@@ -1,0 +1,46 @@
+css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --background: #ffffff;
+  --background-secondary: #f9fafb;
+  --background-tertiary: #f3f4f6;
+  --foreground: #111827;
+  --foreground-secondary: #374151;
+  --foreground-muted: #6b7280;
+  --border: #e5e7eb;
+  --card: #ffffff;
+}
+
+.dark {
+  color-scheme: dark;
+  --background: #0a0a0a;
+  --background-secondary: #111827;
+  --background-tertiary: #1f2937;
+  --foreground: #f9fafb;
+  --foreground-secondary: #e5e7eb;
+  --foreground-muted: #9ca3af;
+  --border: #374151;
+  --card: #111827;
+}
+
+html {
+  background-color: var(--background);
+  min-height: 100vh;
+}
+
+body {
+  padding-top: env(safe-area-inset-top, 0px);
+  overscroll-behavior-y: none;
+  background-color: var(--background);
+  color: var(--foreground);
+  min-height: 100vh;
+}
+
+#root {
+  background-color: var(--background);
+  min-height: 100vh;
+}

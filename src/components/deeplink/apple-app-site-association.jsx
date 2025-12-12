@@ -1,0 +1,16 @@
+// {
+//   "applinks": {
+//     "apps": [],
+//     "details": [
+//       {
+//         "appID": "YOUR_TEAM_ID.YOUR_BUNDLE_ID",
+//         "paths": [
+//           "/event/*",
+//           "/join/*",
+//           "/chat/*",
+//           "/task/*"
+//         ]
+//       }
+//     ]
+//   }
+// }
