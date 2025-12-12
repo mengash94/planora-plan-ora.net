@@ -539,25 +539,14 @@ export default function CreateEventManualPage() {
         // 3. Create in-app notification and send push notification for each admin
         for (const admin of admins) {
           try {
-            await createNotification({
+            await createNotificationAndSendPush({
               userId: admin.id,
               type: 'new_event_created',
               title: 'אירוע חדש נוצר 🎉',
               message: `${creatorName} יצר אירוע חדש: "${newEvent.title}"`,
               eventId: newEvent.id,
-              actionUrl: `/EventDetail?id=${newEvent.id}`,
+              actionUrl: `https://register.plan-ora.net${createPageUrl(`EventDetail?id=${newEvent.id}`)}`,
               priority: 'normal'
-            });
-
-            await sendPlanoraNotification({
-              userId: admin.id,
-              title: 'אירוע חדש נוצר 🎉',
-              body: `${creatorName} יצר: "${newEvent.title}"`,
-              data: {
-                type: 'new_event',
-                eventId: newEvent.id,
-                url: `/EventDetail?id=${newEvent.id}`
-              }
             });
 
             console.log(`✅ Notified admin: ${admin.email} (ID: ${admin.id})`);
