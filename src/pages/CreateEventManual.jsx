@@ -7,19 +7,19 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, MapPin, Loader2, ArrowRight, Image as ImageIcon } from 'lucide-react';
+import { Calendar, MapPin, Upload, Loader2, ArrowRight, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   createEvent,
   createEventMember,
   createTask,
+  getEventTemplates,
   getTaskTemplates, // This is now used for fetching tasks from templates
   uploadFileToInstaback,
   notifyAdminsNewEvent,
   createPoll,
   listUsers,
-  createNotification,
-  sendPlanoraNotification,
+  createNotificationAndSendPush,
   createItineraryItem,
   createRecurringEventRule
 } from '@/components/instabackService';
