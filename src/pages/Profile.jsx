@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useAuth } from '@/components/AuthProvider';
-import { Loader2, User, Bell, Settings, TrendingUp, MessageSquare, Shield, ChevronLeft, ChevronRight, Smartphone, BarChart } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Loader2, User, Bell, Settings, TrendingUp, MessageSquare, Shield, ChevronLeft, ChevronRight, Smartphone, FileText, BarChart } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import {
     updateUser,
@@ -22,6 +24,7 @@ import AppSettings from '@/components/profile/AppSettings';
 import UsageJourney from '@/components/profile/UsageJourney';
 import FeedbackForm from '@/components/profile/FeedbackForm';
 import ManageFeedback from '@/components/profile/ManageFeedback';
+import PushNotificationDebug from '@/components/profile/PushNotificationDebug';
 import AdminSettings from '@/components/profile/AdminSettings';
 import RSVPCategoriesSettings from '@/components/profile/RSVPCategoriesSettings';
 import QuickBroadcast from '@/components/profile/QuickBroadcast';
@@ -487,7 +490,7 @@ export default function ProfilePage() {
 
             </div>
             
-            <style jsx>{`
+            <style>{`
                 .hide-scrollbar::-webkit-scrollbar {
                     display: none;
                 }
