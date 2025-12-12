@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
+  Settings,
   Calendar,
   Users,
   Bell,
@@ -117,6 +120,21 @@ export default function AdminSettings() {
           description: 'ראה ותמוך במשובי משתמשים',
           action: 'manage-feedback',
           icon: MessageSquare
+        }
+      ]
+    },
+    {
+      id: 'system',
+      title: 'מערכת',
+      description: 'מידע טכני ותיעוד המערכת',
+      icon: Settings,
+      color: 'from-gray-500 to-slate-500',
+      items: [
+        {
+          label: 'אפיון האפליקציה',
+          description: 'צפה במסמך האפיון המלא של המערכת',
+          page: 'AppSpecification',
+          icon: FileText
         }
       ]
     }
