@@ -305,7 +305,11 @@ export default function InstaGoogleLogin() {
       });
       
       toast.success('התחברת בהצלחה!');
-      navigate(createPageUrl('Home'));
+      
+      // ⏱️ המתן רגע שה-AuthProvider יעדכן את ה-state
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 100);
       
     } catch (err) {
       console.error('[InstaGoogleLogin] ❌ Login error:', err);
