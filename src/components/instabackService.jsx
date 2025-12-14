@@ -556,6 +556,8 @@ export const handleGoogleOAuthCallback = () => {
 export const loginWithGoogleMobile = async (idToken) => {
     if (!idToken) throw new Error('idToken is required');
 
+    console.log('[loginWithGoogleMobile] 🚀 Starting Google mobile login...');
+
     const res = await fetch(`${AUTH_BASE_URL}/auth/google-mobile`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'accept': 'application/json' },
@@ -563,17 +565,33 @@ export const loginWithGoogleMobile = async (idToken) => {
     });
 
     const data = await res.json().catch(() => ({}));
+    console.log('[loginWithGoogleMobile] 📦 Server response:', data);
+
     if (!res.ok) {
         const msg = data?.message || `Google mobile login failed (HTTP ${res.status})`;
         throw new Error(msg);
     }
 
     if (data.token) {
+        console.log('[loginWithGoogleMobile] 🔑 Saving token...');
         setToken(data.token);
+    } else {
+        console.error('[loginWithGoogleMobile] ❌ NO TOKEN IN RESPONSE!');
     }
+
     if (data.user) {
-        try { localStorage.setItem('instaback_user', JSON.stringify(data.user)); } catch {}
+        console.log('[loginWithGoogleMobile] 👤 Saving user:', data.user);
+        try { 
+            localStorage.setItem('instaback_user', JSON.stringify(data.user)); 
+            console.log('[loginWithGoogleMobile] ✅ User saved to localStorage');
+        } catch (e) {
+            console.error('[loginWithGoogleMobile] ❌ Failed to save user:', e);
+        }
+    } else {
+        console.error('[loginWithGoogleMobile] ❌ NO USER IN RESPONSE!');
     }
+
+    console.log('[loginWithGoogleMobile] ✅ Login complete, returning user');
     return data.user || data;
 };
 
