@@ -16,6 +16,16 @@ export default function InstaGoogleLogin() {
   const [socialLoginReady, setSocialLoginReady] = useState(false);
 
   const isNative = isNativeCapacitor();
+  
+  // 🔍 Debug - הצג את הסביבה בכל רינדר
+  console.log('[InstaGoogleLogin] 🔍 Component mounted/rendered');
+  console.log('[InstaGoogleLogin] Environment check:', {
+    isNative,
+    hasCapacitor: !!window.Capacitor,
+    platform: window.Capacitor?.getPlatform?.(),
+    hasSocialLogin: !!window.Capacitor?.Plugins?.SocialLogin,
+    userAgent: navigator.userAgent
+  });
 
   // ✅ פונקציה להמתנה לזמינות SocialLogin (עד 5 שניות)
   const waitForSocialLogin = async () => {
