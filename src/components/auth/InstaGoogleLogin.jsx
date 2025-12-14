@@ -316,10 +316,14 @@ export default function InstaGoogleLogin() {
       
       toast.success('התחברת בהצלחה!');
       
-      // ⏱️ המתן רגע שה-AuthProvider יעדכן את ה-state
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 100);
+      // ✅ Native: navigate רגיל, Web: reload מלא
+      if (isNative) {
+        navigate(createPageUrl('Home'));
+      } else {
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 100);
+      }
       
     } catch (err) {
       console.error('[InstaGoogleLogin] ❌ Login error:', err);
