@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { getEventRSVPs, deleteEventRSVP } from '@/components/instabackService';
+import { getEventRSVPs, deleteEventRSVP, updateEvent } from '@/components/instabackService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   Users, Check, X, HelpCircle, Trash2, Loader2, 
   Copy, Share2, UserPlus, BarChart3, RefreshCw,
-  Phone, MessageSquare, Download, FileSpreadsheet, FileText
+  Phone, MessageSquare, Download, FileSpreadsheet, FileText, Bell, BellOff
 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +23,8 @@ export default function RSVPTab({ eventId, event, isManager }) {
   const [stats, setStats] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [notifyOnRsvp, setNotifyOnRsvp] = useState(event?.notifyOnRsvp !== false);
+  const [isUpdatingNotify, setIsUpdatingNotify] = useState(false);
 
   const loadRSVPs = async () => {
     if (!eventId) return;
@@ -104,6 +107,20 @@ export default function RSVPTab({ eventId, event, isManager }) {
     const ownerText = ownerName ? `\n👤 מזמין: ${ownerName}` : '';
     const message = `🎉 הוזמנת לאירוע "${event?.title || 'אירוע'}"!${ownerText}\n\n📋 לחץ/י על הקישור כדי לאשר הגעה:\n${getRSVPLink()}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+  };
+
+  const handleToggleNotify = async (checked) => {
+    setIsUpdatingNotify(true);
+    try {
+      await updateEvent(eventId, { notifyOnRsvp: checked });
+      setNotifyOnRsvp(checked);
+      toast.success(checked ? 'התראות אישור הגעה הופעלו' : 'התראות אישור הגעה כובו');
+    } catch (error) {
+      console.error('Failed to update notification setting:', error);
+      toast.error('שגיאה בעדכון ההגדרה');
+    } finally {
+      setIsUpdatingNotify(false);
+    }
   };
 
   const getAttendanceIcon = (attendance) => {
@@ -318,6 +335,32 @@ export default function RSVPTab({ eventId, event, isManager }) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Notification Settings - Only for managers */}
+      {isManager && (
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {notifyOnRsvp ? (
+                  <Bell className="w-5 h-5 text-orange-500" />
+                ) : (
+                  <BellOff className="w-5 h-5 text-gray-400" />
+                )}
+                <div>
+                  <p className="font-medium text-gray-900">התראות אישור הגעה</p>
+                  <p className="text-sm text-gray-500">קבל התראה כשמישהו מגיב לשאלון</p>
+                </div>
+              </div>
+              <Switch
+                checked={notifyOnRsvp}
+                onCheckedChange={handleToggleNotify}
+                disabled={isUpdatingNotify}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* RSVP List */}
       <Card>

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useAuth } from '@/components/AuthProvider';
-import { getEventDetails, getUserById } from '@/components/instabackService';
+import { getEventDetails, getUserById, createNotificationAndSendPush } from '@/components/instabackService';
 
 // Local createEventRSVP function
 const createEventRSVP = async (rsvpData) => {
@@ -49,8 +49,8 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { 
   Loader2, Calendar, MapPin, PartyPopper, AlertCircle, Users, 
-  Check, X, HelpCircle, Sparkles, Gift, MessageCircle,
-  Star, Bell, CheckCircle2, Zap, Camera
+  Check, X, HelpCircle, Sparkles, UserPlus, Gift, MessageCircle,
+  Star, Bell, CheckCircle2, Heart, Zap, Camera
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -166,6 +166,29 @@ export default function EventRSVPPage() {
         notes: rsvpData.notes || null,
         userId: isAuthenticated && user?.id ? user.id : null
       });
+      
+      // Send notification to event owner if notifyOnRsvp is enabled (default true)
+      const notifyOnRsvp = event?.notifyOnRsvp !== false;
+      const ownerId = event?.owner_id || event?.ownerId;
+      
+      if (notifyOnRsvp && ownerId) {
+        try {
+          const attendanceText = rsvpData.attendance === 'yes' ? 'מגיע/ה' : rsvpData.attendance === 'no' ? 'לא מגיע/ה' : 'אולי';
+          const guestText = rsvpData.attendance === 'yes' && rsvpData.guestCount > 1 ? ` (${rsvpData.guestCount} אנשים)` : '';
+          
+          await createNotificationAndSendPush({
+            userId: ownerId,
+            type: 'rsvp_received',
+            title: `אישור הגעה חדש! 📋`,
+            message: `${rsvpData.name} הגיב/ה לאירוע "${event.title}": ${attendanceText}${guestText}`,
+            eventId: eventId,
+            actionUrl: `https://register.plan-ora.net${createPageUrl(`EventDetail?id=${eventId}&tab=rsvp`)}`,
+            priority: 'normal'
+          });
+        } catch (notifyErr) {
+          console.warn('[RSVP] Failed to notify event owner:', notifyErr);
+        }
+      }
       
       setSubmitted(true);
       toast.success('התשובה נשמרה בהצלחה! 🎉');
