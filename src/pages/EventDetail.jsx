@@ -4,14 +4,26 @@ import { createPageUrl } from '@/utils';
 import { useAuth } from '@/components/AuthProvider';
 import {
   getEventDetails,
+  getEventMembers,
+  listTasks,
+  getUserById,
   deleteEvent as deleteEventService,
+  updateTask,
   updateTaskWithNotifications,
   createTask as createTaskService,
   getPolls,
+  listItineraryItems,
+  listProfessionals,
+  listEventLinks,
   listMediaItems,
   listEventDocuments,
+  getUnreadMessagesCount,
+  getEventOverview,
+  checkEventMembership,
   updateEvent,
+  getEventInitialData,
   getEventFullDetails,
+  createNotificationAndSendPush,
   createNotificationsAndSendPushBulk,
   leaveEvent,
   getRecurringEventRule
@@ -22,17 +34,20 @@ import { toast } from 'sonner';
 
 // UI Components
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Loader2,
   ArrowRight,
   MapPin,
+  Edit,
   Trash2,
   Settings,
+  Clock,
   Bell,
   UserPlus,
   Share2,
+  X,
   Plus,
   Calendar,
   Users,
@@ -47,7 +62,8 @@ import {
   LogOut,
   ChevronDown,
   Megaphone,
-  ClipboardCheck
+  ClipboardCheck,
+  Repeat
 } from
 'lucide-react';
 import {
@@ -73,6 +89,7 @@ import DocumentsTab from '../components/event/DocumentsTab';
 import ParticipantsTab from '../components/event/ParticipantsTab';
 import ExpensesTab from '../components/event/ExpensesTab';
 import PaymentsManagementTab from '../components/event/PaymentsManagementTab';
+import BudgetTab from '../components/event/BudgetTab';
 import UpdatesTab from '../components/event/UpdatesTab';
 import RSVPTab from '../components/event/RSVPTab';
 
@@ -93,6 +110,7 @@ import EventDashboard from '../components/event/EventDashboard';
 
 // Date formatting helpers
 import { formatIsraelDate, formatIsraelTime, isSameDay } from '@/components/utils/dateHelpers';
+import { generateICSFile, downloadICSFile, generateGoogleCalendarUrl } from '@/components/utils/calendarHelpers';
 import RecurrenceDisplay, { calculateRecurrenceEndDate } from '@/components/event/RecurrenceDisplay';
 
 // useFirstVisit removed - using SideHelpTab instead
@@ -635,6 +653,11 @@ export default function EventDetailPage() {
           canManage={canManage && !isReadOnly} // Changed from eventData.canManage
           isReadOnly={isReadOnly} />;
 
+      case 'budget':
+        return <BudgetTab
+          eventId={eventId}
+          isManager={canManage && !isReadOnly} />;
+
       case 'payments':
         // Check if this is a public event with participation cost
         const hasParticipationCost = event?.participationCost || event?.participation_cost;
@@ -863,6 +886,7 @@ export default function EventDetailPage() {
     { id: 'gallery', label: 'גלריה', icon: Image },
     { id: 'documents', label: 'מסמכים', icon: FileText },
     { id: 'participants', label: 'משתתפים', icon: Users },
+    { id: 'budget', label: 'תקציב', icon: Wallet },
     { id: 'payments', label: 'תשלומים', icon: Wallet }
   ];
 
