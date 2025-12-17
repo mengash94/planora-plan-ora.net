@@ -248,6 +248,8 @@ export default function InstaAppleLogin() {
 
     } catch (error) {
       console.error('[InstaAppleLogin] ❌ Error:', error);
+      console.error('[InstaAppleLogin] ❌ Error message:', error?.message);
+      console.error('[InstaAppleLogin] ❌ Error stack:', error?.stack);
 
       if (/(canceled|בוטלה|closed|cancelled)/i.test(error?.message || '')) {
         toast.info('ההתחברות בוטלה');
@@ -255,6 +257,7 @@ export default function InstaAppleLogin() {
         toast.error(error.message || 'שגיאה בהתחברות עם Apple');
       }
     } finally {
+      console.log('[InstaAppleLogin] 🏁 Finally block - setting isLoading to false');
       setIsLoading(false);
     }
   };
