@@ -354,7 +354,7 @@ export default function RSVPTab({ eventId, event, isManager }) {
                 checked={notifyOnRsvp}
                 onCheckedChange={handleToggleNotify}
                 disabled={isUpdatingNotify}
-                className="data-[state=checked]:bg-orange-500 flex-shrink-0"
+                className="w-11 h-6 flex-shrink-0 overflow-hidden data-[state=checked]:bg-orange-500 data-[state=checked]:[&>span]:!translate-x-4 [&>span]:h-5 [&>span]:w-5"
               />
             </div>
           </CardContent>
