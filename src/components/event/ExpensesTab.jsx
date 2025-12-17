@@ -4,11 +4,11 @@ import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Wallet, TrendingUp, TrendingDown, PieChart, Edit2, Check, X, Filter, ArrowUpDown } from 'lucide-react';
+import { Loader2, Wallet, TrendingDown, PieChart, Filter, ArrowUpDown } from 'lucide-react';
 import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import ExpenseForm from './ExpenseForm';
 import ExpenseItem from './ExpenseItem';
-import { createEventExpense, listEventExpenses, deleteEventExpense, updateEventExpense, getEventDetails, updateEvent } from '@/components/instabackService';
+import { createEventExpense, listEventExpenses, deleteEventExpense, updateEventExpense } from '@/components/instabackService';
 import { toast } from 'sonner';
 
 const CATEGORY_LABELS = {
@@ -38,9 +38,7 @@ const CATEGORY_COLORS = {
 export default function ExpensesTab({ eventId, members = [], currentUser, isManager, isReadOnly = false }) {
   const [expenses, setExpenses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [budget, setBudget] = useState(0);
-  const [isEditingBudget, setIsEditingBudget] = useState(false);
-  const [tempBudget, setTempBudget] = useState('');
+
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
   const [sortBy, setSortBy] = useState('date');
@@ -69,17 +67,10 @@ export default function ExpensesTab({ eventId, members = [], currentUser, isMana
     if (!eventId) return;
     setIsLoading(true);
     try {
-      const [res, eventDetails] = await Promise.all([
-        listEventExpenses(eventId),
-        getEventDetails(eventId)
-      ]);
+      const res = await listEventExpenses(eventId);
       const expensesList = Array.isArray(res) ? res : (Array.isArray(res?.items) ? res.items : []);
       console.log('[ExpensesTab] Loaded expenses:', expensesList);
       setExpenses(expensesList);
-      
-      if (eventDetails?.budget) {
-        setBudget(Number(eventDetails.budget) || 0);
-      }
     } catch (e) {
       console.error('[ExpensesTab] Failed to load expenses:', e);
       toast.error('שגיאה בטעינת התשלומים');
@@ -92,19 +83,6 @@ export default function ExpensesTab({ eventId, members = [], currentUser, isMana
   useEffect(() => {
     loadExpenses();
   }, [loadExpenses]);
-
-  const handleSaveBudget = async () => {
-    const newBudget = Number(tempBudget) || 0;
-    try {
-      await updateEvent(eventId, { budget: newBudget });
-      setBudget(newBudget);
-      setIsEditingBudget(false);
-      toast.success('התקציב עודכן בהצלחה');
-    } catch (e) {
-      console.error('[ExpensesTab] Failed to update budget:', e);
-      toast.error('שגיאה בעדכון התקציב');
-    }
-  };
 
   const handleUpdateExpense = async (expenseId, updates) => {
     try {
@@ -144,10 +122,6 @@ export default function ExpensesTab({ eventId, members = [], currentUser, isMana
     return expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
   }, [expenses]);
 
-  const remaining = useMemo(() => {
-    return budget - total;
-  }, [budget, total]);
-
   const categoryData = useMemo(() => {
     const grouped = {};
     expenses.forEach(exp => {
@@ -183,8 +157,6 @@ export default function ExpensesTab({ eventId, members = [], currentUser, isMana
     return filtered;
   }, [expenses, filterCategory, filterStatus, sortBy]);
 
-  const budgetPercentUsed = budget > 0 ? Math.min((total / budget) * 100, 100) : 0;
-
   return (
     <div className="space-y-4">
       {/* Budget Overview Card */}
@@ -193,82 +165,25 @@ export default function ExpensesTab({ eventId, members = [], currentUser, isMana
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Wallet className="w-5 h-5" />
-              <span className="font-bold text-lg">תקציב האירוע</span>
+              <span className="font-bold text-lg">סיכום הוצאות</span>
             </div>
-            {isManager && !isReadOnly && !isEditingBudget && (
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => {
-                  setTempBudget(String(budget));
-                  setIsEditingBudget(true);
-                }}
-                className="text-white hover:bg-white/20"
-              >
-                <Edit2 className="w-4 h-4" />
-              </Button>
-            )}
           </div>
-          
-          {isEditingBudget ? (
-            <div className="flex items-center gap-2">
-              <Input
-                type="number"
-                value={tempBudget}
-                onChange={(e) => setTempBudget(e.target.value)}
-                className="bg-white/20 border-white/30 text-white placeholder:text-white/70 w-32"
-                placeholder="0"
-              />
-              <span className="text-white/80">₪</span>
-              <Button size="sm" variant="ghost" onClick={handleSaveBudget} className="text-white hover:bg-white/20">
-                <Check className="w-4 h-4" />
-              </Button>
-              <Button size="sm" variant="ghost" onClick={() => setIsEditingBudget(false)} className="text-white hover:bg-white/20">
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-          ) : (
-            <div className="text-3xl font-bold">₪{budget.toLocaleString()}</div>
-          )}
+          <div className="text-3xl font-bold">₪{total.toLocaleString()}</div>
         </div>
         
         <CardContent className="p-4">
-          <div className="grid grid-cols-3 gap-4 mb-4">
-            <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-              <TrendingUp className="w-5 h-5 text-green-600 mx-auto mb-1" />
-              <p className="text-xs text-gray-600 dark:text-gray-400">תקציב</p>
-              <p className="font-bold text-green-600">₪{budget.toLocaleString()}</p>
-            </div>
-            <div className="text-center p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
-              <TrendingDown className="w-5 h-5 text-red-600 mx-auto mb-1" />
-              <p className="text-xs text-gray-600 dark:text-gray-400">הוצאות</p>
-              <p className="font-bold text-red-600">₪{total.toLocaleString()}</p>
-            </div>
-            <div className={`text-center p-3 rounded-lg ${remaining >= 0 ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-orange-50 dark:bg-orange-900/20'}`}>
-              <Wallet className={`w-5 h-5 mx-auto mb-1 ${remaining >= 0 ? 'text-blue-600' : 'text-orange-600'}`} />
-              <p className="text-xs text-gray-600 dark:text-gray-400">יתרה</p>
-              <p className={`font-bold ${remaining >= 0 ? 'text-blue-600' : 'text-orange-600'}`}>
-                ₪{remaining.toLocaleString()}
-              </p>
-            </div>
+          <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="text-center p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+            <TrendingDown className="w-5 h-5 text-orange-600 mx-auto mb-1" />
+            <p className="text-xs text-gray-600 dark:text-gray-400">סה״כ הוצאות</p>
+            <p className="font-bold text-orange-600">₪{total.toLocaleString()}</p>
           </div>
-          
-          {budget > 0 && (
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">ניצול תקציב</span>
-                <span className={`font-medium ${budgetPercentUsed > 100 ? 'text-red-600' : budgetPercentUsed > 80 ? 'text-orange-600' : 'text-green-600'}`}>
-                  {budgetPercentUsed.toFixed(0)}%
-                </span>
-              </div>
-              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                <div
-                  className={`h-full transition-all duration-500 ${budgetPercentUsed > 100 ? 'bg-red-500' : budgetPercentUsed > 80 ? 'bg-orange-500' : 'bg-green-500'}`}
-                  style={{ width: `${Math.min(budgetPercentUsed, 100)}%` }}
-                />
-              </div>
-            </div>
-          )}
+          <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+            <Wallet className="w-5 h-5 text-blue-600 mx-auto mb-1" />
+            <p className="text-xs text-gray-600 dark:text-gray-400">מספר הוצאות</p>
+            <p className="font-bold text-blue-600">{expenses.length}</p>
+          </div>
+          </div>
         </CardContent>
       </Card>
 
