@@ -356,6 +356,7 @@ export default function RSVPTab({ eventId, event, isManager }) {
                 checked={notifyOnRsvp}
                 onCheckedChange={handleToggleNotify}
                 disabled={isUpdatingNotify}
+                className="data-[state=checked]:bg-orange-500"
               />
             </div>
           </CardContent>
