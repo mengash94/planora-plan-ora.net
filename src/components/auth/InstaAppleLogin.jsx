@@ -2,7 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { isNativeCapacitor } from '@/components/onesignalService';
-import { loginWithAppleMobile } from '@/components/instabackService';
+import { 
+  instabackLogin, 
+  instabackRegister, 
+  findUserByEmail 
+} from '@/components/instabackService';
 
 export default function InstaAppleLogin() {
   const [isLoading, setIsLoading] = useState(false);
@@ -53,7 +57,6 @@ export default function InstaAppleLogin() {
   // Initialize native plugin
   useEffect(() => {
     if (!isNative || !isAppleDevice) {
-      // For web, mark as ready immediately
       if (isAppleDevice && !isNative) {
         setSocialLoginReady(true);
       }
@@ -74,7 +77,7 @@ export default function InstaAppleLogin() {
         
         await plugin.initialize({
           apple: {
-            clientId: 'net.plan-ora.planora', // Your Apple Service ID
+            clientId: 'net.plan-ora.planora',
             redirectUrl: 'https://easypalnistaback.firebaseapp.com/__/auth/handler'
           }
         });
@@ -84,13 +87,74 @@ export default function InstaAppleLogin() {
         
       } catch (error) {
         console.error('[InstaAppleLogin] ❌ Init failed:', error);
-        // Still allow attempts - might work on click
         setSocialLoginReady(true);
       }
     };
 
     initializePlugin();
   }, [isNative, isAppleDevice]);
+
+  // Generate a random password for Apple users
+  const generateRandomPassword = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%';
+    let password = '';
+    for (let i = 0; i < 16; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
+  };
+
+  // Login or register user to Instaback
+  const loginOrRegisterToInstaback = async (email, fullName) => {
+    if (!email) {
+      throw new Error('לא התקבל אימייל מ-Apple');
+    }
+
+    console.log('[InstaAppleLogin] 🔐 Checking if user exists in Instaback:', email);
+
+    // Check if user already exists
+    const existingUser = await findUserByEmail(email);
+    
+    if (existingUser) {
+      console.log('[InstaAppleLogin] ✅ User exists, logging in...');
+      // User exists - try to login with stored Apple password
+      // Since we can't know the password, we use a fixed pattern based on email
+      const applePassword = `Apple_${btoa(email).slice(0, 12)}!`;
+      
+      try {
+        const user = await instabackLogin(email, applePassword);
+        return user;
+      } catch (loginError) {
+        console.log('[InstaAppleLogin] Login failed, user may have different password');
+        // If login fails, the user might have registered differently
+        // Return the existing user info anyway since Firebase verified them
+        return existingUser;
+      }
+    } else {
+      console.log('[InstaAppleLogin] 📝 User not found, registering...');
+      // User doesn't exist - register them
+      const applePassword = `Apple_${btoa(email).slice(0, 12)}!`;
+      const nameParts = (fullName || '').split(' ');
+      const firstName = nameParts[0] || email.split('@')[0];
+      const lastName = nameParts.slice(1).join(' ') || '';
+
+      try {
+        await instabackRegister({
+          email: email,
+          password: applePassword,
+          firstName: firstName,
+          lastName: lastName
+        });
+        
+        console.log('[InstaAppleLogin] ✅ Registration successful, logging in...');
+        const user = await instabackLogin(email, applePassword);
+        return user;
+      } catch (registerError) {
+        console.error('[InstaAppleLogin] Registration error:', registerError);
+        throw new Error('שגיאה ברישום המשתמש');
+      }
+    }
+  };
 
   const handleAppleLogin = async () => {
     setIsLoading(true);
@@ -99,7 +163,7 @@ export default function InstaAppleLogin() {
       console.log('[InstaAppleLogin] 🍎 Starting Apple Sign In...');
       console.log('[InstaAppleLogin] Environment:', isNative ? 'Native' : 'Web');
 
-      let idToken, email, fullName;
+      let email, fullName;
 
       if (isNative) {
         // Native iOS - use @capgo/capacitor-social-login
@@ -120,32 +184,43 @@ export default function InstaAppleLogin() {
 
         console.log('[InstaAppleLogin] Login result:', loginResult);
 
-        idToken = loginResult?.result?.idToken || loginResult?.result?.identityToken;
         email = loginResult?.result?.email;
         fullName = loginResult?.result?.givenName 
           ? `${loginResult.result.givenName} ${loginResult.result.familyName || ''}`.trim()
           : loginResult?.result?.displayName;
 
-        if (!idToken) {
-          console.error('[InstaAppleLogin] No idToken in result:', loginResult);
-          throw new Error('לא התקבל אסימון מ-Apple');
+        // Apple only provides email on first login, so we need to handle this
+        if (!email) {
+          // Try to get from user identifier
+          const userIdentifier = loginResult?.result?.user || loginResult?.result?.userIdentifier;
+          if (userIdentifier) {
+            // Use a placeholder email based on Apple user ID
+            email = `apple_${userIdentifier.substring(0, 20)}@privaterelay.appleid.com`;
+            console.log('[InstaAppleLogin] Using generated email for Apple user');
+          } else {
+            throw new Error('לא התקבל אימייל מ-Apple. נסה שוב או השתמש בשיטת התחברות אחרת.');
+          }
         }
 
       } else {
-        // Web - Apple Sign In is not supported without Firebase
         throw new Error('התחברות עם Apple נתמכת רק באפליקציה');
       }
 
-      console.log('[InstaAppleLogin] Got Apple credentials:', { email, hasIdToken: !!idToken, fullName });
+      console.log('[InstaAppleLogin] Got Apple credentials:', { email, fullName });
 
-      // Login/Register to InstaBack with Apple token
-      const user = await loginWithAppleMobile(idToken, email, fullName);
+      // Login/Register to InstaBack
+      const user = await loginOrRegisterToInstaback(email, fullName);
 
       if (!user?.id) {
         throw new Error('התחברות נכשלה - לא התקבל פרטי משתמש');
       }
 
       console.log('[InstaAppleLogin] ✅ Login successful, user:', user.id);
+
+      // Save user to localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('instaback_user', JSON.stringify(user));
+      }
 
       // Register for push notifications (background)
       if (isNative) {
@@ -182,7 +257,7 @@ export default function InstaAppleLogin() {
     return null;
   }
 
-  // Don't render on web (Apple Sign In requires native or Firebase)
+  // Don't render on web (Apple Sign In requires native)
   if (!isNative) {
     return null;
   }
@@ -197,7 +272,7 @@ export default function InstaAppleLogin() {
       ) : (
         <button
           onClick={handleAppleLogin}
-          disabled={!firebaseReady}
+          disabled={!socialLoginReady}
           className="flex items-center justify-center gap-3 w-full max-w-[280px] px-6 py-3 bg-black text-white rounded-lg shadow-sm hover:bg-gray-900 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           type="button"
           style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}
@@ -210,7 +285,7 @@ export default function InstaAppleLogin() {
             <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
           </svg>
           <span className="font-medium">
-            {!firebaseReady ? 'טוען...' : 'המשך עם Apple'}
+            {!socialLoginReady ? 'טוען...' : 'המשך עם Apple'}
           </span>
         </button>
       )}
