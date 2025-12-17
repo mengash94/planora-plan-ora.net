@@ -340,23 +340,21 @@ export default function RSVPTab({ eventId, event, isManager }) {
       {isManager && (
         <Card className="bg-gradient-to-r from-orange-50 to-rose-50 border-orange-200">
           <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                {notifyOnRsvp ? (
-                  <Bell className="w-5 h-5 text-orange-500" />
-                ) : (
-                  <BellOff className="w-5 h-5 text-gray-400" />
-                )}
-                <div>
-                  <p className="font-medium text-gray-900">התראות אישור הגעה</p>
-                  <p className="text-sm text-gray-500">קבל התראה כשמישהו מגיב לשאלון</p>
-                </div>
+            <div className="flex items-center gap-3">
+              {notifyOnRsvp ? (
+                <Bell className="w-5 h-5 text-orange-500 flex-shrink-0" />
+              ) : (
+                <BellOff className="w-5 h-5 text-gray-400 flex-shrink-0" />
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-gray-900">התראות אישור הגעה</p>
+                <p className="text-sm text-gray-500">קבל התראה כשמישהו מגיב לשאלון</p>
               </div>
               <Switch
                 checked={notifyOnRsvp}
                 onCheckedChange={handleToggleNotify}
                 disabled={isUpdatingNotify}
-                className="data-[state=checked]:bg-orange-500"
+                className="data-[state=checked]:bg-orange-500 flex-shrink-0"
               />
             </div>
           </CardContent>
