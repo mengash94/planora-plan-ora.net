@@ -338,7 +338,7 @@ export default function RSVPTab({ eventId, event, isManager }) {
 
       {/* Notification Settings - Only for managers */}
       {isManager && (
-        <Card>
+        <Card className="bg-gradient-to-r from-orange-50 to-rose-50 border-orange-200">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
