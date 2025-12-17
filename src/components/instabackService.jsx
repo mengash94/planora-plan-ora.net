@@ -641,52 +641,6 @@ export const loginWithAppleMobile = async (idToken, email = null, fullName = nul
     return data.user || data;
 };
 
-export const loginWithAppleMobile = async (idToken, email = null, fullName = null) => {
-    if (!idToken) throw new Error('idToken is required');
-
-    console.log('[loginWithAppleMobile] 🍎 Starting Apple mobile login...');
-
-    const res = await fetch(`${AUTH_BASE_URL}/auth/apple-mobile`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'accept': 'application/json' },
-        body: JSON.stringify({ 
-            id_token: idToken,
-            email: email,
-            full_name: fullName
-        })
-    });
-
-    const data = await res.json().catch(() => ({}));
-    console.log('[loginWithAppleMobile] 📦 Server response:', data);
-
-    if (!res.ok) {
-        const msg = data?.message || `Apple mobile login failed (HTTP ${res.status})`;
-        throw new Error(msg);
-    }
-
-    if (data.token) {
-        console.log('[loginWithAppleMobile] 🔑 Saving token...');
-        setToken(data.token);
-    } else {
-        console.error('[loginWithAppleMobile] ❌ NO TOKEN IN RESPONSE!');
-    }
-
-    if (data.user) {
-        console.log('[loginWithAppleMobile] 👤 Saving user:', data.user);
-        try { 
-            localStorage.setItem('instaback_user', JSON.stringify(data.user)); 
-            console.log('[loginWithAppleMobile] ✅ User saved to localStorage');
-        } catch (e) {
-            console.error('[loginWithAppleMobile] ❌ Failed to save user:', e);
-        }
-    } else {
-        console.error('[loginWithAppleMobile] ❌ NO USER IN RESPONSE!');
-    }
-
-    console.log('[loginWithAppleMobile] ✅ Login complete, returning user');
-    return data.user || data;
-};
-
 // --- Users ---
 export const getUserById = async (userId) => {
     if (!userId) throw new Error("User ID is required.");
