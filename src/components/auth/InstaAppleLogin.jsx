@@ -2,63 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { isNativeCapacitor } from '@/components/onesignalService';
-
-// Firebase Config for easypalnistaback project
-const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyBxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", // TODO: Add your Firebase API key
-  authDomain: "easypalnistaback.firebaseapp.com",
-  projectId: "easypalnistaback",
-};
-
-// InstaBack API
-const API_BASE_URL = 'https://instaback.ai/project/f78de3ce-0cab-4ccb-8442-0c5749792fe8/api';
-
-const getToken = () => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('instaback_token');
-  }
-  return null;
-};
-
-// Login/Register with Apple credentials to InstaBack
-const loginWithApple = async (email, firebaseUid, fullName) => {
-  console.log('[InstaAppleLogin] Sending to InstaBack:', { email, firebaseUid, fullName });
-  
-  const response = await fetch(`${API_BASE_URL}/auth/apple`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'accept': 'application/json'
-    },
-    body: JSON.stringify({
-      email,
-      firebaseUid,
-      fullName: fullName || email.split('@')[0]
-    })
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'Apple login failed');
-  }
-
-  const data = await response.json();
-  
-  // Save token and user
-  if (data.token) {
-    localStorage.setItem('instaback_token', data.token);
-  }
-  if (data.user) {
-    localStorage.setItem('instaback_user', JSON.stringify(data.user));
-  }
-  
-  return data.user || data;
-};
+import { loginWithAppleMobile } from '@/components/instabackService';
 
 export default function InstaAppleLogin() {
   const [isLoading, setIsLoading] = useState(false);
   const [isAppleDevice, setIsAppleDevice] = useState(false);
-  const [firebaseReady, setFirebaseReady] = useState(false);
+  const [socialLoginReady, setSocialLoginReady] = useState(false);
 
   const isNative = isNativeCapacitor();
 
@@ -75,124 +24,134 @@ export default function InstaAppleLogin() {
       
       const isApple = isIOS || isMacOS || isCapacitorIOS;
       
-      console.log('[InstaAppleLogin] Device check:', { isIOS, isMacOS, isCapacitorIOS, isApple });
+      console.log('[InstaAppleLogin] Device check:', { isIOS, isMacOS, isCapacitorIOS, isApple, isNative });
       setIsAppleDevice(isApple);
     };
 
     checkAppleDevice();
-  }, []);
+  }, [isNative]);
 
-  // Load Firebase SDK
+  // Wait for SocialLogin plugin
+  const waitForSocialLogin = async () => {
+    const maxAttempts = 50; // 5 seconds
+    let attempts = 0;
+    
+    while (attempts < maxAttempts) {
+      const plugin = window.Capacitor?.Plugins?.SocialLogin;
+      if (plugin) {
+        console.log('[InstaAppleLogin] ✅ SocialLogin found after', attempts * 100, 'ms');
+        return plugin;
+      }
+      await new Promise(resolve => setTimeout(resolve, 100));
+      attempts++;
+    }
+    
+    console.error('[InstaAppleLogin] ❌ SocialLogin not found after 5s');
+    return null;
+  };
+
+  // Initialize native plugin
   useEffect(() => {
-    if (!isAppleDevice) return;
-
-    // Check if Firebase is already loaded
-    if (window.firebase?.auth) {
-      setFirebaseReady(true);
+    if (!isNative || !isAppleDevice) {
+      // For web, mark as ready immediately
+      if (isAppleDevice && !isNative) {
+        setSocialLoginReady(true);
+      }
       return;
     }
 
-    console.log('[InstaAppleLogin] Loading Firebase SDK...');
-
-    // Load Firebase App
-    const loadFirebase = async () => {
+    const initializePlugin = async () => {
       try {
-        // Firebase App
-        const appScript = document.createElement('script');
-        appScript.src = 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js';
-        appScript.async = true;
-        document.head.appendChild(appScript);
-
-        await new Promise((resolve, reject) => {
-          appScript.onload = resolve;
-          appScript.onerror = reject;
-        });
-
-        // Firebase Auth
-        const authScript = document.createElement('script');
-        authScript.src = 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js';
-        authScript.async = true;
-        document.head.appendChild(authScript);
-
-        await new Promise((resolve, reject) => {
-          authScript.onload = resolve;
-          authScript.onerror = reject;
-        });
-
-        // Initialize Firebase
-        if (!window.firebase.apps?.length) {
-          window.firebase.initializeApp(FIREBASE_CONFIG);
+        console.log('[InstaAppleLogin] 🔄 Waiting for SocialLogin plugin...');
+        const plugin = await waitForSocialLogin();
+        
+        if (!plugin) {
+          console.error('[InstaAppleLogin] ❌ Plugin not available');
+          return;
         }
 
-        console.log('[InstaAppleLogin] ✅ Firebase ready');
-        setFirebaseReady(true);
+        console.log('[InstaAppleLogin] ✅ Plugin found, initializing Apple...');
+        
+        await plugin.initialize({
+          apple: {
+            clientId: 'net.plan-ora.planora', // Your Apple Service ID
+            redirectUrl: 'https://easypalnistaback.firebaseapp.com/__/auth/handler'
+          }
+        });
 
+        console.log('[InstaAppleLogin] ✅ Apple initialized successfully');
+        setSocialLoginReady(true);
+        
       } catch (error) {
-        console.error('[InstaAppleLogin] ❌ Firebase load failed:', error);
+        console.error('[InstaAppleLogin] ❌ Init failed:', error);
+        // Still allow attempts - might work on click
+        setSocialLoginReady(true);
       }
     };
 
-    loadFirebase();
-  }, [isAppleDevice]);
+    initializePlugin();
+  }, [isNative, isAppleDevice]);
 
   const handleAppleLogin = async () => {
-    if (!firebaseReady) {
-      toast.error('Firebase עדיין נטען, נסה שוב');
-      return;
-    }
-
     setIsLoading(true);
 
     try {
       console.log('[InstaAppleLogin] 🍎 Starting Apple Sign In...');
+      console.log('[InstaAppleLogin] Environment:', isNative ? 'Native' : 'Web');
 
-      const provider = new window.firebase.auth.OAuthProvider('apple.com');
-      provider.addScope('email');
-      provider.addScope('name');
+      let idToken, email, fullName;
 
-      // Use redirect for native, popup for web
-      let result;
-      
       if (isNative) {
-        // For native iOS, use signInWithRedirect
-        await window.firebase.auth().signInWithRedirect(provider);
-        // Result will be handled by getRedirectResult on page load
-        return;
+        // Native iOS - use @capgo/capacitor-social-login
+        const plugin = await waitForSocialLogin();
+        
+        if (!plugin) {
+          throw new Error('פלאגין Apple Sign-In לא זמין');
+        }
+
+        console.log('[InstaAppleLogin] Calling SocialLogin.login for Apple...');
+        
+        const loginResult = await plugin.login({
+          provider: 'apple',
+          options: {
+            scopes: ['email', 'name']
+          }
+        });
+
+        console.log('[InstaAppleLogin] Login result:', loginResult);
+
+        idToken = loginResult?.result?.idToken || loginResult?.result?.identityToken;
+        email = loginResult?.result?.email;
+        fullName = loginResult?.result?.givenName 
+          ? `${loginResult.result.givenName} ${loginResult.result.familyName || ''}`.trim()
+          : loginResult?.result?.displayName;
+
+        if (!idToken) {
+          console.error('[InstaAppleLogin] No idToken in result:', loginResult);
+          throw new Error('לא התקבל אסימון מ-Apple');
+        }
+
       } else {
-        // For web (macOS Safari), use popup
-        result = await window.firebase.auth().signInWithPopup(provider);
+        // Web - Apple Sign In is not supported without Firebase
+        throw new Error('התחברות עם Apple נתמכת רק באפליקציה');
       }
 
-      console.log('[InstaAppleLogin] Firebase result:', result);
+      console.log('[InstaAppleLogin] Got Apple credentials:', { email, hasIdToken: !!idToken, fullName });
 
-      const user = result.user;
-      const email = user.email;
-      const firebaseUid = user.uid;
-      const fullName = user.displayName || 
-                       (result.additionalUserInfo?.profile?.name?.firstName 
-                        ? `${result.additionalUserInfo.profile.name.firstName} ${result.additionalUserInfo.profile.name.lastName || ''}`.trim()
-                        : null);
+      // Login/Register to InstaBack with Apple token
+      const user = await loginWithAppleMobile(idToken, email, fullName);
 
-      if (!email) {
-        throw new Error('לא התקבל אימייל מ-Apple');
-      }
-
-      console.log('[InstaAppleLogin] Got Apple credentials:', { email, firebaseUid, fullName });
-
-      // Login/Register to InstaBack
-      const instaUser = await loginWithApple(email, firebaseUid, fullName);
-
-      if (!instaUser?.id) {
+      if (!user?.id) {
         throw new Error('התחברות נכשלה - לא התקבל פרטי משתמש');
       }
 
-      console.log('[InstaAppleLogin] ✅ Login successful:', instaUser.id);
+      console.log('[InstaAppleLogin] ✅ Login successful, user:', user.id);
 
       // Register for push notifications (background)
       if (isNative) {
         try {
           const { loginOneSignalExternalId } = await import('@/components/onesignalService');
-          await loginOneSignalExternalId(instaUser.id);
+          await loginOneSignalExternalId(user.id);
         } catch (e) {
           console.warn('[InstaAppleLogin] Push registration failed:', e);
         }
@@ -208,9 +167,7 @@ export default function InstaAppleLogin() {
     } catch (error) {
       console.error('[InstaAppleLogin] ❌ Error:', error);
 
-      if (error.code === 'auth/popup-closed-by-user' || 
-          error.code === 'auth/cancelled-popup-request' ||
-          error.message?.includes('cancelled')) {
+      if (/(canceled|בוטלה|closed|cancelled)/i.test(error?.message || '')) {
         toast.info('ההתחברות בוטלה');
       } else {
         toast.error(error.message || 'שגיאה בהתחברות עם Apple');
@@ -220,41 +177,13 @@ export default function InstaAppleLogin() {
     }
   };
 
-  // Handle redirect result (for native iOS)
-  useEffect(() => {
-    if (!firebaseReady || !isNative) return;
-
-    const handleRedirectResult = async () => {
-      try {
-        const result = await window.firebase.auth().getRedirectResult();
-        
-        if (result?.user) {
-          console.log('[InstaAppleLogin] Got redirect result:', result);
-          
-          const email = result.user.email;
-          const firebaseUid = result.user.uid;
-          const fullName = result.user.displayName;
-
-          if (email) {
-            setIsLoading(true);
-            const instaUser = await loginWithApple(email, firebaseUid, fullName);
-            
-            if (instaUser?.id) {
-              toast.success('התחברת בהצלחה!');
-              window.location.href = '/';
-            }
-          }
-        }
-      } catch (error) {
-        console.error('[InstaAppleLogin] Redirect result error:', error);
-      }
-    };
-
-    handleRedirectResult();
-  }, [firebaseReady, isNative]);
-
   // Don't render on non-Apple devices
   if (!isAppleDevice) {
+    return null;
+  }
+
+  // Don't render on web (Apple Sign In requires native or Firebase)
+  if (!isNative) {
     return null;
   }
 
