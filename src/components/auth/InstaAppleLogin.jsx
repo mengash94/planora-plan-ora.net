@@ -157,6 +157,10 @@ export default function InstaAppleLogin() {
   };
 
   const handleAppleLogin = async () => {
+    console.log('[InstaAppleLogin] 🍎 Button clicked!');
+    console.log('[InstaAppleLogin] socialLoginReady:', socialLoginReady);
+    console.log('[InstaAppleLogin] isNative:', isNative);
+    
     setIsLoading(true);
 
     try {
@@ -167,13 +171,16 @@ export default function InstaAppleLogin() {
 
       if (isNative) {
         // Native iOS - use @capgo/capacitor-social-login
+        console.log('[InstaAppleLogin] 📱 Native mode, waiting for SocialLogin plugin...');
         const plugin = await waitForSocialLogin();
+        
+        console.log('[InstaAppleLogin] Plugin result:', plugin ? 'Found' : 'NOT FOUND');
         
         if (!plugin) {
           throw new Error('פלאגין Apple Sign-In לא זמין');
         }
 
-        console.log('[InstaAppleLogin] Calling SocialLogin.login for Apple...');
+        console.log('[InstaAppleLogin] 📞 Calling SocialLogin.login for Apple...');
         
         const loginResult = await plugin.login({
           provider: 'apple',
@@ -182,7 +189,7 @@ export default function InstaAppleLogin() {
           }
         });
 
-        console.log('[InstaAppleLogin] Login result:', loginResult);
+        console.log('[InstaAppleLogin] ✅ Login result:', JSON.stringify(loginResult, null, 2));
 
         email = loginResult?.result?.email;
         fullName = loginResult?.result?.givenName 
