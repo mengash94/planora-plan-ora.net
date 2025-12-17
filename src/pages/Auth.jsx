@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { ArrowRight, Loader2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import InstaGoogleLogin from "@/components/auth/InstaGoogleLogin";
+import InstaAppleLogin from "@/components/auth/InstaAppleLogin";
 
 export default function AuthPage() {
   const navigate = useNavigate();
@@ -128,9 +129,10 @@ export default function AuthPage() {
           </CardHeader>
 
           <CardContent className="space-y-4">
-            {/* Google Login - מעל הכל */}
-            <div>
+            {/* Social Logins */}
+            <div className="space-y-3">
               <InstaGoogleLogin />
+              <InstaAppleLogin />
             </div>
 
             {/* Divider */}
