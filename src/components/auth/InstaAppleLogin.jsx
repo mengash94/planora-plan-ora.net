@@ -182,14 +182,12 @@ export default function InstaAppleLogin() {
 
   const handleAppleLogin = async () => {
     console.log('[InstaAppleLogin] 🍎 Button clicked!');
-    console.log('[InstaAppleLogin] socialLoginReady:', socialLoginReady);
-    console.log('[InstaAppleLogin] isNative:', isNative);
+    toast.info('🍎 התחלת התחברות Apple...');
     
     setIsLoading(true);
 
     try {
-      console.log('[InstaAppleLogin] 🍎 Starting Apple Sign In...');
-      console.log('[InstaAppleLogin] Environment:', isNative ? 'Native' : 'Web');
+      toast.info('שלב 1: מתחיל Apple Sign In...');
 
       let email, fullName;
 
