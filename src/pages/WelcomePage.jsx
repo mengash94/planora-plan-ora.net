@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/components/AuthProvider';
 import { createPageUrl } from '@/utils';
@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
   Sparkles, CheckSquare, BarChart2, MessageSquare, Camera, Bot,
-  Users, PartyPopper, Calendar, Smile, Lightbulb
+  Users, PartyPopper, Heart, Calendar, MapPin, Smile, Lightbulb
 } from 'lucide-react';
 
 export default function WelcomePage() {
@@ -49,6 +49,12 @@ export default function WelcomePage() {
           <p className="text-white/80 text-sm mt-4">
             חינם לגמרי • ללא התחייבות • הצטרפות תוך דקה
           </p>
+          <button
+            onClick={handleLogin}
+            className="text-white/90 hover:text-white text-sm mt-3 underline underline-offset-4"
+          >
+            כבר יש לך חשבון? התחבר כאן
+          </button>
         </div>
       </section>
 
