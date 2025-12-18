@@ -111,47 +111,71 @@ export default function InstaAppleLogin() {
     }
 
     console.log('[InstaAppleLogin] 🔐 Checking if user exists in Instaback:', email);
+    toast.info('Checking user: ' + email.substring(0, 15) + '...');
 
     // Check if user already exists
-    const existingUser = await findUserByEmail(email);
+    let existingUser = null;
+    try {
+      existingUser = await findUserByEmail(email);
+      console.log('[InstaAppleLogin] findUserByEmail result:', existingUser);
+      toast.info('Find result: ' + (existingUser ? 'found' : 'not found'));
+    } catch (findError) {
+      console.log('[InstaAppleLogin] findUserByEmail error:', findError?.message);
+      toast.info('Find error: ' + (findError?.message || 'unknown'));
+      existingUser = null;
+    }
+    
+    const applePassword = `Apple_${btoa(email).slice(0, 12)}!`;
     
     if (existingUser) {
       console.log('[InstaAppleLogin] ✅ User exists, logging in...');
-      // User exists - try to login with stored Apple password
-      // Since we can't know the password, we use a fixed pattern based on email
-      const applePassword = `Apple_${btoa(email).slice(0, 12)}!`;
+      toast.info('User exists, logging in...');
       
       try {
         const user = await instabackLogin(email, applePassword);
+        toast.info('Login OK: ' + (user?.id || 'no id'));
         return user;
       } catch (loginError) {
-        console.log('[InstaAppleLogin] Login failed, user may have different password');
-        // If login fails, the user might have registered differently
-        // Return the existing user info anyway since Firebase verified them
+        console.log('[InstaAppleLogin] Login failed:', loginError?.message);
+        toast.info('Login failed: ' + (loginError?.message || 'unknown'));
         return existingUser;
       }
     } else {
       console.log('[InstaAppleLogin] 📝 User not found, registering...');
-      // User doesn't exist - register them
-      const applePassword = `Apple_${btoa(email).slice(0, 12)}!`;
+      toast.info('Registering new user...');
+      
       const nameParts = (fullName || '').split(' ');
       const firstName = nameParts[0] || email.split('@')[0];
       const lastName = nameParts.slice(1).join(' ') || '';
 
       try {
-        await instabackRegister({
+        const regResult = await instabackRegister({
           email: email,
           password: applePassword,
           firstName: firstName,
           lastName: lastName
         });
         
-        console.log('[InstaAppleLogin] ✅ Registration successful, logging in...');
+        console.log('[InstaAppleLogin] ✅ Registration result:', regResult);
+        toast.info('Register OK, logging in...');
+        
         const user = await instabackLogin(email, applePassword);
+        toast.info('Login OK: ' + (user?.id || 'no id'));
         return user;
       } catch (registerError) {
         console.error('[InstaAppleLogin] Registration error:', registerError);
-        throw new Error('שגיאה ברישום המשתמש');
+        toast.error('Register error: ' + (registerError?.message || 'unknown'));
+        
+        // Try login anyway (maybe already registered)
+        try {
+          toast.info('Trying login anyway...');
+          const user = await instabackLogin(email, applePassword);
+          toast.info('Fallback login OK');
+          return user;
+        } catch (e2) {
+          toast.error('Fallback failed: ' + (e2?.message || 'unknown'));
+          throw new Error('שגיאה ברישום המשתמש');
+        }
       }
     }
   };
