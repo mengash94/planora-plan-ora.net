@@ -279,16 +279,13 @@ export default function InstaAppleLogin() {
 
     } catch (error) {
       console.error('[InstaAppleLogin] ❌ Error:', error);
-      console.error('[InstaAppleLogin] ❌ Error message:', error?.message);
-      console.error('[InstaAppleLogin] ❌ Error stack:', error?.stack);
+      toast.error('שגיאה: ' + (error?.message || 'לא ידוע'));
 
       if (/(canceled|בוטלה|closed|cancelled)/i.test(error?.message || '')) {
         toast.info('ההתחברות בוטלה');
-      } else {
-        toast.error(error.message || 'שגיאה בהתחברות עם Apple');
       }
     } finally {
-      console.log('[InstaAppleLogin] 🏁 Finally block - setting isLoading to false');
+      toast.info('סיום - מסיר loading...');
       setIsLoading(false);
     }
   };
