@@ -190,6 +190,7 @@ export default function InstaAppleLogin() {
         });
 
         console.log('[InstaAppleLogin] ✅ Login result:', JSON.stringify(loginResult, null, 2));
+        toast.info('Apple result: ' + (loginResult?.result?.email || loginResult?.result?.user?.substring(0,10) || 'no data'));
 
         email = loginResult?.result?.email;
         fullName = loginResult?.result?.givenName 
