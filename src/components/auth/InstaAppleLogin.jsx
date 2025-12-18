@@ -15,7 +15,7 @@ export default function InstaAppleLogin() {
 
   const isNative = isNativeCapacitor();
 
-  // Check if device is Apple (iOS/macOS)
+  // 1. בדיקת מכשיר (iOS/Mac)
   useEffect(() => {
     const checkAppleDevice = () => {
       const ua = navigator.userAgent.toLowerCase();
@@ -35,7 +35,7 @@ export default function InstaAppleLogin() {
     checkAppleDevice();
   }, [isNative]);
 
-  // Wait for SocialLogin plugin
+  // 2. המתנה לפלאגין
   const waitForSocialLogin = async () => {
     const maxAttempts = 50; // 5 seconds
     let attempts = 0;
@@ -43,29 +43,24 @@ export default function InstaAppleLogin() {
     while (attempts < maxAttempts) {
       const plugin = window.Capacitor?.Plugins?.SocialLogin;
       if (plugin) {
-        console.log('[InstaAppleLogin] ✅ SocialLogin found after', attempts * 100, 'ms');
+        console.log('[InstaAppleLogin] ✅ SocialLogin found');
         return plugin;
       }
       await new Promise(resolve => setTimeout(resolve, 100));
       attempts++;
     }
-    
-    console.error('[InstaAppleLogin] ❌ SocialLogin not found after 5s');
     return null;
   };
 
-  // Initialize native plugin
+  // 3. אתחול הפלאגין עם ה-ID הנכון
   useEffect(() => {
     if (!isNative || !isAppleDevice) {
-      if (isAppleDevice && !isNative) {
-        setSocialLoginReady(true);
-      }
+      if (isAppleDevice && !isNative) setSocialLoginReady(true);
       return;
     }
 
     const initializePlugin = async () => {
       try {
-        console.log('[InstaAppleLogin] 🔄 Waiting for SocialLogin plugin...');
         const plugin = await waitForSocialLogin();
         
         if (!plugin) {
@@ -73,11 +68,10 @@ export default function InstaAppleLogin() {
           return;
         }
 
-        console.log('[InstaAppleLogin] ✅ Plugin found, initializing Apple...');
-        
         await plugin.initialize({
           apple: {
-            clientId: 'net.planora.app',
+            // שים לב: ב-iOS Native משתמשים ב-Bundle ID
+            clientId: 'net.planora.app', 
             redirectUrl: 'https://easypalnistaback.firebaseapp.com/__/auth/handler'
           }
         });
@@ -87,218 +81,177 @@ export default function InstaAppleLogin() {
         
       } catch (error) {
         console.error('[InstaAppleLogin] ❌ Init failed:', error);
-        setSocialLoginReady(true);
+        setSocialLoginReady(true); // נאפשר לחיצה כדי לראות שגיאה בלייב
       }
     };
 
     initializePlugin();
   }, [isNative, isAppleDevice]);
 
-  // Generate a random password for Apple users
-  const generateRandomPassword = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%';
-    let password = '';
-    for (let i = 0; i < 16; i++) {
-      password += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return password;
-  };
-
-  // Login or register user to Instaback
-  const loginOrRegisterToInstaback = async (email, fullName) => {
-    if (!email) {
-      throw new Error('לא התקבל אימייל מ-Apple');
+  // 4. פונקציית הלוגין/רישום מול השרת
+  // שים לב: הוספתי פרמטר password כדי שנוכל לשלוט עליו מבחוץ
+  const loginOrRegisterToInstaback = async (email, fullName, password) => {
+    if (!email || !password) {
+      throw new Error('חסר אימייל או סיסמה לביצוע הרישום');
     }
 
-    console.log('[InstaAppleLogin] 🔐 Checking if user exists in Instaback:', email);
-    toast.info('Checking user: ' + email.substring(0, 15) + '...');
+    console.log('[InstaAppleLogin] 🔐 Processing user:', email);
+    toast.info('בודק משתמש במערכת...');
 
-    // Check if user already exists
+    // בדיקה אם המשתמש קיים
     let existingUser = null;
     try {
       existingUser = await findUserByEmail(email);
-      console.log('[InstaAppleLogin] findUserByEmail result:', existingUser);
-      toast.info('Find result: ' + (existingUser ? 'found' : 'not found'));
+      console.log('[InstaAppleLogin] Find result:', existingUser ? 'Found' : 'Not found');
     } catch (findError) {
-      console.log('[InstaAppleLogin] findUserByEmail error:', findError?.message);
-      toast.info('Find error: ' + (findError?.message || 'unknown'));
-      existingUser = null;
+      console.log('[InstaAppleLogin] Find error (might be new user):', findError?.message);
     }
     
-    const applePassword = `Apple_${btoa(email).slice(0, 12)}!`;
-    
     if (existingUser) {
+      // --- משתמש קיים: התחברות ---
       console.log('[InstaAppleLogin] ✅ User exists, logging in...');
-      toast.info('User exists, logging in...');
-      
       try {
-        const user = await instabackLogin(email, applePassword);
-        toast.info('Login OK: ' + (user?.id || 'no id'));
+        const user = await instabackLogin(email, password);
         return user;
       } catch (loginError) {
         console.log('[InstaAppleLogin] Login failed:', loginError?.message);
-        toast.info('Login failed: ' + (loginError?.message || 'unknown'));
-        return existingUser;
+        
+        // במקרה נדיר שהמשתמש קיים אבל הסיסמה לא תואמת (אולי נרשם ידנית בעבר)
+        // אפשר לנסות להחזיר את המשתמש שנמצא, אבל עדיף להיכשל כדי לא לפרוץ
+        throw new Error('התחברות נכשלה. ייתכן שנרשמת בעבר עם סיסמה אחרת למייל זה.');
       }
     } else {
+      // --- משתמש חדש: הרשמה ---
       console.log('[InstaAppleLogin] 📝 User not found, registering...');
-      toast.info('Registering new user...');
       
       const nameParts = (fullName || '').split(' ');
-      const firstName = nameParts[0] || email.split('@')[0];
-      const lastName = nameParts.slice(1).join(' ') || '';
+      const firstName = nameParts[0] || 'Apple';
+      const lastName = nameParts.slice(1).join(' ') || 'User';
 
       try {
-        const regResult = await instabackRegister({
+        await instabackRegister({
           email: email,
-          password: applePassword,
+          password: password, // שימוש בסיסמה הקבועה שקיבלנו
           firstName: firstName,
           lastName: lastName
         });
         
-        console.log('[InstaAppleLogin] ✅ Registration result:', regResult);
-        toast.info('Register OK, logging in...');
+        console.log('[InstaAppleLogin] ✅ Registration success, now logging in...');
         
-        const user = await instabackLogin(email, applePassword);
-        toast.info('Login OK: ' + (user?.id || 'no id'));
+        // מיד אחרי רישום - מתחברים
+        const user = await instabackLogin(email, password);
         return user;
+
       } catch (registerError) {
         console.error('[InstaAppleLogin] Registration error:', registerError);
-        toast.error('Register error: ' + (registerError?.message || 'unknown'));
-        
-        // Try login anyway (maybe already registered)
+        // ניסיון אחרון - אולי נוצר במקביל
         try {
-          toast.info('Trying login anyway...');
-          const user = await instabackLogin(email, applePassword);
-          toast.info('Fallback login OK');
-          return user;
-        } catch (e2) {
-          toast.error('Fallback failed: ' + (e2?.message || 'unknown'));
-          throw new Error('שגיאה ברישום המשתמש');
+            return await instabackLogin(email, password);
+        } catch {
+            throw new Error('שגיאה ביצירת המשתמש');
         }
       }
     }
   };
 
+  // 5. הלוגיקה הראשית של הכפתור
   const handleAppleLogin = async () => {
     console.log('[InstaAppleLogin] 🍎 Button clicked!');
-    toast.info('🍎 התחלת התחברות Apple...');
+    toast.info('מתחיל הזדהות מול Apple...');
     
     setIsLoading(true);
 
     try {
-      toast.info('שלב 1: מתחיל Apple Sign In...');
-
-      let email, fullName;
-
-      if (isNative) {
-        // Native iOS - use @capgo/capacitor-social-login
-        toast.info('שלב 2: מחפש plugin...');
-        const plugin = await waitForSocialLogin();
-        
-        if (!plugin) {
-          toast.error('Plugin לא נמצא!');
-          throw new Error('פלאגין Apple Sign-In לא זמין');
-        }
-
-        toast.info('שלב 3: קורא ל-Apple...');
-        
-        let loginResult;
-        try {
-          loginResult = await plugin.login({
-            provider: 'apple',
-            options: {
-              scopes: ['email', 'name']
-            }
-          });
-          toast.success('שלב 4: Apple החזיר תשובה!');
-        } catch (appleError) {
-          toast.error('Apple error: ' + (appleError?.message || 'unknown'));
-          throw appleError;
-        }
-
-        console.log('[InstaAppleLogin] ✅ Login result:', JSON.stringify(loginResult, null, 2));
-        toast.info('Email: ' + (loginResult?.result?.email || 'אין אימייל'));
-
-        email = loginResult?.result?.email;
-        fullName = loginResult?.result?.givenName 
-          ? `${loginResult.result.givenName} ${loginResult.result.familyName || ''}`.trim()
-          : loginResult?.result?.displayName;
-
-        // Apple only provides email on first login, so we need to handle this
-        if (!email) {
-          // Try to get from user identifier
-          const userIdentifier = loginResult?.result?.user || loginResult?.result?.userIdentifier;
-          if (userIdentifier) {
-            // Use a placeholder email based on Apple user ID
-            email = `apple_${userIdentifier.substring(0, 20)}@privaterelay.appleid.com`;
-            console.log('[InstaAppleLogin] Using generated email for Apple user');
-          } else {
-            throw new Error('לא התקבל אימייל מ-Apple. נסה שוב או השתמש בשיטת התחברות אחרת.');
-          }
-        }
-
-      } else {
+      if (!isNative) {
         throw new Error('התחברות עם Apple נתמכת רק באפליקציה');
       }
 
-      console.log('[InstaAppleLogin] Got Apple credentials:', { email, fullName });
-      toast.info('Got email: ' + (email || 'no email'));
+      const plugin = await waitForSocialLogin();
+      if (!plugin) throw new Error('רכיב Apple Sign-In לא זמין');
 
-      // Login/Register to InstaBack
-      toast.info('Calling Instaback...');
-      const user = await loginOrRegisterToInstaback(email, fullName);
+      // --- שלב א: קריאה לאפל ---
+      const loginResult = await plugin.login({
+        provider: 'apple',
+        options: {
+          scopes: ['email', 'name']
+        }
+      });
 
-      if (!user?.id) {
-        throw new Error('התחברות נכשלה - לא התקבל פרטי משתמש');
+      console.log('[InstaAppleLogin] Raw Apple Result:', JSON.stringify(loginResult));
+
+      // --- שלב ב: חילוץ נתונים ---
+      // ה-User ID הוא הדבר הכי חשוב ויציב כאן
+      const appleUserId = loginResult.result.user || loginResult.result.userIdentifier;
+      
+      if (!appleUserId) {
+          throw new Error('לא התקבל מזהה משתמש (User ID) מאפל');
       }
 
-      console.log('[InstaAppleLogin] ✅ Login successful, user:', user.id);
+      let email = loginResult.result.email;
+      
+      // בניית השם
+      let fullName = null;
+      if (loginResult.result.givenName) {
+        fullName = `${loginResult.result.givenName} ${loginResult.result.familyName || ''}`.trim();
+      } else if (loginResult.result.displayName) {
+        fullName = loginResult.result.displayName;
+      }
 
-      // Save user to localStorage
+      // --- שלב ג: טיפול במקרה של אימייל חסר (התחברות חוזרת) ---
+      if (!email) {
+        console.log('[InstaAppleLogin] Email is null (returning user), generating from ID...');
+        // שים לב: אנחנו מייצרים אימייל פיקטיבי אבל קבוע לאותו משתמש
+        // הפורמט חייב להיות זהה למה שיצרנו ברישום!
+        email = `apple_${appleUserId}@planora.placeholder.com`;
+      }
+
+      // --- שלב ד: יצירת סיסמה "קבועה" ובטוחה ---
+      // שימוש ב-User ID כחלק מהסיסמה מבטיח שהיא תהיה זהה בכל התחברות
+      const staticSecurePassword = `Apple_${appleUserId}_SecureLogin!`;
+
+      console.log('[InstaAppleLogin] Proceeding with:', { email, hasName: !!fullName });
+
+      // --- שלב ה: שליחה לשרת ---
+      const user = await loginOrRegisterToInstaback(email, fullName, staticSecurePassword);
+
+      if (!user?.id) {
+        throw new Error('התחברות נכשלה - לא התקבל מזהה משתמש מהשרת');
+      }
+
+      // --- שלב ו: הצלחה ושמירה ---
       if (typeof window !== 'undefined') {
         localStorage.setItem('instaback_user', JSON.stringify(user));
       }
 
-      // Register for push notifications (background)
-      if (isNative) {
-        try {
-          const { loginOneSignalExternalId } = await import('@/components/onesignalService');
-          await loginOneSignalExternalId(user.id);
-        } catch (e) {
-          console.warn('[InstaAppleLogin] Push registration failed:', e);
-        }
+      // רישום ל-Push Notifications
+      try {
+        const { loginOneSignalExternalId } = await import('@/components/onesignalService');
+        await loginOneSignalExternalId(user.id);
+      } catch (e) {
+        console.warn('Push registration skipped:', e);
       }
 
       toast.success('התחברת בהצלחה!');
 
-      // Refresh page to update auth state
       setTimeout(() => {
         window.location.href = '/';
-      }, 200);
+      }, 500);
 
     } catch (error) {
-      console.error('[InstaAppleLogin] ❌ Error:', error);
-      toast.error('שגיאה: ' + (error?.message || 'לא ידוע'));
-
-      if (/(canceled|בוטלה|closed|cancelled)/i.test(error?.message || '')) {
+      console.error('[InstaAppleLogin] Error:', error);
+      
+      const errMsg = error?.message || '';
+      if (/(canceled|בוטלה|closed|cancelled)/i.test(errMsg)) {
         toast.info('ההתחברות בוטלה');
+      } else {
+        toast.error('שגיאה: ' + errMsg);
       }
     } finally {
-      toast.info('סיום - מסיר loading...');
       setIsLoading(false);
     }
   };
 
-  // Don't render on non-Apple devices
-  if (!isAppleDevice) {
-    return null;
-  }
-
-  // Don't render on web (Apple Sign In requires native)
-  if (!isNative) {
-    return null;
-  }
+  if (!isAppleDevice || !isNative) return null;
 
   return (
     <div className="flex flex-col items-center gap-3">
