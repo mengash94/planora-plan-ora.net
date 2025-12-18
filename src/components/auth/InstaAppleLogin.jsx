@@ -215,8 +215,10 @@ export default function InstaAppleLogin() {
       }
 
       console.log('[InstaAppleLogin] Got Apple credentials:', { email, fullName });
+      toast.info('Got email: ' + (email || 'no email'));
 
       // Login/Register to InstaBack
+      toast.info('Calling Instaback...');
       const user = await loginOrRegisterToInstaback(email, fullName);
 
       if (!user?.id) {
