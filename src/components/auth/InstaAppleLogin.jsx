@@ -77,7 +77,7 @@ export default function InstaAppleLogin() {
         
         await plugin.initialize({
           apple: {
-            clientId: 'net.plan-ora.planora',
+            clientId: 'net.planora.app',
             redirectUrl: 'https://easypalnistaback.firebaseapp.com/__/auth/handler'
           }
         });
