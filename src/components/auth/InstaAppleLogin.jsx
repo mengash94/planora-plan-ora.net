@@ -193,26 +193,32 @@ export default function InstaAppleLogin() {
 
       if (isNative) {
         // Native iOS - use @capgo/capacitor-social-login
-        console.log('[InstaAppleLogin] 📱 Native mode, waiting for SocialLogin plugin...');
+        toast.info('שלב 2: מחפש plugin...');
         const plugin = await waitForSocialLogin();
         
-        console.log('[InstaAppleLogin] Plugin result:', plugin ? 'Found' : 'NOT FOUND');
-        
         if (!plugin) {
+          toast.error('Plugin לא נמצא!');
           throw new Error('פלאגין Apple Sign-In לא זמין');
         }
 
-        console.log('[InstaAppleLogin] 📞 Calling SocialLogin.login for Apple...');
+        toast.info('שלב 3: קורא ל-Apple...');
         
-        const loginResult = await plugin.login({
-          provider: 'apple',
-          options: {
-            scopes: ['email', 'name']
-          }
-        });
+        let loginResult;
+        try {
+          loginResult = await plugin.login({
+            provider: 'apple',
+            options: {
+              scopes: ['email', 'name']
+            }
+          });
+          toast.success('שלב 4: Apple החזיר תשובה!');
+        } catch (appleError) {
+          toast.error('Apple error: ' + (appleError?.message || 'unknown'));
+          throw appleError;
+        }
 
         console.log('[InstaAppleLogin] ✅ Login result:', JSON.stringify(loginResult, null, 2));
-        toast.info('Apple result: ' + (loginResult?.result?.email || loginResult?.result?.user?.substring(0,10) || 'no data'));
+        toast.info('Email: ' + (loginResult?.result?.email || 'אין אימייל'));
 
         email = loginResult?.result?.email;
         fullName = loginResult?.result?.givenName 
@@ -273,16 +279,13 @@ export default function InstaAppleLogin() {
 
     } catch (error) {
       console.error('[InstaAppleLogin] ❌ Error:', error);
-      console.error('[InstaAppleLogin] ❌ Error message:', error?.message);
-      console.error('[InstaAppleLogin] ❌ Error stack:', error?.stack);
+      toast.error('שגיאה: ' + (error?.message || 'לא ידוע'));
 
       if (/(canceled|בוטלה|closed|cancelled)/i.test(error?.message || '')) {
         toast.info('ההתחברות בוטלה');
-      } else {
-        toast.error(error.message || 'שגיאה בהתחברות עם Apple');
       }
     } finally {
-      console.log('[InstaAppleLogin] 🏁 Finally block - setting isLoading to false');
+      toast.info('סיום - מסיר loading...');
       setIsLoading(false);
     }
   };
