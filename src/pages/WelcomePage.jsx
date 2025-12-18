@@ -49,12 +49,16 @@ export default function WelcomePage() {
           <p className="text-white/80 text-sm mt-4">
             חינם לגמרי • ללא התחייבות • הצטרפות תוך דקה
           </p>
-          <button
-            onClick={handleLogin}
-            className="text-white/90 hover:text-white text-sm mt-3 underline underline-offset-4"
-          >
-            כבר יש לך חשבון? התחבר כאן
-          </button>
+          <div className="mt-6 pt-6 border-t border-white/30">
+            <p className="text-white/90 text-base mb-3">כבר יש לך חשבון?</p>
+            <Button
+              onClick={handleLogin}
+              variant="outline"
+              className="h-12 px-8 text-base bg-transparent border-2 border-white text-white hover:bg-white hover:text-orange-600 rounded-full transition-all"
+            >
+              התחבר לחשבון שלך
+            </Button>
+          </div>
         </div>
       </section>
 
