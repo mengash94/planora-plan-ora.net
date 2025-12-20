@@ -124,27 +124,62 @@ export default function InstaAppleLogin() {
         options: { scopes: ['email', 'name'] }
       });
 
-      // המיקום הנכון: result.profile.user
+      showDebugAlert('Raw Response', loginResult);
+
+      // שליפת ה-User ID מכל המיקומים האפשריים
       const profile = loginResult?.result?.profile;
-      const appleUserId = profile?.user;
-      const email = profile?.email;
-      const givenName = profile?.givenName;
-      const familyName = profile?.familyName;
+      let appleUserId = profile?.user || 
+                        profile?.userIdentifier ||
+                        loginResult?.result?.user ||
+                        loginResult?.result?.userIdentifier;
+
+      // אם אין user ID, ננסה לפענח מה-idToken
+      if (!appleUserId) {
+        const idToken = loginResult?.result?.idToken;
+        if (idToken) {
+          try {
+            const parts = idToken.split('.');
+            if (parts.length === 3) {
+              let payload = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+              while (payload.length % 4) payload += '=';
+              const decoded = JSON.parse(atob(payload));
+              appleUserId = decoded.sub;
+              showDebugAlert('Decoded from JWT', { sub: decoded.sub, email: decoded.email });
+            }
+          } catch (e) {
+            showDebugAlert('JWT decode failed', e);
+          }
+        }
+      }
+
+      showDebugAlert('Apple User ID', appleUserId || 'NOT FOUND');
 
       if (!appleUserId) {
-        showDebugAlert('Error', 'No User ID from Apple');
         throw new Error('No User ID from Apple');
       }
 
+      // האימייל - רק בפעם הראשונה אפל מחזיר אותו
+      let email = profile?.email;
+      const givenName = profile?.givenName;
+      const familyName = profile?.familyName;
+
+      // אם אין אימייל (פעם שנייה+), נשתמש ב-placeholder מבוסס User ID
+      if (!email) {
+        email = `apple_${appleUserId}@planora.placeholder.com`;
+      }
+
       const fullName = givenName ? `${givenName} ${familyName || ''}`.trim() : null;
-      const userEmail = email || `apple_${appleUserId}@planora.placeholder.com`;
       const staticSecurePassword = `Apple_${appleUserId}_SecureLogin!`;
 
-      const user = await loginOrRegisterToInstaback(userEmail, fullName, staticSecurePassword);
+      showDebugAlert('Sending to Backend', { email, fullName, appleUserId });
+
+      const user = await loginOrRegisterToInstaback(email, fullName, staticSecurePassword);
 
       if (!user?.id) {
         throw new Error('Backend login returned no ID');
       }
+
+      showDebugAlert('SUCCESS!', 'Logged in as: ' + user.id);
 
       if (typeof window !== 'undefined') {
         localStorage.setItem('instaback_user', JSON.stringify(user));
