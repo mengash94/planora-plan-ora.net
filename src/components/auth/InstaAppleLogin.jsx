@@ -69,10 +69,7 @@ export default function InstaAppleLogin() {
         const plugin = await waitForSocialLogin();
         if (!plugin) return;
 
-        await plugin.initialize({
-          apple: {}
-        });
-
+        await plugin.initialize({ apple: {} });
         setSocialLoginReady(true);
       } catch (error) {
         setSocialLoginReady(true);
@@ -109,15 +106,10 @@ export default function InstaAppleLogin() {
     setIsLoading(true);
 
     try {
-      if (!isNative) {
-        throw new Error('Not native device');
-      }
+      if (!isNative) throw new Error('Not native device');
 
       const plugin = await waitForSocialLogin();
-      
-      if (!plugin) {
-        throw new Error('Plugin not found');
-      }
+      if (!plugin) throw new Error('Plugin not found');
       
       const loginResult = await plugin.login({
         provider: 'apple',
@@ -126,60 +118,38 @@ export default function InstaAppleLogin() {
 
       showDebugAlert('Raw Response', loginResult);
 
-      // שליפת ה-User ID מכל המיקומים האפשריים
-      const profile = loginResult?.result?.profile;
-      let appleUserId = profile?.user || 
-                        profile?.userIdentifier ||
-                        loginResult?.result?.user ||
-                        loginResult?.result?.userIdentifier;
+      const result = loginResult?.result;
 
-      // אם אין user ID, ננסה לפענח מה-idToken
-      if (!appleUserId) {
-        const idToken = loginResult?.result?.idToken;
-        if (idToken) {
-          try {
-            const parts = idToken.split('.');
-            if (parts.length === 3) {
-              let payload = parts[1].replace(/-/g, '+').replace(/_/g, '/');
-              while (payload.length % 4) payload += '=';
-              const decoded = JSON.parse(atob(payload));
-              appleUserId = decoded.sub;
-              showDebugAlert('Decoded from JWT', { sub: decoded.sub, email: decoded.email });
-            }
-          } catch (e) {
-            showDebugAlert('JWT decode failed', e);
-          }
-        }
-      }
+      // פעם ראשונה: result.profile.user
+      // פעם שנייה+: result.user
+      const appleUserId = result?.profile?.user || result?.user;
+      
+      // אימייל ושם - רק בפעם הראשונה
+      const email = result?.profile?.email;
+      const givenName = result?.profile?.givenName;
+      const familyName = result?.profile?.familyName;
 
-      showDebugAlert('Apple User ID', appleUserId || 'NOT FOUND');
+      showDebugAlert('Extracted', { 
+        appleUserId, 
+        email: email || 'none', 
+        givenName: givenName || 'none' 
+      });
 
       if (!appleUserId) {
         throw new Error('No User ID from Apple');
       }
 
-      // האימייל - רק בפעם הראשונה אפל מחזיר אותו
-      let email = profile?.email;
-      const givenName = profile?.givenName;
-      const familyName = profile?.familyName;
-
-      // אם אין אימייל (פעם שנייה+), נשתמש ב-placeholder מבוסס User ID
-      if (!email) {
-        email = `apple_${appleUserId}@planora.placeholder.com`;
-      }
-
       const fullName = givenName ? `${givenName} ${familyName || ''}`.trim() : null;
+      const userEmail = email || `apple_${appleUserId}@planora.placeholder.com`;
       const staticSecurePassword = `Apple_${appleUserId}_SecureLogin!`;
 
-      showDebugAlert('Sending to Backend', { email, fullName, appleUserId });
+      showDebugAlert('Calling Backend', { userEmail });
 
-      const user = await loginOrRegisterToInstaback(email, fullName, staticSecurePassword);
+      const user = await loginOrRegisterToInstaback(userEmail, fullName, staticSecurePassword);
 
-      if (!user?.id) {
-        throw new Error('Backend login returned no ID');
-      }
+      if (!user?.id) throw new Error('Backend login returned no ID');
 
-      showDebugAlert('SUCCESS!', 'Logged in as: ' + user.id);
+      showDebugAlert('SUCCESS!', 'User: ' + user.id);
 
       if (typeof window !== 'undefined') {
         localStorage.setItem('instaback_user', JSON.stringify(user));
@@ -197,7 +167,6 @@ export default function InstaAppleLogin() {
 
     } catch (error) {
       showDebugAlert('ERROR', error);
-      
       const errMsg = error?.message || 'Unknown error';
       if (!errMsg.includes('cancel')) {
         toast.error('שגיאה: ' + errMsg);
