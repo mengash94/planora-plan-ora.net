@@ -15,27 +15,25 @@ export default function InstaAppleLogin() {
 
   const isNative = isNativeCapacitor();
 
-  // --- פונקציית עזר לדיבאג (מציגה שגיאות על המסך) ---
-  const showDebugAlert = (title, err) => {
+  // --- פונקציית עזר לדיבאג (מציגה על המסך) ---
+  const showDebugAlert = (title, data) => {
     try {
       let message = '';
-      if (typeof err === 'object' && err !== null) {
-        // טריק להציג את כל השדות של השגיאה (כולל message ו-stack)
-        const errorObj = {};
-        Object.getOwnPropertyNames(err).forEach(key => {
-          errorObj[key] = err[key];
+      if (typeof data === 'object' && data !== null) {
+        const obj = {};
+        Object.getOwnPropertyNames(data).forEach(key => {
+          obj[key] = data[key];
         });
-        message = JSON.stringify(errorObj, null, 2);
+        message = JSON.stringify(obj, null, 2);
       } else {
-        message = String(err);
+        message = String(data);
       }
-      // הקפצת חלון באייפון
-      alert(`🐞 DEBUG: ${title}\n\n${message}`);
+      alert(`🍎 ${title}\n\n${message}`);
+      console.log(`[Apple Debug] ${title}:`, data);
     } catch (e) {
-      alert(`DEBUG ERROR: Could not stringify error for ${title}`);
+      alert(`🍎 ${title}: [Could not stringify]`);
     }
   };
-  // ---------------------------------------------------
 
   useEffect(() => {
     const checkAppleDevice = () => {
@@ -77,14 +75,12 @@ export default function InstaAppleLogin() {
           return;
         }
 
+        // iOS Native - לא צריך clientId או redirectUrl
         await plugin.initialize({
-          apple: {
-            clientId: 'net.planora.app', // ה-Bundle ID שלך
-            redirectUrl: 'https://easypalnistaback.firebaseapp.com/__/auth/handler'
-          }
+          apple: {}
         });
 
-        console.log('Apple Initialized');
+        console.log('Apple Initialized (iOS native)');
         setSocialLoginReady(true);
         
       } catch (error) {
@@ -96,9 +92,7 @@ export default function InstaAppleLogin() {
     initializePlugin();
   }, [isNative, isAppleDevice]);
 
-
   const loginOrRegisterToInstaback = async (email, fullName, password) => {
-    // שלב 1: חיפוש משתמש
     let existingUser = null;
     try {
       existingUser = await findUserByEmail(email);
@@ -106,7 +100,6 @@ export default function InstaAppleLogin() {
       console.log('User check error (likely new user)');
     }
     
-    // שלב 2: לוגין או רישום
     if (existingUser) {
       return await instabackLogin(email, password);
     } else {
@@ -126,50 +119,69 @@ export default function InstaAppleLogin() {
     setIsLoading(true);
 
     try {
-      if (!isNative) throw new Error('Not native device');
+      if (!isNative) {
+        showDebugAlert('Error', 'Not native device');
+        throw new Error('Not native device');
+      }
 
+      showDebugAlert('Step 1', 'Getting plugin...');
       const plugin = await waitForSocialLogin();
       
-      // --- קריאה לאפל ---
-      // alert('Calling Apple Login...'); // ניתן להוריד הערה אם נתקע לפני
+      if (!plugin) {
+        showDebugAlert('Error', 'Plugin not found');
+        throw new Error('Plugin not found');
+      }
       
-      const loginResult = await plugin.login({
+      showDebugAlert('Step 2', 'Plugin ready, calling Apple login...');
+      
+      const loginPromise = plugin.login({
         provider: 'apple',
         options: { scopes: ['email', 'name'] }
       });
+      
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Apple login timeout - 60s')), 60000)
+      );
+      
+      showDebugAlert('Step 3', 'Waiting for Apple response...');
+      
+      const loginResult = await Promise.race([loginPromise, timeoutPromise]);
 
-      // --- הצגת התוצאה הגולמית מאפל ---
-      // alert('Raw Apple Result:\n' + JSON.stringify(loginResult)); 
+      showDebugAlert('Step 4 - Response', loginResult);
 
-      const appleUserId = loginResult.result.user || loginResult.result.userIdentifier;
+      const appleUserId = loginResult.result?.user || loginResult.result?.userIdentifier;
       
       if (!appleUserId) {
+        showDebugAlert('Error', 'No User ID from Apple');
         throw new Error('No User ID received from Apple');
       }
 
-      let email = loginResult.result.email;
+      showDebugAlert('Step 5', 'Got user ID: ' + appleUserId);
+
+      let email = loginResult.result?.email;
       let fullName = null;
       
-      if (loginResult.result.givenName) {
+      if (loginResult.result?.givenName) {
         fullName = `${loginResult.result.givenName} ${loginResult.result.familyName || ''}`;
       }
 
-      // טיפול באימייל חסר (התחברות חוזרת)
       if (!email) {
         email = `apple_${appleUserId}@planora.placeholder.com`;
       }
 
-      // סיסמה קבועה מבוססת ID
       const staticSecurePassword = `Apple_${appleUserId}_SecureLogin!`;
 
-      // --- קריאה לשרת שלך ---
-      // alert(`Sending to server:\nEmail: ${email}\nPass: ${staticSecurePassword}`);
+      showDebugAlert('Step 6', 'Calling Instaback...\nEmail: ' + email);
 
       const user = await loginOrRegisterToInstaback(email, fullName, staticSecurePassword);
 
-      if (!user?.id) throw new Error('Backend login returned no ID');
+      if (!user?.id) {
+        showDebugAlert('Error', 'Backend returned no ID');
+        throw new Error('Backend login returned no ID');
+      }
 
-      // שמירה וסיום
+      showDebugAlert('Step 7', 'SUCCESS! User ID: ' + user.id);
+
       if (typeof window !== 'undefined') {
         localStorage.setItem('instaback_user', JSON.stringify(user));
       }
@@ -185,7 +197,6 @@ export default function InstaAppleLogin() {
       setTimeout(() => { window.location.href = '/'; }, 500);
 
     } catch (error) {
-      // *** כאן הקסם קורה: הצגת השגיאה למסך ***
       showDebugAlert('CRITICAL ERROR', error);
       
       const errMsg = error?.message || 'Unknown error';
