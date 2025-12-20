@@ -79,26 +79,27 @@ export default function InstaAppleLogin() {
     initializePlugin();
   }, [isNative, isAppleDevice]);
 
-  const loginOrRegisterToInstaback = async (email, fullName, password) => {
-    let existingUser = null;
-    try {
-      existingUser = await findUserByEmail(email);
-    } catch (err) {
-      console.log('User check error');
-    }
-    
-    if (existingUser) {
-      return await instabackLogin(email, password);
-    } else {
+  const loginOrRegisterToInstaback = async (email, fullName, password, isNewUser) => {
+    if (isNewUser) {
+      // רישום משתמש חדש
       const nameParts = (fullName || 'Apple User').split(' ');
-      await instabackRegister({
+      const registerData = {
         email: email,
         password: password,
         firstName: nameParts[0],
         lastName: nameParts.slice(1).join(' ') || ''
-      });
-      return await instabackLogin(email, password);
+      };
+      
+      showDebugAlert('📤 Sending REGISTER to Instaback', registerData);
+      
+      await instabackRegister(registerData);
     }
+    
+    // לוגין
+    const loginData = { email, password };
+    showDebugAlert('📤 Sending LOGIN to Instaback', loginData);
+    
+    return await instabackLogin(email, password);
   };
 
   const handleAppleLogin = async () => {
@@ -111,45 +112,84 @@ export default function InstaAppleLogin() {
       const plugin = await waitForSocialLogin();
       if (!plugin) throw new Error('Plugin not found');
       
+      showDebugAlert('Step 1', 'Calling Apple Sign In...');
+      
       const loginResult = await plugin.login({
         provider: 'apple',
         options: { scopes: ['email', 'name'] }
       });
 
-      showDebugAlert('Raw Response', loginResult);
+      showDebugAlert('Step 2 - Raw Apple Response', loginResult);
 
       const result = loginResult?.result;
 
-      // פעם ראשונה: result.profile.user
-      // פעם שנייה+: result.user
+      // הצגת כל המפתחות שקיבלנו
+      showDebugAlert('Step 3 - Result Keys', {
+        hasProfile: !!result?.profile,
+        hasUser: !!result?.user,
+        hasIdToken: !!result?.idToken,
+        hasAccessToken: !!result?.accessToken,
+        allKeys: Object.keys(result || {})
+      });
+
+      // חילוץ User ID - פעם ראשונה: profile.user, פעם שנייה: user
       const appleUserId = result?.profile?.user || result?.user;
       
-      // אימייל ושם - רק בפעם הראשונה
+      // חילוץ אימייל ושם - רק בפעם הראשונה
       const email = result?.profile?.email;
       const givenName = result?.profile?.givenName;
       const familyName = result?.profile?.familyName;
 
-      showDebugAlert('Extracted', { 
-        appleUserId, 
-        email: email || 'none', 
-        givenName: givenName || 'none' 
+      showDebugAlert('Step 4 - Extracted Data', { 
+        appleUserId: appleUserId || 'NOT FOUND',
+        email: email || 'NOT PROVIDED (returning user)',
+        givenName: givenName || 'NOT PROVIDED',
+        familyName: familyName || 'NOT PROVIDED',
+        isFirstTimeUser: !!email
       });
 
       if (!appleUserId) {
         throw new Error('No User ID from Apple');
       }
 
+      // הכנת נתונים לשרת
       const fullName = givenName ? `${givenName} ${familyName || ''}`.trim() : null;
       const userEmail = email || `apple_${appleUserId}@planora.placeholder.com`;
       const staticSecurePassword = `Apple_${appleUserId}_SecureLogin!`;
 
-      showDebugAlert('Calling Backend', { userEmail });
+      showDebugAlert('Step 5 - Prepared for Backend', {
+        userEmail: userEmail,
+        fullName: fullName || 'Apple User',
+        password: staticSecurePassword.substring(0, 20) + '...',
+        isPlaceholderEmail: !email
+      });
 
-      const user = await loginOrRegisterToInstaback(userEmail, fullName, staticSecurePassword);
+      // בדיקה אם המשתמש קיים
+      let existingUser = null;
+      try {
+        showDebugAlert('Step 6', 'Checking if user exists...');
+        existingUser = await findUserByEmail(userEmail);
+        showDebugAlert('Step 6 - User Check Result', { 
+          exists: !!existingUser,
+          userId: existingUser?.id || 'N/A'
+        });
+      } catch (err) {
+        showDebugAlert('Step 6 - User Not Found', 'Will create new user');
+      }
+
+      // רישום או לוגין
+      const isNewUser = !existingUser;
+      showDebugAlert('Step 7', isNewUser ? 'Creating NEW user...' : 'Logging in EXISTING user...');
+      
+      const user = await loginOrRegisterToInstaback(userEmail, fullName, staticSecurePassword, isNewUser);
 
       if (!user?.id) throw new Error('Backend login returned no ID');
 
-      showDebugAlert('SUCCESS!', 'User: ' + user.id);
+      showDebugAlert('Step 8 - SUCCESS! 🎉', {
+        userId: user.id,
+        email: user.email,
+        name: user.firstName || user.name
+      });
 
       if (typeof window !== 'undefined') {
         localStorage.setItem('instaback_user', JSON.stringify(user));
@@ -166,7 +206,7 @@ export default function InstaAppleLogin() {
       setTimeout(() => { window.location.href = '/'; }, 500);
 
     } catch (error) {
-      showDebugAlert('ERROR', error);
+      showDebugAlert('❌ ERROR', error);
       const errMsg = error?.message || 'Unknown error';
       if (!errMsg.includes('cancel')) {
         toast.error('שגיאה: ' + errMsg);
