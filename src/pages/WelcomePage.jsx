@@ -90,11 +90,30 @@ export default function WelcomePage() {
     if (targetStoreUrl) {
       console.log('[WelcomePage] 📱 Not in native app - redirecting to store:', targetStoreUrl);
       
-      // If in-app browser, show manual button instead of auto-redirect
+      // In-app browser: force auto-redirect to store (no button)
       if (isInAppBrowser()) {
-        console.log('[WelcomePage] 🔒 In-app browser detected - showing manual button');
-        setStoreUrl(targetStoreUrl);
-        setShowInAppBrowserMessage(true);
+        console.log('[WelcomePage] 🔒 In-app browser detected - auto-redirecting to store');
+        try {
+          if (/android/i.test(userAgent)) {
+            // Try to open Play Store app first
+            window.location.href = 'market://details?id=net.planora.app';
+            // Fallback to web Play Store if blocked
+            setTimeout(() => {
+              window.location.href = 'https://play.google.com/store/apps/details?id=net.planora.app';
+            }, 400);
+          } else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+            // Try to open App Store app first
+            window.location.href = 'itms-apps://apps.apple.com/il/app/id6755497184';
+            // Fallback to web App Store if blocked
+            setTimeout(() => {
+              window.location.href = 'https://apps.apple.com/il/app/planora-%D7%90%D7%99%D7%A8%D7%95%D7%A2%D7%99%D7%9D/id6755497184';
+            }, 400);
+          } else {
+            window.location.href = targetStoreUrl;
+          }
+        } catch (e) {
+          window.location.href = targetStoreUrl;
+        }
       } else {
         // Regular browser - auto redirect works
         console.log('[WelcomePage] 🌐 Regular browser - auto redirecting');
