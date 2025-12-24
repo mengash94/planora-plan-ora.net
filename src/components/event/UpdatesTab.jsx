@@ -82,7 +82,8 @@ function UpdateCard({ update, canManage, onEdit, onDelete, onTogglePin }) {
   );
 }
 
-export default function UpdatesTab({ eventId, currentUser, canManage = false }) {
+export default function UpdatesTab({ eventId, currentUser, canManage = false, isReadOnly = false }) {
+  const effectiveCanManage = canManage && !isReadOnly;
   const [updates, setUpdates] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -207,7 +208,13 @@ export default function UpdatesTab({ eventId, currentUser, canManage = false }) 
 
   return (
     <div className="space-y-4">
-      {canManage && (
+      {isReadOnly && (
+        <div className="bg-gray-100 border border-gray-300 rounded-lg p-3 text-center text-sm text-gray-600">
+          📜 האירוע הסתיים - צפייה בלבד
+        </div>
+      )}
+      
+      {effectiveCanManage && (
         <Button onClick={handleOpenCreate} className="w-full bg-black hover:bg-gray-800 text-white">
           <Plus className="w-4 h-4 ml-2" />
           פרסם עדכון חדש
@@ -218,7 +225,7 @@ export default function UpdatesTab({ eventId, currentUser, canManage = false }) 
         <div className="text-center py-12 bg-gray-50 rounded-lg">
           <Megaphone className="w-12 h-12 mx-auto text-gray-300 mb-4" />
           <p className="text-gray-500 text-lg mb-2">אין עדכונים עדיין</p>
-          {canManage && (
+          {effectiveCanManage && (
             <p className="text-gray-400 text-sm">פרסם עדכון ראשון כדי ליידע את המשתתפים</p>
           )}
         </div>
@@ -228,7 +235,7 @@ export default function UpdatesTab({ eventId, currentUser, canManage = false }) 
             <UpdateCard
               key={update.id}
               update={update}
-              canManage={canManage}
+              canManage={effectiveCanManage}
               onEdit={handleOpenEdit}
               onDelete={handleDelete}
               onTogglePin={handleTogglePin}

@@ -190,6 +190,12 @@ export default function PollsTab({ eventId, initialPolls, members, isManager, on
 
   return (
     <div className="space-y-6" dir="rtl">
+      {isReadOnly && (
+        <div className="bg-gray-100 border border-gray-300 rounded-lg p-3 text-center text-sm text-gray-600 mb-4">
+          📜 האירוע הסתיים - צפייה בלבד
+        </div>
+      )}
+      
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold dark:text-white">הצבעות וסקרים</h2>
         {isManager && !isReadOnly && (

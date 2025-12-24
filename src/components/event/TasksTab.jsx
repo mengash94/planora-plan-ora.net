@@ -249,9 +249,10 @@ export default function TasksTab({
   onTaskUpdate,
   canManage = false,
   isManager = false,
-  highlightTaskId = null
+  highlightTaskId = null,
+  isReadOnly = false
 }) {
-  const hasManage = Boolean(canManage || isManager);
+  const hasManage = Boolean(canManage || isManager) && !isReadOnly;
   const [tasks, setTasks] = useState(initialTasks || []);
   const [expandedTask, setExpandedTask] = useState(null);
   const [taskToDelete, setTaskToDelete] = useState(null);
@@ -623,17 +624,19 @@ export default function TasksTab({
   if (tasks.length === 0) {
     return (
       <div className="space-y-4">
-        <Button
-          onClick={onAddTask}
-          data-coachmark="add-task"
-          className="w-full bg-black hover:bg-gray-800 text-white">
+        {!isReadOnly && (
+          <Button
+            onClick={onAddTask}
+            data-coachmark="add-task"
+            className="w-full bg-black hover:bg-gray-800 text-white">
 
-          <Plus className="w-4 h-4 ml-2" /> הוסף משימה חדשה
-        </Button>
+            <Plus className="w-4 h-4 ml-2" /> הוסף משימה חדשה
+          </Button>
+        )}
 
         <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg">
           <p className="text-lg mb-2">עדיין לא נוספו משימות</p>
-          <p className="text-sm">הוסף את המשימה הראשונה כדי להתחיל</p>
+          <p className="text-sm">{isReadOnly ? 'האירוע הסתיים' : 'הוסף את המשימה הראשונה כדי להתחיל'}</p>
         </div>
       </div>);
 
@@ -641,12 +644,20 @@ export default function TasksTab({
 
   return (
     <div className="space-y-4 pb-4">
-      <Button
-        onClick={onAddTask}
-        className="w-full bg-black hover:bg-gray-800 text-white">
+      {isReadOnly && (
+        <div className="bg-gray-100 border border-gray-300 rounded-lg p-3 text-center text-sm text-gray-600">
+          📜 האירוע הסתיים - לא ניתן לבצע שינויים
+        </div>
+      )}
+      
+      {!isReadOnly && (
+        <Button
+          onClick={onAddTask}
+          className="w-full bg-black hover:bg-gray-800 text-white">
 
-        <Plus className="w-4 h-4 ml-2" /> הוסף משימה חדשה
-      </Button>
+          <Plus className="w-4 h-4 ml-2" /> הוסף משימה חדשה
+        </Button>
+      )}
 
       {/* Show hidden tasks toggle - only for managers */}
       {hasManage && hiddenTasksCount > 0 && (
@@ -689,7 +700,8 @@ export default function TasksTab({
               <div className="flex items-center gap-3">
                 <Checkbox
                   checked={task.status === 'done'}
-                  onCheckedChange={(isChecked) => handleStatusChange(task, isChecked)} />
+                  onCheckedChange={(isChecked) => handleStatusChange(task, isChecked)}
+                  disabled={isReadOnly} />
 
 
                 <div
