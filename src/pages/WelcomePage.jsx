@@ -100,19 +100,19 @@ export default function WelcomePage() {
             className="w-full h-14 text-lg bg-orange-500 hover:bg-orange-600 rounded-xl shadow-lg mb-4"
           >
             <Sparkles className="w-5 h-5 ml-2" />
-            פתח בחנות האפליקציות
+            התקן את האפליקציה
           </Button>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 mb-4">
             💡 טיפ: אם זה לא עובד, העתק את הקישור ופתח בדפדפן Chrome או Safari
           </p>
           <button
             onClick={() => {
-              navigator.clipboard.writeText(window.location.href);
-              alert('הקישור הועתק!');
+              navigator.clipboard.writeText(storeUrl);
+              alert('קישור לחנות הועתק!');
             }}
-            className="mt-3 text-orange-600 hover:text-orange-700 text-sm underline"
+            className="text-orange-600 hover:text-orange-700 text-sm underline"
           >
-            העתק קישור
+            העתק קישור לחנות
           </button>
         </Card>
       </div>
