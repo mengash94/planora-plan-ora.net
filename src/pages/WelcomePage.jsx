@@ -16,12 +16,8 @@ export default function WelcomePage() {
 
   // Redirect to app stores based on device (only if NOT in native app)
   useEffect(() => {
-    // Check if running inside Capacitor native app
-    const isNativeApp = window.Capacitor?.isNativePlatform?.() || 
-                        window.Capacitor?.getPlatform?.() === 'ios' || 
-                        window.Capacitor?.getPlatform?.() === 'android';
-    
-    if (isNativeApp) {
+    // Check if running inside Capacitor native app using the service function
+    if (isNativeCapacitor()) {
       return; // Don't redirect if already in native app
     }
 
