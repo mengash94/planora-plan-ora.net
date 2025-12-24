@@ -282,24 +282,24 @@ export default function AdminUsersPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-orange-50 p-6 pb-20" style={{ direction: 'rtl' }}>
             <div className="max-w-7xl mx-auto">
-                <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                    <div className="flex items-center gap-3">
                         <Button variant="ghost" size="icon" onClick={() => navigate(createPageUrl('AdminDashboard'))}>
                             <ArrowRight className="w-5 h-5" />
                         </Button>
                         <div>
-                            <h1 className="text-3xl font-bold text-gray-900">ניהול משתמשים</h1>
-                            <p className="text-sm text-gray-500">צפייה, עריכה ושליחת הודעות למשתמשים</p>
+                            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">ניהול משתמשים</h1>
+                            <p className="text-xs sm:text-sm text-gray-500">צפייה, עריכה ושליחת הודעות</p>
                         </div>
                     </div>
-                    <div className="flex gap-2">
-                        <Button variant="outline" onClick={() => navigate(createPageUrl('AdminSystemMessages'))}>
-                            <Bell className="w-4 h-4 ml-2" />
-                            הודעות מערכת
+                    <div className="flex gap-2 mr-auto sm:mr-0">
+                        <Button variant="outline" size="sm" className="text-xs sm:text-sm" onClick={() => navigate(createPageUrl('AdminSystemMessages'))}>
+                            <Bell className="w-4 h-4 sm:ml-2" />
+                            <span className="hidden sm:inline">הודעות מערכת</span>
                         </Button>
-                        <Button onClick={() => setBulkMessageOpen(true)}>
-                            <Mail className="w-4 h-4 ml-2" />
-                            שלח הודעה המונית
+                        <Button size="sm" className="text-xs sm:text-sm" onClick={() => setBulkMessageOpen(true)}>
+                            <Mail className="w-4 h-4 sm:ml-2" />
+                            <span className="hidden sm:inline">שלח הודעה המונית</span>
                         </Button>
                     </div>
                 </div>
