@@ -111,7 +111,8 @@ const getCategoryInfo = (categoryValue) => {
   return CATEGORIES.find(c => c.value === categoryValue) || CATEGORIES[CATEGORIES.length - 1];
 };
 
-export default function BudgetTab({ eventId, isManager = false }) {
+export default function BudgetTab({ eventId, isManager = false, isReadOnly = false }) {
+  const effectiveIsManager = isManager && !isReadOnly;
   const [budgets, setBudgets] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -310,8 +311,14 @@ export default function BudgetTab({ eventId, isManager = false }) {
         </CardContent>
       </Card>
 
+      {isReadOnly && (
+        <div className="bg-gray-100 border border-gray-300 rounded-lg p-3 text-center text-sm text-gray-600">
+          📜 האירוע הסתיים - צפייה בלבד
+        </div>
+      )}
+
       {/* Add Button */}
-      {isManager && (
+      {effectiveIsManager && (
         <Button 
           onClick={() => handleOpenDialog()} 
           className="w-full bg-orange-500 hover:bg-orange-600"
@@ -327,7 +334,7 @@ export default function BudgetTab({ eventId, isManager = false }) {
           <CardContent className="py-12 text-center">
             <Wallet className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500">עדיין לא הוגדרו קטגוריות תקציב</p>
-            {isManager && (
+            {effectiveIsManager && (
               <p className="text-sm text-gray-400 mt-1">לחץ על "הוסף קטגוריה" כדי להתחיל</p>
             )}
           </CardContent>
@@ -357,7 +364,7 @@ export default function BudgetTab({ eventId, isManager = false }) {
                             ? budget.categoryName 
                             : categoryInfo.label}
                         </h4>
-                        {isManager && (
+                        {effectiveIsManager && (
                           <div className="flex items-center gap-1">
                             <Button
                               variant="ghost"

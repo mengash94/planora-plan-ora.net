@@ -753,7 +753,7 @@ export default function TasksTab({
                         )}
                       </Badge>
                       {/* Show unassign button for the user's own task */}
-                      {isMyTask && !isManualAssignment && (
+                      {!isReadOnly && isMyTask && !isManualAssignment && (
                         <Button
                           variant="ghost"
                           size="sm"
@@ -765,7 +765,7 @@ export default function TasksTab({
                           {isUnassigning ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserMinus className="w-4 h-4" />}
                         </Button>
                       )}
-                      {hasManage && (
+                      {!isReadOnly && hasManage && (
                         <Button
                           variant="ghost"
                           size="sm"
@@ -778,17 +778,19 @@ export default function TasksTab({
                       )}
                     </>
                   ) : (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => { e.stopPropagation(); hasManage ? setAssignmentDialog({ open: true, task: task }) : handleSelfAssign(task.id); }}
-                    >
-                      <UserPlus className="w-4 h-4 ml-1" />
-                      {hasManage ? 'שייך' : 'קח'}
-                    </Button>
+                    !isReadOnly && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => { e.stopPropagation(); hasManage ? setAssignmentDialog({ open: true, task: task }) : handleSelfAssign(task.id); }}
+                      >
+                        <UserPlus className="w-4 h-4 ml-1" />
+                        {hasManage ? 'שייך' : 'קח'}
+                      </Button>
+                    )
                   )}
 
-                  {canDelete &&
+                  {!isReadOnly && canDelete &&
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="sm" onClick={(e) => e.stopPropagation()}>

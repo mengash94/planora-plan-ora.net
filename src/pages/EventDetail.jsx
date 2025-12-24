@@ -656,7 +656,8 @@ export default function EventDetailPage() {
       case 'budget':
         return <BudgetTab
           eventId={eventId}
-          isManager={canManage && !isReadOnly} />;
+          isManager={canManage}
+          isReadOnly={isReadOnly} />;
 
       case 'payments':
         // Check if this is a public event with participation cost

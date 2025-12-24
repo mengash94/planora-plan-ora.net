@@ -10,7 +10,8 @@ import { createEventLink, updateEventLink, deleteEventLink } from '@/components/
 import { Plus, ExternalLink, Edit, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-export default function LinksTab({ eventId, initialLinks, isManager }) {
+export default function LinksTab({ eventId, initialLinks, isManager, isReadOnly = false }) {
+  const effectiveIsManager = isManager && !isReadOnly;
   const [linksState, setLinksState] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingLink, setEditingLink] = useState(null);
@@ -143,9 +144,15 @@ export default function LinksTab({ eventId, initialLinks, isManager }) {
 
   return (
     <div className="space-y-6">
+      {isReadOnly && (
+        <div className="bg-gray-100 border border-gray-300 rounded-lg p-3 text-center text-sm text-gray-600">
+          📜 האירוע הסתיים - צפייה בלבד
+        </div>
+      )}
+      
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold dark:text-white">קישורים שימושיים</h2>
-        {isManager && (
+        {effectiveIsManager && (
           <Button onClick={() => openDialog()}>
             <Plus className="w-4 h-4 ml-2" />
             הוסף קישור
@@ -158,7 +165,7 @@ export default function LinksTab({ eventId, initialLinks, isManager }) {
           <CardContent className="py-12 text-center">
             <ExternalLink className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
             <p className="text-gray-500 dark:text-gray-400 mb-4">עדיין לא נוספו קישורים</p>
-            {isManager && (
+            {effectiveIsManager && (
               <Button variant="outline" onClick={() => openDialog()}>
                 הוסף קישור ראשון
               </Button>
@@ -203,7 +210,7 @@ export default function LinksTab({ eventId, initialLinks, isManager }) {
                     >
                       <ExternalLink className="w-4 h-4" />
                     </Button>
-                    {isManager && (
+                    {effectiveIsManager && (
                       <>
                         <Button
                           variant="ghost"
@@ -233,7 +240,7 @@ export default function LinksTab({ eventId, initialLinks, isManager }) {
       )}
 
       {/* Dialog unchanged */}
-      {isManager && (
+      {effectiveIsManager && (
         <Dialog open={isDialogOpen} onOpenChange={closeDialog}>
           <DialogContent>
             <DialogHeader>
