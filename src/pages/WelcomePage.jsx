@@ -23,11 +23,13 @@ export default function WelcomePage() {
     return /FBAN|FBAV|Instagram|Line|Twitter|Snapchat|Pinterest|LinkedIn/i.test(userAgent);
   };
 
-  // Redirect to app stores based on device (only if NOT in native app and NOT in preview/dev)
+  // Redirect to app stores based on device
+  // ALWAYS redirect if NOT in our native Capacitor app (except dev/preview)
   useEffect(() => {
-    // Check if running inside Capacitor native app using the service function
+    // ✅ אם אנחנו באפליקציה שלנו (Capacitor Native) - לא מפנים לחנות
     if (isNativeCapacitor()) {
-      return; // Don't redirect if already in native app
+      console.log('[WelcomePage] ✅ Running in native Capacitor app - no redirect');
+      return;
     }
 
     // Skip redirect in development/preview environments
@@ -42,6 +44,7 @@ export default function WelcomePage() {
       return;
     }
 
+    // ✅ לא באפליקציה שלנו - מפנים לחנות לפי סוג המכשיר
     const userAgent = navigator.userAgent || navigator.vendor || window.opera;
     let targetStoreUrl = null;
 
@@ -52,12 +55,16 @@ export default function WelcomePage() {
     }
 
     if (targetStoreUrl) {
+      console.log('[WelcomePage] 📱 Not in native app - redirecting to store:', targetStoreUrl);
+      
       // If in-app browser, show manual button instead of auto-redirect
       if (isInAppBrowser()) {
+        console.log('[WelcomePage] 🔒 In-app browser detected - showing manual button');
         setStoreUrl(targetStoreUrl);
         setShowInAppBrowserMessage(true);
       } else {
         // Regular browser - auto redirect works
+        console.log('[WelcomePage] 🌐 Regular browser - auto redirecting');
         window.location.replace(targetStoreUrl);
       }
     }
