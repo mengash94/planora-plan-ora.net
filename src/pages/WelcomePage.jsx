@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/components/AuthProvider';
 import { createPageUrl } from '@/utils';
+import { isNativeCapacitor } from '@/components/onesignalService';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
