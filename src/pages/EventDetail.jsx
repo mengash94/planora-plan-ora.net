@@ -588,10 +588,10 @@ export default function EventDetailPage() {
           initialTasks={tasks || []} // Changed from eventData.tasks
           members={members || []} // Changed from eventData.members
           currentUser={user} // Changed from currentUser
-          onAddTask={() => setIsCreateTaskDialogOpen(true)}
+          onAddTask={() => !isReadOnly && setIsCreateTaskDialogOpen(true)}
           onAssignTask={handleOpenAssignDialog}
-          isManager={canManage} // Changed from eventData.canManage
-          canManage={canManage && !isReadOnly} // Changed from eventData.canManage
+          isManager={canManage && !isReadOnly} // Changed from eventData.canManage
+          canManage={canManage} // Changed from eventData.canManage
           onTaskUpdate={loadEventData}
           highlightTaskId={highlightTaskId}
           isReadOnly={isReadOnly} />;
