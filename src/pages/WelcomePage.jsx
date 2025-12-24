@@ -18,9 +18,32 @@ export default function WelcomePage() {
 
   // Detect in-app browser (Instagram, Facebook, etc.)
   const isInAppBrowser = () => {
-    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-    // Common in-app browser identifiers
-    return /FBAN|FBAV|Instagram|Line|Twitter|Snapchat|Pinterest|LinkedIn/i.test(userAgent);
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera || '';
+    // Common in-app browser identifiers - expanded list
+    const inAppPatterns = [
+      'FBAN',           // Facebook App
+      'FBAV',           // Facebook App Version
+      'FB_IAB',         // Facebook In-App Browser
+      'Instagram',      // Instagram
+      'Line',           // Line App
+      'Twitter',        // Twitter App
+      'Snapchat',       // Snapchat
+      'Pinterest',      // Pinterest
+      'LinkedIn',       // LinkedIn
+      'TikTok',         // TikTok
+      'Telegram',       // Telegram
+      'WhatsApp',       // WhatsApp (rare but possible)
+      'Messenger',      // Facebook Messenger
+      'WebView',        // Generic WebView
+      'wv',             // Android WebView indicator
+    ];
+    
+    const isInApp = inAppPatterns.some(pattern => 
+      userAgent.toLowerCase().includes(pattern.toLowerCase())
+    );
+    
+    console.log('[WelcomePage] User-Agent check:', { userAgent, isInApp });
+    return isInApp;
   };
 
   // Redirect to app stores based on device
