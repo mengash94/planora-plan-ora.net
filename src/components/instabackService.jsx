@@ -956,46 +956,42 @@ export const updateEvent = async (eventId, updates) => {
 };
 
 export const deleteEvent = async (eventId, eventTitle = null) => {
-    // Get event details before deletion for notifications
-    let eventName = eventTitle;
-    let eventMembers = [];
+    if (!eventId) throw new Error('eventId is required');
     
+    const instabackToken = getToken();
+    if (!instabackToken) throw new Error('Authentication required');
+
+    console.log('[deleteEvent] 🗑️ Deleting event and all related data:', eventId);
+
     try {
-        if (!eventName) {
-            const eventDetails = await _fetchWithAuth(`/Event/${eventId}`, { method: 'GET' }).catch(() => null);
-            eventName = eventDetails?.title || 'האירוע';
+        const response = await fetch(`${API_BASE_URL}/edge-function/delete_event_and_related`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${instabackToken}`,
+                'accept': 'application/json'
+            },
+            body: JSON.stringify({
+                params: {
+                    eventId: String(eventId)
+                }
+            })
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('[deleteEvent] ❌ Failed:', errorText);
+            throw new Error(`Failed to delete event: ${errorText}`);
         }
-        
-        // Get members to notify them
-        eventMembers = await _fetchWithAuth(`/EventMember?eventId=${encodeURIComponent(eventId)}`, { method: 'GET' }).catch(() => []);
-    } catch (err) {
-        console.warn('[deleteEvent] Failed to get event details/members:', err);
+
+        const result = await response.json();
+        console.log('[deleteEvent] ✅ Event deleted successfully:', result);
+        return result;
+
+    } catch (error) {
+        console.error('[deleteEvent] ❌ Error:', error);
+        throw error;
     }
-
-    const result = await _fetchWithAuth(`/Event/${eventId}`, { method: 'DELETE' });
-
-    // Notify all members about event deletion
-    const currentUser = getCurrentUser();
-    const currentUserId = currentUser?.id;
-    
-    for (const member of (eventMembers || [])) {
-        const memberId = member.userId || member.UserId || member.user_id;
-        if (memberId && memberId !== currentUserId) {
-            try {
-                await createNotificationAndSendPush({
-                    userId: memberId,
-                    type: 'event_reminder',
-                    title: 'אירוע בוטל ❌',
-                    message: `האירוע "${eventName}" בוטל`,
-                    priority: 'high'
-                });
-            } catch (notifErr) {
-                console.warn('[deleteEvent] Failed to notify member:', memberId, notifErr);
-            }
-        }
-    }
-
-    return result;
 };
 
 // --- Event Members ---
