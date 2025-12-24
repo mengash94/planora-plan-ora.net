@@ -390,7 +390,7 @@ export default function AdminUsersPage() {
                 </CardContent>
             </Card>
 
-            {/* טבלת משתמשים */}
+            {/* רשימת משתמשים - תצוגת כרטיסים למובייל, טבלה לדסקטופ */}
             <Card>
                 <CardHeader className="pb-2">
                     <CardTitle className="flex items-center justify-between">
@@ -398,88 +398,149 @@ export default function AdminUsersPage() {
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
-                    <div className="overflow-x-auto">
-                        <Table>
-                            <TableHeader>
-                                <TableRow className="bg-gray-50">
-                                    <TableHead className="text-right">משתמש</TableHead>
-                                    <TableHead className="text-right">תפקיד</TableHead>
-                                    <TableHead className="text-right">אירועים</TableHead>
-                                    <TableHead className="text-right">הצטרף</TableHead>
-                                    <TableHead className="text-right">פעולות</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {filteredUsers.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={5} className="text-center py-8 text-gray-500">
-                                            לא נמצאו משתמשים
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    filteredUsers.map(usr => {
-                                        const name = usr.name || usr.fullName || `${usr.firstName || ''} ${usr.lastName || ''}`.trim() || 'משתמש';
-                                        const eventsCount = eventsByUser[usr.id] || 0;
-                                        const isCurrentUser = usr.id === currentUser.id;
+                    {filteredUsers.length === 0 ? (
+                        <div className="text-center py-8 text-gray-500">
+                            לא נמצאו משתמשים
+                        </div>
+                    ) : (
+                        <>
+                            {/* תצוגת כרטיסים למובייל */}
+                            <div className="md:hidden divide-y">
+                                {filteredUsers.map(usr => {
+                                    const name = usr.name || usr.fullName || `${usr.firstName || ''} ${usr.lastName || ''}`.trim() || 'משתמש';
+                                    const eventsCount = eventsByUser[usr.id] || 0;
+                                    const isCurrentUser = usr.id === currentUser.id;
 
-                                        return (
-                                            <TableRow key={usr.id} className="hover:bg-gray-50">
-                                                <TableCell>
-                                                    <div className="flex items-center gap-3">
-                                                        <img
-                                                            src={usr.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=f97316&color=fff&size=40`}
-                                                            alt={name}
-                                                            className="w-10 h-10 rounded-full"
-                                                        />
-                                                        <div>
-                                                            <div className="font-medium text-gray-900">{name}</div>
-                                                            <div className="text-sm text-gray-500">{usr.email}</div>
-                                                            {isCurrentUser && (
-                                                                <Badge variant="outline" className="text-xs mt-1">זה אתה</Badge>
-                                                            )}
-                                                        </div>
+                                    return (
+                                        <div key={usr.id} className="p-4 hover:bg-gray-50">
+                                            <div className="flex items-start gap-3">
+                                                <img
+                                                    src={usr.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=f97316&color=fff&size=48`}
+                                                    alt={name}
+                                                    className="w-12 h-12 rounded-full flex-shrink-0"
+                                                />
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                        <span className="font-medium text-gray-900 truncate">{name}</span>
+                                                        {isCurrentUser && (
+                                                            <Badge variant="outline" className="text-xs">זה אתה</Badge>
+                                                        )}
                                                     </div>
-                                                </TableCell>
-                                                <TableCell>{getRoleBadge(usr.role)}</TableCell>
-                                                <TableCell>
-                                                    <Badge variant={eventsCount > 0 ? "default" : "outline"} className="font-mono">
-                                                        {eventsCount}
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell className="text-sm text-gray-500">
-                                                    {formatIsraelDate(usr.created_date || usr.createdAt || usr.created_at)}
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="flex gap-1">
+                                                    <div className="text-sm text-gray-500 truncate">{usr.email}</div>
+                                                    <div className="flex items-center gap-2 mt-2 flex-wrap">
+                                                        {getRoleBadge(usr.role)}
+                                                        <Badge variant={eventsCount > 0 ? "default" : "outline"} className="font-mono text-xs">
+                                                            <Calendar className="w-3 h-3 ml-1" />
+                                                            {eventsCount} אירועים
+                                                        </Badge>
+                                                    </div>
+                                                    <div className="text-xs text-gray-400 mt-1">
+                                                        הצטרף: {formatIsraelDate(usr.created_date || usr.createdAt || usr.created_at)}
+                                                    </div>
+                                                </div>
+                                                <div className="flex flex-col gap-1">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() => openMessageDialog(usr)}
+                                                        className="text-blue-600 hover:text-blue-800 h-8 w-8"
+                                                    >
+                                                        <MessageSquare className="w-4 h-4" />
+                                                    </Button>
+                                                    {!isCurrentUser && (
                                                         <Button
                                                             variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => openMessageDialog(usr)}
-                                                            className="text-blue-600 hover:text-blue-800"
-                                                            title="שלח הודעה"
+                                                            size="icon"
+                                                            onClick={() => openDeleteDialog(usr)}
+                                                            className="text-red-500 hover:text-red-700 h-8 w-8"
                                                         >
-                                                            <MessageSquare className="w-4 h-4" />
+                                                            <Trash2 className="w-4 h-4" />
                                                         </Button>
-                                                        {!isCurrentUser && (
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            {/* תצוגת טבלה לדסקטופ */}
+                            <div className="hidden md:block overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow className="bg-gray-50">
+                                            <TableHead className="text-right">משתמש</TableHead>
+                                            <TableHead className="text-right">תפקיד</TableHead>
+                                            <TableHead className="text-right">אירועים</TableHead>
+                                            <TableHead className="text-right">הצטרף</TableHead>
+                                            <TableHead className="text-right">פעולות</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {filteredUsers.map(usr => {
+                                            const name = usr.name || usr.fullName || `${usr.firstName || ''} ${usr.lastName || ''}`.trim() || 'משתמש';
+                                            const eventsCount = eventsByUser[usr.id] || 0;
+                                            const isCurrentUser = usr.id === currentUser.id;
+
+                                            return (
+                                                <TableRow key={usr.id} className="hover:bg-gray-50">
+                                                    <TableCell>
+                                                        <div className="flex items-center gap-3">
+                                                            <img
+                                                                src={usr.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=f97316&color=fff&size=40`}
+                                                                alt={name}
+                                                                className="w-10 h-10 rounded-full"
+                                                            />
+                                                            <div>
+                                                                <div className="font-medium text-gray-900">{name}</div>
+                                                                <div className="text-sm text-gray-500">{usr.email}</div>
+                                                                {isCurrentUser && (
+                                                                    <Badge variant="outline" className="text-xs mt-1">זה אתה</Badge>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>{getRoleBadge(usr.role)}</TableCell>
+                                                    <TableCell>
+                                                        <Badge variant={eventsCount > 0 ? "default" : "outline"} className="font-mono">
+                                                            {eventsCount}
+                                                        </Badge>
+                                                    </TableCell>
+                                                    <TableCell className="text-sm text-gray-500">
+                                                        {formatIsraelDate(usr.created_date || usr.createdAt || usr.created_at)}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="flex gap-1">
                                                             <Button
                                                                 variant="ghost"
                                                                 size="sm"
-                                                                onClick={() => openDeleteDialog(usr)}
-                                                                className="text-red-500 hover:text-red-700"
-                                                                title="מחק משתמש"
+                                                                onClick={() => openMessageDialog(usr)}
+                                                                className="text-blue-600 hover:text-blue-800"
+                                                                title="שלח הודעה"
                                                             >
-                                                                <Trash2 className="w-4 h-4" />
+                                                                <MessageSquare className="w-4 h-4" />
                                                             </Button>
-                                                        )}
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>
-                                        );
-                                    })
-                                )}
-                            </TableBody>
-                        </Table>
-                    </div>
+                                                            {!isCurrentUser && (
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    onClick={() => openDeleteDialog(usr)}
+                                                                    className="text-red-500 hover:text-red-700"
+                                                                    title="מחק משתמש"
+                                                                >
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                </Button>
+                                                            )}
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </>
+                    )}
                 </CardContent>
             </Card>
 
