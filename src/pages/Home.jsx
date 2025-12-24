@@ -605,6 +605,39 @@ export default function HomePage() {
               </Card>
             )}
 
+            {/* כרטיס שיתוף עם חברים */}
+            <Card className="bg-gradient-to-br from-green-400 to-teal-500 border-0 shadow-xl text-white mb-4">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Share2 className="w-7 h-7" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold mb-1">אהבת את Planora? 💜</h3>
+                    <p className="text-sm opacity-90 mb-3">שתף עם חברים ועזור להם לתכנן אירועים בקלות!</p>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={handleWhatsAppShareApp}
+                        className="bg-white text-green-600 hover:bg-gray-100 px-3 py-1.5 font-semibold shadow-lg text-sm flex-1"
+                      >
+                        <MessageCircle className="w-4 h-4 ml-1" />
+                        שתף בוואטסאפ
+                      </Button>
+                      <Button
+                        onClick={handleShareApp}
+                        variant="outline"
+                        className="bg-transparent border-2 border-white text-white hover:bg-white/20 px-3 py-1.5 font-semibold text-sm"
+                      >
+                        <Share2 className="w-4 h-4 ml-1" />
+                        העתק
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* כרטיס יצירת אירוע */}
             <Card 
               className="bg-gradient-to-br from-orange-400 to-pink-500 border-0 shadow-xl text-white cursor-pointer hover:shadow-2xl transition-shadow"
               onClick={() => navigate(createPageUrl('CreateEvent'))}
