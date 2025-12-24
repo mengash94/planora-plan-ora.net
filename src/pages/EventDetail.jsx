@@ -686,7 +686,8 @@ export default function EventDetailPage() {
         return <UpdatesTab
           eventId={eventId}
           currentUser={user}
-          canManage={canManage && !isReadOnly} />;
+          canManage={canManage}
+          isReadOnly={isReadOnly} />;
 
       case 'rsvp':
         // Get owner name for RSVP invitations
