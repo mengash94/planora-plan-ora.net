@@ -357,6 +357,15 @@ export default function HomePage() {
           </div>
 
           <div className="flex items-center gap-2 flex-shrink-0">
+            <Button 
+              onClick={handleWhatsAppShareApp} 
+              size="sm" 
+              variant="outline"
+              className="border-green-500 text-green-600 hover:bg-green-50 shadow-sm"
+              title="שתף את האפליקציה"
+            >
+              <Share2 className="w-4 h-4" />
+            </Button>
             <Button onClick={() => navigate(createPageUrl('CreateEvent'))} size="sm" className="bg-orange-500 hover:bg-orange-600 shadow-lg text-sm whitespace-nowrap">
               <Plus className="w-4 h-4 ml-1" />
               <span className="hidden sm:inline">אירוע חדש</span>
