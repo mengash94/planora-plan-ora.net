@@ -13,6 +13,19 @@ export default function WelcomePage() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
 
+  // Redirect to app stores based on device
+  useEffect(() => {
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+
+    if (/android/i.test(userAgent)) {
+      window.location.replace("https://play.google.com/store/apps/details?id=net.planora.app");
+      return;
+    } else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+      window.location.replace("https://apps.apple.com/il/app/planora-%D7%90%D7%99%D7%A8%D7%95%D7%A2%D7%99%D7%9D/id6755497184");
+      return;
+    }
+  }, []);
+
   useEffect(() => {
     if (isAuthenticated) {
       navigate(createPageUrl('Home'));
