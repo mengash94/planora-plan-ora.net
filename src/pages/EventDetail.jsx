@@ -933,6 +933,16 @@ export default function EventDetailPage() {
                 <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/60" />
               )}
 
+              {/* Completed Event Overlay */}
+              {isCompleted && (
+                <div className="absolute inset-0 bg-gray-900/60 flex items-center justify-center z-30">
+                  <div className="bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2 text-center">
+                    <p className="text-gray-800 font-bold text-sm">📜 האירוע הסתיים</p>
+                    <p className="text-gray-600 text-xs">צפייה בלבד - לא ניתן לבצע שינויים</p>
+                  </div>
+                </div>
+              )}
+
               {/* שורת הכפתורים העליונה */}
 <div className="absolute top-0 left-0 right-0 px-3 pt-[calc(1.5rem+env(safe-area-inset-top))] flex items-center justify-between z-40">
   {/* חזור לרשימת האירועים */}
