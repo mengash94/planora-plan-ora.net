@@ -14,11 +14,23 @@ export default function WelcomePage() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
 
-  // Redirect to app stores based on device (only if NOT in native app)
+  // Redirect to app stores based on device (only if NOT in native app and NOT in preview/dev)
   useEffect(() => {
     // Check if running inside Capacitor native app using the service function
     if (isNativeCapacitor()) {
       return; // Don't redirect if already in native app
+    }
+
+    // Skip redirect in development/preview environments
+    const hostname = window.location.hostname || '';
+    const isDevOrPreview = hostname.includes('localhost') || 
+                           hostname.includes('base44.com') || 
+                           hostname.includes('base44.app') ||
+                           window.location.search.includes('preview');
+    
+    if (isDevOrPreview) {
+      console.log('[WelcomePage] Skipping store redirect in dev/preview environment');
+      return;
     }
 
     const userAgent = navigator.userAgent || navigator.vendor || window.opera;
