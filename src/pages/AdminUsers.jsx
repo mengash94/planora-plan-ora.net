@@ -364,20 +364,20 @@ export default function AdminUsersPage() {
             </div>
 
             {/* סינון וחיפוש */}
-            <Card className="mb-6">
-                <CardContent className="p-4">
-                    <div className="flex flex-col md:flex-row gap-4">
+            <Card className="mb-4 sm:mb-6">
+                <CardContent className="p-3 sm:p-4">
+                    <div className="flex flex-col sm:flex-row gap-3">
                         <div className="flex-1 relative">
                             <Search className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2" />
                             <Input
                                 placeholder="חיפוש לפי שם או אימייל..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pr-10"
+                                className="pr-10 text-sm"
                             />
                         </div>
                         <Select value={roleFilter} onValueChange={setRoleFilter}>
-                            <SelectTrigger className="w-full md:w-40">
+                            <SelectTrigger className="w-full sm:w-36">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
