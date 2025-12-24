@@ -3447,17 +3447,40 @@ export const updateTaskAssigneeWithNotifications = async (taskId, assigneeId) =>
     }
 };
 
-// Assign task to self - no notification needed (user assigns to themselves)
+// Assign task to self with notifications
 export const assignTaskToSelfWithNotifications = async (taskId) => {
+    const instabackToken = getToken();
+    if (!instabackToken) throw new Error('Authentication required');
+
     const currentUser = getCurrentUser();
     if (!currentUser?.id) throw new Error('User not found');
 
-    // Simply update the task without triggering notifications
-    // since the user is assigning to themselves
-    return updateTask(taskId, { 
-        assigneeId: currentUser.id,
-        assignee_id: currentUser.id 
-    });
+    try {
+        const response = await fetch(`${API_BASE_URL}/edge-function/updatetaskwithnotifications`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${instabackToken}`,
+                'accept': 'application/json'
+            },
+            body: JSON.stringify({
+                params: {
+                    taskId: taskId,
+                    updates: { assigneeId: currentUser.id }
+                }
+            })
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Failed to assign task: ${errorText}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error assigning task to self:', error);
+        throw error;
+    }
 };
 
 // Unassign task from self with notifications to event managers
