@@ -13,8 +13,17 @@ export default function WelcomePage() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
 
-  // Redirect to app stores based on device
+  // Redirect to app stores based on device (only if NOT in native app)
   useEffect(() => {
+    // Check if running inside Capacitor native app
+    const isNativeApp = window.Capacitor?.isNativePlatform?.() || 
+                        window.Capacitor?.getPlatform?.() === 'ios' || 
+                        window.Capacitor?.getPlatform?.() === 'android';
+    
+    if (isNativeApp) {
+      return; // Don't redirect if already in native app
+    }
+
     const userAgent = navigator.userAgent || navigator.vendor || window.opera;
 
     if (/android/i.test(userAgent)) {
