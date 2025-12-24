@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/components/AuthProvider';
 import { createPageUrl } from '@/utils';
-import { isNativeCapacitor } from '@/components/onesignalService';
+// Using strict native detection locally to avoid UA false-positives
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
@@ -15,6 +15,16 @@ export default function WelcomePage() {
   const { isAuthenticated } = useAuth();
   const [showInAppBrowserMessage, setShowInAppBrowserMessage] = useState(false);
   const [storeUrl, setStoreUrl] = useState(null);
+
+  // Strict native detection: only treat as native if Capacitor object is present (prevents mis-detection in in-app browsers)
+  const isNativeStrict = () => {
+    try {
+      const cap = window?.Capacitor;
+      return !!(cap && (cap.getPlatform || cap.Plugins || cap.isNativePlatform));
+    } catch (e) {
+      return false;
+    }
+  };
 
   // Detect in-app browser (Instagram, Facebook, etc.)
   const isInAppBrowser = () => {
@@ -50,7 +60,7 @@ export default function WelcomePage() {
   // ALWAYS redirect if NOT in our native Capacitor app (except dev/preview)
   useEffect(() => {
     // ✅ אם אנחנו באפליקציה שלנו (Capacitor Native) - לא מפנים לחנות
-    if (isNativeCapacitor()) {
+    if (isNativeStrict()) {
       console.log('[WelcomePage] ✅ Running in native Capacitor app - no redirect');
       return;
     }
