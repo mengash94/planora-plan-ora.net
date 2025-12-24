@@ -441,40 +441,46 @@ export default function ChatTab({ eventId, members = [], memberships = [], curre
           <div ref={messagesEndRef} />
         </div>
 
-        <div className="border-t bg-white p-3">
-          <form onSubmit={handleSendMessage} className="flex items-center gap-2">
-            <input
-              type="file"
-              onChange={handleFileUpload}
-              className="hidden"
-              id="file-upload-chat"
-              disabled={isSending || isReadOnly}
-            />
-            <label htmlFor="file-upload-chat">
-              <Button type="button" variant="ghost" size="icon" asChild disabled={isSending || isReadOnly} className="text-gray-500 hover:text-orange-500">
-                <span><Paperclip className="h-5 w-5" /></span>
+        {isReadOnly ? (
+          <div className="border-t bg-gray-100 p-3 text-center">
+            <p className="text-sm text-gray-500">📜 האירוע הסתיים - לא ניתן לשלוח הודעות</p>
+          </div>
+        ) : (
+          <div className="border-t bg-white p-3">
+            <form onSubmit={handleSendMessage} className="flex items-center gap-2">
+              <input
+                type="file"
+                onChange={handleFileUpload}
+                className="hidden"
+                id="file-upload-chat"
+                disabled={isSending}
+              />
+              <label htmlFor="file-upload-chat">
+                <Button type="button" variant="ghost" size="icon" asChild disabled={isSending} className="text-gray-500 hover:text-orange-500">
+                  <span><Paperclip className="h-5 w-5" /></span>
+                </Button>
+              </label>
+
+              <Input
+                ref={messageInputRef}
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                placeholder="כתוב הודעה..."
+                disabled={isSending}
+                className="flex-1 text-right border-gray-200 focus:border-orange-300 focus:ring-orange-200"
+                autoFocus={!isMobile}
+              />
+
+              <Button
+                type="submit"
+                disabled={!newMessage.trim() || isSending}
+                className="bg-orange-500 hover:bg-orange-600 transition-colors rounded-full w-10 h-10 p-0"
+              >
+                {isSending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
               </Button>
-            </label>
-
-            <Input
-              ref={messageInputRef}
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="כתוב הודעה..."
-              disabled={isSending || isReadOnly}
-              className="flex-1 text-right border-gray-200 focus:border-orange-300 focus:ring-orange-200"
-              autoFocus={!isMobile}
-            />
-
-            <Button
-              type="submit"
-              disabled={!newMessage.trim() || isSending || isReadOnly}
-              className="bg-orange-500 hover:bg-orange-600 transition-colors rounded-full w-10 h-10 p-0"
-            >
-              {isSending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
-            </Button>
-          </form>
-        </div>
+            </form>
+          </div>
+        )}
       </div>
     </ErrorBoundary>
   );
