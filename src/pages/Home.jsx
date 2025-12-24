@@ -614,28 +614,7 @@ export default function HomePage() {
               </Card>
             )}
 
-            {/* כרטיס שיתוף האפליקציה */}
-            <Card 
-              className="bg-gradient-to-br from-green-400 to-teal-500 border-0 shadow-xl text-white cursor-pointer hover:shadow-2xl transition-shadow mb-4"
-              onClick={handleWhatsAppShareApp}
-            >
-              <CardContent className="p-4 text-center">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <Share2 className="w-5 h-5" />
-                  <h3 className="text-lg font-bold">שתף את האפליקציה</h3>
-                </div>
-                <Button
-                  className="bg-white text-green-600 hover:bg-gray-100 px-4 py-2 font-semibold shadow-lg text-sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleWhatsAppShareApp();
-                  }}
-                >
-                  <MessageCircle className="w-4 h-4 ml-1" />
-                  שלח לחברים
-                </Button>
-              </CardContent>
-            </Card>
+
 
             {/* כרטיס יצירת אירוע */}
             <Card 
