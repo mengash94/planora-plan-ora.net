@@ -365,7 +365,7 @@ export default function HomePage() {
               <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center border-2 border-green-500 hover:bg-green-200 transition-colors">
                 <Share2 className="w-5 h-5 text-green-600" />
               </div>
-              <span className="text-[9px] text-green-600 font-medium">שתף</span>
+              <span className="text-[9px] text-green-600 font-medium">שתף את האפליקציה</span>
             </button>
             <Button onClick={() => navigate(createPageUrl('CreateEvent'))} size="sm" className="bg-orange-500 hover:bg-orange-600 shadow-lg text-sm whitespace-nowrap">
               <Plus className="w-4 h-4 ml-1" />
