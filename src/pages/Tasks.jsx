@@ -53,8 +53,14 @@ export default function TasksPage() {
         const events = await getMyEvents(user.id);
         const eventsArray = Array.isArray(events) ? events : [];
 
+        // Filter out completed events - only show active events
+        const activeEvents = eventsArray.filter(ev => {
+          const status = (ev.status || 'active').toLowerCase();
+          return status === 'active';
+        });
+
         const tasksPerEvent = await Promise.all(
-          eventsArray.map(async (ev) => {
+          activeEvents.map(async (ev) => {
             try {
               const tasks = await listTasks(ev.id);
               const tasksArr = Array.isArray(tasks) ? tasks : (Array.isArray(tasks?.items) ? tasks.items : []);

@@ -80,6 +80,10 @@ export default function ChatOverviewPage() {
   }, [user]);
 
   const filteredEvents = events.filter(event => {
+    // Filter out completed/cancelled events - only show active events
+    const status = (event.status || 'active').toLowerCase();
+    if (status !== 'active') return false;
+    
     const matchesSearch = event.title?.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesSearch;
   });

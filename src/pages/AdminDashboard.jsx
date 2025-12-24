@@ -571,122 +571,112 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-orange-50 pb-20" style={{ direction: 'rtl' }}>
       <div className="max-w-7xl mx-auto p-6 space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => navigate(createPageUrl('Profile'))}>
               <ArrowRight className="w-5 h-5" />
             </Button>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">לוח ניהול מערכת</h1>
-              <p className="text-sm text-gray-500 mt-1">ניהול, מעקב וניתוח מתקדם</p>
+              <h1 className="text-xl sm:text-3xl font-bold text-gray-900">לוח ניהול</h1>
+              <p className="text-xs sm:text-sm text-gray-500 mt-1">ניהול, מעקב וניתוח</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => navigate(createPageUrl('AdminUsers'))}>
-              <Users className="w-4 h-4 ml-2" />
-              ניהול משתמשים
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button variant="outline" size="sm" onClick={() => navigate(createPageUrl('AdminUsers'))} className="text-xs sm:text-sm">
+              <Users className="w-4 h-4 ml-1 sm:ml-2" />
+              <span className="hidden sm:inline">ניהול </span>משתמשים
             </Button>
-            <Button variant="outline" onClick={() => navigate(createPageUrl('AdminSystemMessages'))}>
-              <Mail className="w-4 h-4 ml-2" />
-              הודעות מערכת
+            <Button variant="outline" size="sm" onClick={() => navigate(createPageUrl('AdminSystemMessages'))} className="text-xs sm:text-sm">
+              <Mail className="w-4 h-4 ml-1 sm:ml-2" />
+              <span className="hidden sm:inline">הודעות </span>מערכת
             </Button>
-            <AppLogo size={40} showText />
+            <div className="hidden sm:block">
+              <AppLogo size={40} showText />
+            </div>
           </div>
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-6 gap-2 sm:gap-4">
           <Card className="border-t-4 border-t-blue-500">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <Users className="w-5 h-5 text-blue-600" />
-              </div>
-              <p className="text-2xl font-bold text-gray-900">{stats.totalUsers}</p>
-              <p className="text-xs text-gray-500">סה"כ משתמשים</p>
+            <CardContent className="p-2 sm:p-4">
+              <Users className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 mb-1" />
+              <p className="text-lg sm:text-2xl font-bold text-gray-900">{stats.totalUsers}</p>
+              <p className="text-[10px] sm:text-xs text-gray-500">משתמשים</p>
             </CardContent>
           </Card>
 
           <Card className="border-t-4 border-t-purple-500">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <Crown className="w-5 h-5 text-purple-600" />
-              </div>
-              <p className="text-2xl font-bold text-gray-900">{stats.admins}</p>
-              <p className="text-xs text-gray-500">מנהלים</p>
+            <CardContent className="p-2 sm:p-4">
+              <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 mb-1" />
+              <p className="text-lg sm:text-2xl font-bold text-gray-900">{stats.admins}</p>
+              <p className="text-[10px] sm:text-xs text-gray-500">מנהלים</p>
             </CardContent>
           </Card>
 
           <Card className="border-t-4 border-t-orange-500">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <Calendar className="w-5 h-5 text-orange-600" />
-              </div>
-              <p className="text-2xl font-bold text-gray-900">{stats.totalEvents}</p>
-              <p className="text-xs text-gray-500">אירועים</p>
+            <CardContent className="p-2 sm:p-4">
+              <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600 mb-1" />
+              <p className="text-lg sm:text-2xl font-bold text-gray-900">{stats.totalEvents}</p>
+              <p className="text-[10px] sm:text-xs text-gray-500">אירועים</p>
             </CardContent>
           </Card>
 
           <Card className="border-t-4 border-t-green-500">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <TrendingUp className="w-5 h-5 text-green-600" />
-              </div>
-              <p className="text-2xl font-bold text-gray-900">{stats.activeRate}%</p>
-              <p className="text-xs text-gray-500">שיעור פעילים</p>
+            <CardContent className="p-2 sm:p-4">
+              <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 mb-1" />
+              <p className="text-lg sm:text-2xl font-bold text-gray-900">{stats.activeRate}%</p>
+              <p className="text-[10px] sm:text-xs text-gray-500">פעילים</p>
             </CardContent>
           </Card>
 
           <Card className="border-t-4 border-t-pink-500">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <Zap className="w-5 h-5 text-pink-600" />
-              </div>
-              <p className="text-2xl font-bold text-gray-900">{stats.recentUsers}</p>
-              <p className="text-xs text-gray-500">משתמשים חדשים (7 ימים)</p>
+            <CardContent className="p-2 sm:p-4">
+              <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-pink-600 mb-1" />
+              <p className="text-lg sm:text-2xl font-bold text-gray-900">{stats.recentUsers}</p>
+              <p className="text-[10px] sm:text-xs text-gray-500">חדשים</p>
             </CardContent>
           </Card>
 
           <Card className="border-t-4 border-t-cyan-500">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <Activity className="w-5 h-5 text-cyan-600" />
-              </div>
-              <p className="text-2xl font-bold text-gray-900">{stats.retentionRate}%</p>
-              <p className="text-xs text-gray-500">Retention Rate</p>
+            <CardContent className="p-2 sm:p-4">
+              <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-600 mb-1" />
+              <p className="text-lg sm:text-2xl font-bold text-gray-900">{stats.retentionRate}%</p>
+              <p className="text-[10px] sm:text-xs text-gray-500">Retention</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Main Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="overview">
-              <PieChart className="w-4 h-4 ml-2" />
-              סקירה כללית
+          <TabsList className="flex flex-wrap h-auto gap-1 p-1 sm:grid sm:w-full sm:grid-cols-7">
+            <TabsTrigger value="overview" className="text-xs sm:text-sm px-2 py-1.5">
+              <PieChart className="w-3 h-3 sm:w-4 sm:h-4 ml-1" />
+              <span className="hidden sm:inline">סקירה</span>
             </TabsTrigger>
-            <TabsTrigger value="users">
-              <Users className="w-4 h-4 ml-2" />
-              משתמשים
+            <TabsTrigger value="users" className="text-xs sm:text-sm px-2 py-1.5">
+              <Users className="w-3 h-3 sm:w-4 sm:h-4 ml-1" />
+              <span className="hidden sm:inline">משתמשים</span>
             </TabsTrigger>
-            <TabsTrigger value="analytics">
-              <LineChart className="w-4 h-4 ml-2" />
-              אנליטיקס
+            <TabsTrigger value="analytics" className="text-xs sm:text-sm px-2 py-1.5">
+              <LineChart className="w-3 h-3 sm:w-4 sm:h-4 ml-1" />
+              <span className="hidden sm:inline">אנליטיקס</span>
             </TabsTrigger>
-            <TabsTrigger value="activity">
-              <Activity className="w-4 h-4 ml-2" />
-              פעילות אחרונה
+            <TabsTrigger value="activity" className="text-xs sm:text-sm px-2 py-1.5">
+              <Activity className="w-3 h-3 sm:w-4 sm:h-4 ml-1" />
+              <span className="hidden sm:inline">פעילות</span>
             </TabsTrigger>
-            <TabsTrigger value="events">
-              <Calendar className="w-4 h-4 ml-2" />
-              אירועים
+            <TabsTrigger value="events" className="text-xs sm:text-sm px-2 py-1.5">
+              <Calendar className="w-3 h-3 sm:w-4 sm:h-4 ml-1" />
+              <span className="hidden sm:inline">אירועים</span>
             </TabsTrigger>
-            <TabsTrigger value="feedback">
-              <MessageSquare className="w-4 h-4 ml-2" />
-              משובים
+            <TabsTrigger value="feedback" className="text-xs sm:text-sm px-2 py-1.5">
+              <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4 ml-1" />
+              <span className="hidden sm:inline">משובים</span>
             </TabsTrigger>
-            <TabsTrigger value="settings">
-              <Settings className="w-4 h-4 ml-2" />
-              הגדרות
+            <TabsTrigger value="settings" className="text-xs sm:text-sm px-2 py-1.5">
+              <Settings className="w-3 h-3 sm:w-4 sm:h-4 ml-1" />
+              <span className="hidden sm:inline">הגדרות</span>
             </TabsTrigger>
           </TabsList>
 
