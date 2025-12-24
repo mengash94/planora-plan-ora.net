@@ -73,6 +73,45 @@ export default function WelcomePage() {
     navigate(createPageUrl('Auth'));
   };
 
+  // If in-app browser detected, show message to open in external browser
+  if (showInAppBrowserMessage && storeUrl) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-pink-50 flex items-center justify-center p-6" style={{ direction: 'rtl' }}>
+        <Card className="max-w-md w-full p-8 text-center shadow-2xl">
+          <div className="w-20 h-20 mx-auto bg-orange-100 rounded-full flex items-center justify-center mb-6">
+            <Calendar className="w-10 h-10 text-orange-500" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            כדי להוריד את Planora
+          </h1>
+          <p className="text-gray-600 mb-6 leading-relaxed">
+            הדפדפן הנוכחי לא תומך בהורדה ישירה.<br/>
+            לחץ על הכפתור למטה כדי לעבור לחנות האפליקציות:
+          </p>
+          <Button
+            onClick={() => window.open(storeUrl, '_blank')}
+            className="w-full h-14 text-lg bg-orange-500 hover:bg-orange-600 rounded-xl shadow-lg mb-4"
+          >
+            <Sparkles className="w-5 h-5 ml-2" />
+            פתח בחנות האפליקציות
+          </Button>
+          <p className="text-sm text-gray-500">
+            💡 טיפ: אם זה לא עובד, העתק את הקישור ופתח בדפדפן Chrome או Safari
+          </p>
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(window.location.href);
+              alert('הקישור הועתק!');
+            }}
+            className="mt-3 text-orange-600 hover:text-orange-700 text-sm underline"
+          >
+            העתק קישור
+          </button>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-pink-50 dark:from-black dark:via-black dark:to-gray-900" style={{ direction: 'rtl' }}>
       {/* Hero Section */}
