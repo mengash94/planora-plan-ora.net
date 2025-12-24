@@ -13,6 +13,15 @@ import {
 export default function WelcomePage() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const [showInAppBrowserMessage, setShowInAppBrowserMessage] = useState(false);
+  const [storeUrl, setStoreUrl] = useState(null);
+
+  // Detect in-app browser (Instagram, Facebook, etc.)
+  const isInAppBrowser = () => {
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    // Common in-app browser identifiers
+    return /FBAN|FBAV|Instagram|Line|Twitter|Snapchat|Pinterest|LinkedIn/i.test(userAgent);
+  };
 
   // Redirect to app stores based on device (only if NOT in native app and NOT in preview/dev)
   useEffect(() => {
@@ -34,13 +43,23 @@ export default function WelcomePage() {
     }
 
     const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    let targetStoreUrl = null;
 
     if (/android/i.test(userAgent)) {
-      window.location.replace("https://play.google.com/store/apps/details?id=net.planora.app");
-      return;
+      targetStoreUrl = "https://play.google.com/store/apps/details?id=net.planora.app";
     } else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
-      window.location.replace("https://apps.apple.com/il/app/planora-%D7%90%D7%99%D7%A8%D7%95%D7%A2%D7%99%D7%9D/id6755497184");
-      return;
+      targetStoreUrl = "https://apps.apple.com/il/app/planora-%D7%90%D7%99%D7%A8%D7%95%D7%A2%D7%99%D7%9D/id6755497184";
+    }
+
+    if (targetStoreUrl) {
+      // If in-app browser, show manual button instead of auto-redirect
+      if (isInAppBrowser()) {
+        setStoreUrl(targetStoreUrl);
+        setShowInAppBrowserMessage(true);
+      } else {
+        // Regular browser - auto redirect works
+        window.location.replace(targetStoreUrl);
+      }
     }
   }, []);
 
