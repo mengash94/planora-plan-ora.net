@@ -280,7 +280,7 @@ export default function AdminUsersPage() {
     const activeUsers = users.filter(u => eventsByUser[u.id] > 0).length;
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-orange-50 p-6 pb-20" style={{ direction: 'rtl' }}>
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-orange-50 p-3 sm:p-6 pb-20" style={{ direction: 'rtl' }}>
             <div className="max-w-7xl mx-auto">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                     <div className="flex items-center gap-3">
