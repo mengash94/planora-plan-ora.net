@@ -357,31 +357,6 @@ export default function HomePage() {
           </div>
 
           <div className="flex items-center gap-2 flex-shrink-0">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  size="sm"
-                  className="bg-green-500 hover:bg-green-600 text-white rounded-full p-2 shadow-lg"
-                >
-                  <Share2 className="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem onClick={handleWhatsAppShareApp} className="flex items-center gap-3 p-3 cursor-pointer">
-                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                    <MessageCircle className="w-4 h-4 text-white" />
-                  </div>
-                  <span className="font-medium">שתף בוואטסאפ</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleShareApp} className="flex items-center gap-3 p-3 cursor-pointer">
-                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                    <Share2 className="w-4 h-4 text-white" />
-                  </div>
-                  <span className="font-medium">העתק קישור</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
             <Button onClick={() => navigate(createPageUrl('CreateEvent'))} size="sm" className="bg-orange-500 hover:bg-orange-600 shadow-lg text-sm whitespace-nowrap">
               <Plus className="w-4 h-4 ml-1" />
               <span className="hidden sm:inline">אירוע חדש</span>
