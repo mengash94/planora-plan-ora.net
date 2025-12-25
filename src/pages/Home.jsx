@@ -351,7 +351,7 @@ export default function HomePage() {
               <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">שלום, {user?.name || user?.firstName || 'משתמש'}!</h1>
+              <h1 className="text-lg sm:text-2xl font-bold text-gray-900 whitespace-normal break-words leading-snug">שלום, <span className="font-extrabold">{user?.name || user?.firstName || 'משתמש'}</span>!</h1>
               <p className="text-sm text-gray-600">הנה המידע העדכני שלך</p>
             </div>
           </div>
