@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/components/AuthProvider';
 import { createPageUrl } from '@/utils';
-// Using strict native detection locally to avoid UA false-positives
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import {
   Sparkles, CheckSquare, BarChart2, MessageSquare, Camera, Bot,
-  Users, PartyPopper, Heart, Calendar, MapPin, Smile, Lightbulb
+  Users, PartyPopper, Heart, Calendar, MapPin, Smile, Lightbulb, RefreshCw
 } from 'lucide-react';
 
 export default function WelcomePage() {
@@ -15,6 +15,8 @@ export default function WelcomePage() {
   const { isAuthenticated } = useAuth();
   const [showInAppBrowserMessage, setShowInAppBrowserMessage] = useState(false);
   const [storeUrl, setStoreUrl] = useState(null);
+  const [showUpdateDialog, setShowUpdateDialog] = useState(false);
+  const [newVersion, setNewVersion] = useState(null);
 
   // Strict native detection: only treat as native if Capacitor object is present (prevents mis-detection in in-app browsers)
   const isNativeStrict = () => {
@@ -128,6 +130,24 @@ export default function WelcomePage() {
     }
   }, [isAuthenticated, navigate]);
 
+  // Check for available update
+  useEffect(() => {
+    const updateAvailable = localStorage.getItem('planora_update_available');
+    if (updateAvailable) {
+      setNewVersion(updateAvailable);
+      setShowUpdateDialog(true);
+    }
+  }, []);
+
+  const handleUpdateNow = () => {
+    const newVer = localStorage.getItem('planora_update_available');
+    if (newVer) {
+      localStorage.setItem('planora_app_version', newVer);
+      localStorage.removeItem('planora_update_available');
+    }
+    window.location.reload();
+  };
+
   const handleLogin = () => {
     navigate(createPageUrl('Auth'));
   };
@@ -173,6 +193,44 @@ export default function WelcomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-pink-50 dark:from-black dark:via-black dark:to-gray-900" style={{ direction: 'rtl' }}>
+      {/* Update Available Dialog */}
+      <Dialog open={showUpdateDialog} onOpenChange={setShowUpdateDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <RefreshCw className="w-6 h-6 text-orange-500" />
+              עדכון גרסה זמין!
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-gray-700 mb-4">
+              גרסה חדשה של Planora זמינה ({newVersion}). 
+            </p>
+            <p className="text-gray-600 text-sm">
+              האפליקציה תתרענן כדי להביא לך את התכונות החדשות ביותר והשיפורים.
+            </p>
+          </div>
+          <DialogFooter className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                localStorage.removeItem('planora_update_available');
+                setShowUpdateDialog(false);
+              }}
+            >
+              אולי מאוחר יותר
+            </Button>
+            <Button
+              onClick={handleUpdateNow}
+              className="bg-orange-500 hover:bg-orange-600"
+            >
+              <RefreshCw className="w-4 h-4 ml-2" />
+              עדכן עכשיו
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Hero Section */}
       <section className="relative overflow-hidden py-16 md:py-24 text-center bg-gradient-to-br from-orange-400 to-rose-500 text-white">
         <div className="relative z-10 max-w-4xl mx-auto px-6">

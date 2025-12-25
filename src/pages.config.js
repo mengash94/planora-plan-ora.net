@@ -4,13 +4,10 @@ import AdminSystemMessages from './pages/AdminSystemMessages';
 import AdminTemplatesManage from './pages/AdminTemplatesManage';
 import AdminTemplatesSeed from './pages/AdminTemplatesSeed';
 import AdminUsers from './pages/AdminUsers';
-import AdminVersions from './pages/AdminVersions';
 import AppSpecification from './pages/AppSpecification';
 import Auth from './pages/Auth';
 import ChatOverview from './pages/ChatOverview';
 import CreateEvent from './pages/CreateEvent';
-import CreateEventAI from './pages/CreateEventAI';
-import CreateEventManual from './pages/CreateEventManual';
 import EditEvent from './pages/EditEvent';
 import EventChat from './pages/EventChat';
 import EventDetail from './pages/EventDetail';
@@ -19,7 +16,6 @@ import ForgotPassword from './pages/ForgotPassword';
 import Home from './pages/Home';
 import HomePage from './pages/HomePage';
 import InstaBackTest from './pages/InstaBackTest';
-import JoinEvent from './pages/JoinEvent';
 import LandingPage from './pages/LandingPage';
 import MigrateImages from './pages/MigrateImages';
 import MyEventsList from './pages/MyEventsList';
@@ -32,8 +28,12 @@ import Terms from './pages/Terms';
 import VerifiedVenueFinder from './pages/VerifiedVenueFinder';
 import WelcomePage from './pages/WelcomePage';
 import WhatsNew from './pages/WhatsNew';
-import AdminDashboard from './pages/AdminDashboard';
 import AdminAnalytics from './pages/AdminAnalytics';
+import AdminDashboard from './pages/AdminDashboard';
+import AdminVersions from './pages/AdminVersions';
+import CreateEventAI from './pages/CreateEventAI';
+import CreateEventManual from './pages/CreateEventManual';
+import JoinEvent from './pages/JoinEvent';
 import __Layout from './Layout.jsx';
 
 
@@ -44,13 +44,10 @@ export const PAGES = {
     "AdminTemplatesManage": AdminTemplatesManage,
     "AdminTemplatesSeed": AdminTemplatesSeed,
     "AdminUsers": AdminUsers,
-    "AdminVersions": AdminVersions,
     "AppSpecification": AppSpecification,
     "Auth": Auth,
     "ChatOverview": ChatOverview,
     "CreateEvent": CreateEvent,
-    "CreateEventAI": CreateEventAI,
-    "CreateEventManual": CreateEventManual,
     "EditEvent": EditEvent,
     "EventChat": EventChat,
     "EventDetail": EventDetail,
@@ -59,7 +56,6 @@ export const PAGES = {
     "Home": Home,
     "HomePage": HomePage,
     "InstaBackTest": InstaBackTest,
-    "JoinEvent": JoinEvent,
     "LandingPage": LandingPage,
     "MigrateImages": MigrateImages,
     "MyEventsList": MyEventsList,
@@ -72,8 +68,12 @@ export const PAGES = {
     "VerifiedVenueFinder": VerifiedVenueFinder,
     "WelcomePage": WelcomePage,
     "WhatsNew": WhatsNew,
-    "AdminDashboard": AdminDashboard,
     "AdminAnalytics": AdminAnalytics,
+    "AdminDashboard": AdminDashboard,
+    "AdminVersions": AdminVersions,
+    "CreateEventAI": CreateEventAI,
+    "CreateEventManual": CreateEventManual,
+    "JoinEvent": JoinEvent,
 }
 
 export const pagesConfig = {
