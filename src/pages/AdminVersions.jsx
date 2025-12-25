@@ -348,7 +348,20 @@ export default function AdminVersionsPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    {version.is_published && !version.notification_sent && (
+                    {/* כפתור פרסום - מופיע כשהגרסה עדיין לא מפורסמת */}
+                    {!version.is_published && !version.isPublished && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handlePublishVersion(version)}
+                        className="text-green-600 border-green-200"
+                      >
+                        <CheckCircle className="w-4 h-4 ml-1" />
+                        פרסם
+                      </Button>
+                    )}
+                    {/* כפתור שליחת עדכון - מופיע אחרי פרסום */}
+                    {(version.is_published || version.isPublished) && !version.notification_sent && !version.notificationSent && (
                       <Button
                         size="sm"
                         variant="outline"

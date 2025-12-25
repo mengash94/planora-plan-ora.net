@@ -1,20 +1,27 @@
 import AccessibilityStatement from './pages/AccessibilityStatement';
+import AdminAnalytics from './pages/AdminAnalytics';
 import AdminAnnouncements from './pages/AdminAnnouncements';
+import AdminDashboard from './pages/AdminDashboard';
 import AdminSystemMessages from './pages/AdminSystemMessages';
 import AdminTemplatesManage from './pages/AdminTemplatesManage';
 import AdminTemplatesSeed from './pages/AdminTemplatesSeed';
 import AdminUsers from './pages/AdminUsers';
+import AdminVersions from './pages/AdminVersions';
 import AppSpecification from './pages/AppSpecification';
 import Auth from './pages/Auth';
 import ChatOverview from './pages/ChatOverview';
 import CreateEvent from './pages/CreateEvent';
+import CreateEventAI from './pages/CreateEventAI';
+import CreateEventManual from './pages/CreateEventManual';
 import EditEvent from './pages/EditEvent';
 import EventChat from './pages/EventChat';
 import EventDetail from './pages/EventDetail';
 import EventRSVP from './pages/EventRSVP';
 import ForgotPassword from './pages/ForgotPassword';
+import Home from './pages/Home';
 import HomePage from './pages/HomePage';
 import InstaBackTest from './pages/InstaBackTest';
+import JoinEvent from './pages/JoinEvent';
 import LandingPage from './pages/LandingPage';
 import MigrateImages from './pages/MigrateImages';
 import MyEventsList from './pages/MyEventsList';
@@ -25,36 +32,36 @@ import ResetPassword from './pages/ResetPassword';
 import Tasks from './pages/Tasks';
 import Terms from './pages/Terms';
 import VerifiedVenueFinder from './pages/VerifiedVenueFinder';
-import WhatsNew from './pages/WhatsNew';
-import AdminAnalytics from './pages/AdminAnalytics';
-import AdminDashboard from './pages/AdminDashboard';
-import AdminVersions from './pages/AdminVersions';
-import CreateEventAI from './pages/CreateEventAI';
-import CreateEventManual from './pages/CreateEventManual';
-import Home from './pages/Home';
-import JoinEvent from './pages/JoinEvent';
 import WelcomePage from './pages/WelcomePage';
+import WhatsNew from './pages/WhatsNew';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "AccessibilityStatement": AccessibilityStatement,
+    "AdminAnalytics": AdminAnalytics,
     "AdminAnnouncements": AdminAnnouncements,
+    "AdminDashboard": AdminDashboard,
     "AdminSystemMessages": AdminSystemMessages,
     "AdminTemplatesManage": AdminTemplatesManage,
     "AdminTemplatesSeed": AdminTemplatesSeed,
     "AdminUsers": AdminUsers,
+    "AdminVersions": AdminVersions,
     "AppSpecification": AppSpecification,
     "Auth": Auth,
     "ChatOverview": ChatOverview,
     "CreateEvent": CreateEvent,
+    "CreateEventAI": CreateEventAI,
+    "CreateEventManual": CreateEventManual,
     "EditEvent": EditEvent,
     "EventChat": EventChat,
     "EventDetail": EventDetail,
     "EventRSVP": EventRSVP,
     "ForgotPassword": ForgotPassword,
+    "Home": Home,
     "HomePage": HomePage,
     "InstaBackTest": InstaBackTest,
+    "JoinEvent": JoinEvent,
     "LandingPage": LandingPage,
     "MigrateImages": MigrateImages,
     "MyEventsList": MyEventsList,
@@ -65,15 +72,8 @@ export const PAGES = {
     "Tasks": Tasks,
     "Terms": Terms,
     "VerifiedVenueFinder": VerifiedVenueFinder,
-    "WhatsNew": WhatsNew,
-    "AdminAnalytics": AdminAnalytics,
-    "AdminDashboard": AdminDashboard,
-    "AdminVersions": AdminVersions,
-    "CreateEventAI": CreateEventAI,
-    "CreateEventManual": CreateEventManual,
-    "Home": Home,
-    "JoinEvent": JoinEvent,
     "WelcomePage": WelcomePage,
+    "WhatsNew": WhatsNew,
 }
 
 export const pagesConfig = {
