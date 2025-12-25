@@ -336,7 +336,7 @@ export default function AdminVersionsPage() {
           </Card>
         ) : (
           versions.map((version) => (
-            <Card key={version.id} className={`${!version.is_published ? 'border-dashed border-2 border-gray-300' : ''}`}>
+            <Card key={version.id} className={`${!(version.is_published || version.isPublished) ? 'border-dashed border-2 border-gray-300' : ''}`}>
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
