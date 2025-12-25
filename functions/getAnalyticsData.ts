@@ -7,10 +7,18 @@ Deno.serve(async (req) => {
     // Verify user is admin
     const user = await base44.auth.me();
     if (!user || user.role !== 'admin') {
-      return Response.json({ error: 'Unauthorized - Admin only' }, { status: 403 });
+      return Response.json({ success: false, error: 'Unauthorized - Admin only' }, { status: 403 });
     }
 
-    const { startDate, endDate } = await req.json();
+    let startDate, endDate;
+    try {
+      const body = await req.json();
+      startDate = body.startDate;
+      endDate = body.endDate;
+    } catch (parseError) {
+      startDate = null;
+      endDate = null;
+    }
 
     // Build query filter
     const filter = {};
@@ -145,12 +153,13 @@ Deno.serve(async (req) => {
     return Response.json({
       success: true,
       metrics,
-      rawEvents: events // Include raw events for detailed analysis
+      rawEvents: events
     });
 
   } catch (error) {
     console.error('[getAnalyticsData] Error:', error);
     return Response.json({ 
+      success: false,
       error: error.message || 'Failed to get analytics data' 
     }, { status: 500 });
   }
