@@ -5,6 +5,7 @@ import { isNativeCapacitor } from '@/components/onesignalService';
 // מפתח לשמירת הגרסה ב-localStorage
 const LOCAL_VERSION_KEY = 'planora_app_version';
 const LAST_CHECK_KEY = 'planora_last_version_check';
+const UPDATE_AVAILABLE_KEY = 'planora_update_available';
 
 // זמן מינימלי בין בדיקות (5 דקות)
 const MIN_CHECK_INTERVAL = 5 * 60 * 1000;
@@ -58,8 +59,9 @@ export default function AppVersionChecker() {
             }
 
             if (localVersion !== serverVersion) {
-                localStorage.setItem(LOCAL_VERSION_KEY, serverVersion);
-                window.location.reload();
+                // Instead of auto-reload, save that update is available
+                localStorage.setItem(UPDATE_AVAILABLE_KEY, serverVersion);
+                console.log('[AppVersionChecker] Update available:', serverVersion);
             }
         } catch (error) {
             console.warn('[AppVersionChecker]', error.message);
