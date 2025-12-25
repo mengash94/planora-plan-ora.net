@@ -24,9 +24,14 @@ export default function AppVersionChecker() {
     }
 
     const checkForUpdates = useCallback(async (forceRefresh = false) => {
+        // Skip version check in native Capacitor apps - they update via app stores
+        if (isNativeRef.current) {
+            console.log('[AppVersionChecker] Skipping version check in native app');
+            return;
+        }
+
         // מניעת בדיקות כפולות
         if (isCheckingRef.current) {
-            console.log('[AppVersionChecker] Already checking, skipping...');
             return;
         }
 
@@ -36,129 +41,69 @@ export default function AppVersionChecker() {
             if (lastCheck) {
                 const timeSinceLastCheck = Date.now() - parseInt(lastCheck, 10);
                 if (timeSinceLastCheck < MIN_CHECK_INTERVAL) {
-                    console.log('[AppVersionChecker] Skipping check, too soon since last check');
                     return;
                 }
             }
         }
 
         isCheckingRef.current = true;
-        console.log('[AppVersionChecker] 🔍 Checking for app updates...');
 
         try {
-            // שליפת הגרסה השמורה מקומית
             const localVersion = localStorage.getItem(LOCAL_VERSION_KEY);
-            
-            // שליפת הגרסה העדכנית מהשרת
             const versions = await listAppVersions();
-            
-            // מציאת הגרסה האחרונה שפורסמה
             const publishedVersions = versions.filter(v => v.isPublished || v.is_published);
             
             if (publishedVersions.length === 0) {
-                console.log('[AppVersionChecker] No published versions found');
                 localStorage.setItem(LAST_CHECK_KEY, String(Date.now()));
                 return;
             }
 
-            // מיון לפי תאריך שחרור (הכי חדש ראשון)
             publishedVersions.sort((a, b) => {
                 const dateA = new Date(a.releaseDate || a.release_date || a.createdAt || 0);
                 const dateB = new Date(b.releaseDate || b.release_date || b.createdAt || 0);
                 return dateB - dateA;
             });
 
-            const latestVersion = publishedVersions[0];
-            const serverVersion = latestVersion.version;
-
-            console.log('[AppVersionChecker] 📦 Local version:', localVersion);
-            console.log('[AppVersionChecker] 🌐 Server version:', serverVersion);
-
-            // שמירת זמן הבדיקה
+            const serverVersion = publishedVersions[0].version;
             localStorage.setItem(LAST_CHECK_KEY, String(Date.now()));
 
-            // אם אין גרסה מקומית - שמור את הגרסה הנוכחית ואל תרענן
             if (!localVersion) {
-                console.log('[AppVersionChecker] 💾 First time - saving current version');
                 localStorage.setItem(LOCAL_VERSION_KEY, serverVersion);
                 return;
             }
 
-            // בדיקה אם הגרסה השתנתה
             if (localVersion !== serverVersion) {
-                console.log('[AppVersionChecker] 🚀 New version detected! Reloading...');
-                console.log(`[AppVersionChecker] ${localVersion} → ${serverVersion}`);
-                
-                // שמירת הגרסה החדשה לפני הרענון
                 localStorage.setItem(LOCAL_VERSION_KEY, serverVersion);
-                
-                // רענון העמוד
-                window.location.reload();
-            } else {
-                console.log('[AppVersionChecker] ✅ App is up to date');
+                setTimeout(() => window.location.reload(), 100);
             }
-
         } catch (error) {
-            console.warn('[AppVersionChecker] ❌ Error checking for updates:', error.message);
+            console.warn('[AppVersionChecker] Error:', error.message);
         } finally {
             isCheckingRef.current = false;
         }
     }, []);
 
     useEffect(() => {
-        // בדיקה ראשונית בטעינה
-        checkForUpdates();
+        // Only run version checks for web (PWA), skip for native Capacitor
+        if (isNativeRef.current) {
+            return;
+        }
 
-        // האזנה לאירועי Capacitor (resume מהרקע)
-        const handleAppResume = () => {
-            console.log('[AppVersionChecker] 📱 App resumed from background');
-            checkForUpdates(true); // force check on resume
-        };
+        // Initial check on load (delayed to not block app startup)
+        const initialTimer = setTimeout(() => checkForUpdates(), 3000);
 
-        // האזנה ל-visibility change (לדפדפן רגיל ול-WebView)
+        // Visibility change listener for web/PWA only
         const handleVisibilityChange = () => {
             if (!document.hidden) {
-                console.log('[AppVersionChecker] 👁️ Page became visible');
                 checkForUpdates();
             }
         };
 
-        // הוספת listener ל-Capacitor App plugin אם קיים
-        let appStateListener = null;
-        
-        if (isNativeRef.current && window.Capacitor?.Plugins?.App) {
-            const { App } = window.Capacitor.Plugins;
-            
-            App.addListener('appStateChange', ({ isActive }) => {
-                if (isActive) {
-                    console.log('[AppVersionChecker] 📱 Capacitor: App became active');
-                    checkForUpdates(true);
-                }
-            }).then(listener => {
-                appStateListener = listener;
-            }).catch(err => {
-                console.warn('[AppVersionChecker] Failed to add Capacitor listener:', err);
-            });
-
-            // גם listener ל-resume
-            App.addListener('resume', () => {
-                console.log('[AppVersionChecker] 📱 Capacitor: App resumed');
-                checkForUpdates(true);
-            }).catch(err => {
-                console.warn('[AppVersionChecker] Failed to add resume listener:', err);
-            });
-        }
-
-        // תמיד מאזינים ל-visibility change (עובד גם ב-WebView)
         document.addEventListener('visibilitychange', handleVisibilityChange);
 
-        // Cleanup
         return () => {
+            clearTimeout(initialTimer);
             document.removeEventListener('visibilitychange', handleVisibilityChange);
-            
-            if (appStateListener && typeof appStateListener.remove === 'function') {
-                appStateListener.remove();
-            }
         };
     }, [checkForUpdates]);
 
