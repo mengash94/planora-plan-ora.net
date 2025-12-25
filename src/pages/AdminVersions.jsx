@@ -337,22 +337,23 @@ export default function AdminVersionsPage() {
       {/* Header */}
       <header className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-4 py-6">
         <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3 w-full sm:w-auto">
               <button onClick={() => navigate(createPageUrl('AdminDashboard'))} className="hover:bg-white/20 rounded-full p-2">
                 <ArrowRight className="w-5 h-5" />
               </button>
               <div>
-                <h1 className="text-xl font-bold flex items-center gap-2">
-                  <Package className="w-6 h-6" />
+                <h1 className="text-lg sm:text-xl font-bold flex items-center gap-2">
+                  <Package className="w-5 h-5 sm:w-6 sm:h-6" />
                   ניהול גרסאות
                 </h1>
-                <p className="text-purple-100 text-sm">תיעוד פיצ'רים ושליחת עדכונים</p>
+                <p className="text-purple-100 text-xs sm:text-sm">תיעוד פיצ'רים ושליחת עדכונים</p>
               </div>
             </div>
             <Button 
               onClick={() => handleOpenDialog()} 
-              className="bg-white text-purple-600 hover:bg-purple-50"
+              size="sm"
+              className="bg-white text-purple-600 hover:bg-purple-50 w-full sm:w-auto"
             >
               <Plus className="w-4 h-4 ml-1" />
               גרסה חדשה
@@ -379,7 +380,7 @@ export default function AdminVersionsPage() {
           versions.map((version) => (
             <Card key={version.id} className={`${!(version.is_published || version.isPublished) ? 'border-dashed border-2 border-gray-300' : ''}`}>
               <CardHeader className="pb-2">
-                <div className="flex items-start justify-between">
+                <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
                       <Package className="w-6 h-6 text-purple-600" />
@@ -409,7 +410,7 @@ export default function AdminVersionsPage() {
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     {/* כפתור פרסום - תמיד מוצג, מושבת אם כבר פורסם */}
                     <Button
                       size="sm"
@@ -420,7 +421,7 @@ export default function AdminVersionsPage() {
                         }
                       }}
                       disabled={version.is_published || version.isPublished}
-                      className={(version.is_published || version.isPublished) ? 'text-gray-400 border-gray-200' : 'text-green-600 border-green-200'}
+                      className={(version.is_published || version.isPublished) ? 'h-8 px-2 text-xs text-gray-400 border-gray-200' : 'h-8 px-2 text-xs text-green-600 border-green-200'}
                     >
                       <CheckCircle className="w-4 h-4 ml-1" />
                       {(version.is_published || version.isPublished) ? 'מפורסמת' : 'פרסם'}
@@ -433,7 +434,7 @@ export default function AdminVersionsPage() {
                         variant="outline"
                         onClick={() => handleSendNotification(version)}
                         disabled={isSendingNotification}
-                        className="text-blue-600 border-blue-200"
+                        className="h-8 px-2 text-xs text-blue-600 border-blue-200"
                       >
                         {isSendingNotification ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
@@ -493,7 +494,7 @@ export default function AdminVersionsPage() {
           </DialogHeader>
 
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>מספר גרסה *</Label>
                 <Input
