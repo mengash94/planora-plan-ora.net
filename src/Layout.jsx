@@ -438,6 +438,9 @@ function LayoutContent({ children, currentPageName }) {
       {/* Help Chatbot - AI Assistant */}
       {isAuthenticated && <HelpChatbot />}
 
+      {/* App Version Checker - Auto-reload on new version */}
+      <AppVersionChecker />
+
       {!isNative && (
         <InstallPromptCustomBanner 
           deferredPrompt={deferredInstallPrompt}
