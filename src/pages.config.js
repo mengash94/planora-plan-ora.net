@@ -1,6 +1,5 @@
 import AccessibilityStatement from './pages/AccessibilityStatement';
 import AdminAnnouncements from './pages/AdminAnnouncements';
-import AdminDashboard from './pages/AdminDashboard';
 import AdminSystemMessages from './pages/AdminSystemMessages';
 import AdminTemplatesManage from './pages/AdminTemplatesManage';
 import AdminTemplatesSeed from './pages/AdminTemplatesSeed';
@@ -33,13 +32,14 @@ import Terms from './pages/Terms';
 import VerifiedVenueFinder from './pages/VerifiedVenueFinder';
 import WelcomePage from './pages/WelcomePage';
 import WhatsNew from './pages/WhatsNew';
+import AdminDashboard from './pages/AdminDashboard';
+import AdminAnalytics from './pages/AdminAnalytics';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "AccessibilityStatement": AccessibilityStatement,
     "AdminAnnouncements": AdminAnnouncements,
-    "AdminDashboard": AdminDashboard,
     "AdminSystemMessages": AdminSystemMessages,
     "AdminTemplatesManage": AdminTemplatesManage,
     "AdminTemplatesSeed": AdminTemplatesSeed,
@@ -72,6 +72,8 @@ export const PAGES = {
     "VerifiedVenueFinder": VerifiedVenueFinder,
     "WelcomePage": WelcomePage,
     "WhatsNew": WhatsNew,
+    "AdminDashboard": AdminDashboard,
+    "AdminAnalytics": AdminAnalytics,
 }
 
 export const pagesConfig = {
