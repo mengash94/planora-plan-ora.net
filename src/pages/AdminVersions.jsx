@@ -154,11 +154,18 @@ export default function AdminVersionsPage() {
 
     setIsSaving(true);
     try {
+      const dataToSave = {
+        ...formData,
+        notification_sent: editingVersion ? formData.notification_sent : false,
+        showPopup: formData.is_published,
+        show_popup: formData.is_published
+      };
+      
       if (editingVersion) {
-        await updateAppVersion(editingVersion.id, formData);
+        await updateAppVersion(editingVersion.id, dataToSave);
         toast.success('הגרסה עודכנה בהצלחה');
       } else {
-        await createAppVersion(formData);
+        await createAppVersion(dataToSave);
         toast.success('הגרסה נוצרה בהצלחה');
       }
       setIsDialogOpen(false);
