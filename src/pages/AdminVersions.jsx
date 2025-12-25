@@ -65,7 +65,8 @@ export default function AdminVersionsPage() {
     release_date: new Date().toISOString().split('T')[0],
     features: [],
     notes: '',
-    is_published: false
+    is_published: false,
+    send_push_on_create: false
   });
 
   const [newFeature, setNewFeature] = useState({
@@ -114,7 +115,8 @@ export default function AdminVersionsPage() {
         release_date: version.release_date || new Date().toISOString().split('T')[0],
         features: version.features || [],
         notes: version.notes || '',
-        is_published: version.is_published || false
+        is_published: version.is_published || false,
+        send_push_on_create: false
       });
     } else {
       setEditingVersion(null);
@@ -124,7 +126,8 @@ export default function AdminVersionsPage() {
         release_date: new Date().toISOString().split('T')[0],
         features: [],
         notes: '',
-        is_published: false
+        is_published: false,
+        send_push_on_create: false
       });
     }
     setIsDialogOpen(true);
@@ -179,6 +182,44 @@ export default function AdminVersionsPage() {
         const result = await createAppVersion(dataToSave);
         console.log('[AdminVersions] Version created:', result);
         toast.success('הגרסה נוצרה בהצלחה! ✨');
+
+        // שליחת התראת Push מיידית לאחר יצירה (אופציונלי)
+        if (formData.send_push_on_create) {
+          try {
+            const users = await listUsers();
+            const userIds = (Array.isArray(users) ? users : [])
+              .map(u => u.id)
+              .filter(id => id && id !== user?.id);
+
+            if (userIds.length > 0) {
+              const featuresText = (formData.features || [])
+                .slice(0, 3)
+                .map(f => `• ${f.title}`)
+                .join('\n');
+
+              const message = `${formData.title}\n${featuresText}${(formData.features?.length || 0) > 3 ? '\n• ועוד...' : ''}`;
+
+              await createNotificationsAndSendPushBulk({
+                userIds,
+                type: 'update',
+                title: `🎉 גרסה חדשה: ${formData.version}`,
+                message,
+                actionUrl: createPageUrl('WhatsNew'),
+                priority: 'normal'
+              });
+
+              if (result?.id) {
+                await updateAppVersion(result.id, { notification_sent: true, notificationSent: true });
+              }
+              toast.success(`נשלחו התראות ל-${userIds.length} משתמשים`);
+            } else {
+              toast.info('אין למי לשלוח התראות');
+            }
+          } catch (e) {
+            console.error('[AdminVersions] Failed to send push after create:', e);
+            toast.error('שגיאה בשליחת ההתראות');
+          }
+        }
       }
       setIsDialogOpen(false);
       await loadVersions();
@@ -563,6 +604,19 @@ export default function AdminVersionsPage() {
                 onCheckedChange={(checked) => setFormData({ ...formData, is_published: checked })}
               />
             </div>
+
+            {!editingVersion && (
+              <div className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
+                <div>
+                  <Label>שליחת התראת Push לכל המשתמשים</Label>
+                  <p className="text-xs text-gray-500">ישלח הודעת OneSignal על יצירת הגרסה</p>
+                </div>
+                <Switch
+                  checked={formData.send_push_on_create}
+                  onCheckedChange={(checked) => setFormData({ ...formData, send_push_on_create: checked })}
+                />
+              </div>
+            )}
           </div>
 
           <DialogFooter className="gap-2">
