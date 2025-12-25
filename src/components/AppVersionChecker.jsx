@@ -26,17 +26,18 @@ export default function AppVersionChecker() {
 
     const checkForUpdates = useCallback(async (forceRefresh = false) => {
         if (isCheckingRef.current) return;
-
-        if (!forceRefresh) {
-            const lastCheck = localStorage.getItem(LAST_CHECK_KEY);
-            if (lastCheck && (Date.now() - parseInt(lastCheck, 10)) < MIN_CHECK_INTERVAL) {
-                return;
-            }
-        }
-
-        isCheckingRef.current = true;
+        if (typeof window === 'undefined' || typeof localStorage === 'undefined') return;
 
         try {
+            if (!forceRefresh) {
+                const lastCheck = localStorage.getItem(LAST_CHECK_KEY);
+                if (lastCheck && (Date.now() - parseInt(lastCheck, 10)) < MIN_CHECK_INTERVAL) {
+                    return;
+                }
+            }
+
+            isCheckingRef.current = true;
+
             const localVersion = localStorage.getItem(LOCAL_VERSION_KEY);
             const versions = await listAppVersions();
             const publishedVersions = versions.filter(v => v.isPublished || v.is_published);
@@ -59,7 +60,6 @@ export default function AppVersionChecker() {
             }
 
             if (localVersion !== serverVersion) {
-                // Instead of auto-reload, save that update is available
                 localStorage.setItem(UPDATE_AVAILABLE_KEY, serverVersion);
                 console.log('[AppVersionChecker] Update available:', serverVersion);
             }
@@ -71,28 +71,54 @@ export default function AppVersionChecker() {
     }, []);
 
     useEffect(() => {
-        // Delayed check to not block initial load
-        const initialTimer = setTimeout(() => checkForUpdates(), 5000);
+        if (typeof window === 'undefined') return;
+        
+        const initialTimer = setTimeout(() => {
+            checkForUpdates().catch(() => {});
+        }, 5000);
 
         const handleVisibilityChange = () => {
-            if (!document.hidden) {
-                setTimeout(() => checkForUpdates(), 1000);
+            try {
+                if (!document.hidden) {
+                    setTimeout(() => {
+                        checkForUpdates().catch(() => {});
+                    }, 1000);
+                }
+            } catch (error) {
+                console.warn('[AppVersionChecker] visibility error:', error);
             }
         };
 
         let resumeListener = null;
-        if (isNativeRef.current && window.Capacitor?.Plugins?.App) {
-            window.Capacitor.Plugins.App.addListener('resume', () => {
-                setTimeout(() => checkForUpdates(true), 1000);
-            }).then(l => resumeListener = l).catch(() => {});
+        if (isNativeRef.current && typeof window !== 'undefined') {
+            try {
+                const cap = window.Capacitor;
+                if (cap?.Plugins?.App?.addListener) {
+                    cap.Plugins.App.addListener('resume', () => {
+                        setTimeout(() => {
+                            checkForUpdates(true).catch(() => {});
+                        }, 1000);
+                    }).then(l => { resumeListener = l; }).catch(() => {});
+                }
+            } catch (error) {
+                console.warn('[AppVersionChecker] Capacitor error:', error);
+            }
         }
 
-        document.addEventListener('visibilitychange', handleVisibilityChange);
+        try {
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+        } catch (error) {
+            console.warn('[AppVersionChecker] addEventListener error:', error);
+        }
 
         return () => {
             clearTimeout(initialTimer);
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
-            if (resumeListener?.remove) resumeListener.remove();
+            try {
+                document.removeEventListener('visibilitychange', handleVisibilityChange);
+            } catch {}
+            try {
+                if (resumeListener?.remove) resumeListener.remove();
+            } catch {}
         };
     }, [checkForUpdates]);
 

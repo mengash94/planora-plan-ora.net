@@ -13,7 +13,6 @@ import EventChat from './pages/EventChat';
 import EventDetail from './pages/EventDetail';
 import EventRSVP from './pages/EventRSVP';
 import ForgotPassword from './pages/ForgotPassword';
-import Home from './pages/Home';
 import HomePage from './pages/HomePage';
 import InstaBackTest from './pages/InstaBackTest';
 import LandingPage from './pages/LandingPage';
@@ -26,14 +25,15 @@ import ResetPassword from './pages/ResetPassword';
 import Tasks from './pages/Tasks';
 import Terms from './pages/Terms';
 import VerifiedVenueFinder from './pages/VerifiedVenueFinder';
-import WelcomePage from './pages/WelcomePage';
 import WhatsNew from './pages/WhatsNew';
 import AdminAnalytics from './pages/AdminAnalytics';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminVersions from './pages/AdminVersions';
 import CreateEventAI from './pages/CreateEventAI';
 import CreateEventManual from './pages/CreateEventManual';
+import Home from './pages/Home';
 import JoinEvent from './pages/JoinEvent';
+import WelcomePage from './pages/WelcomePage';
 import __Layout from './Layout.jsx';
 
 
@@ -53,7 +53,6 @@ export const PAGES = {
     "EventDetail": EventDetail,
     "EventRSVP": EventRSVP,
     "ForgotPassword": ForgotPassword,
-    "Home": Home,
     "HomePage": HomePage,
     "InstaBackTest": InstaBackTest,
     "LandingPage": LandingPage,
@@ -66,14 +65,15 @@ export const PAGES = {
     "Tasks": Tasks,
     "Terms": Terms,
     "VerifiedVenueFinder": VerifiedVenueFinder,
-    "WelcomePage": WelcomePage,
     "WhatsNew": WhatsNew,
     "AdminAnalytics": AdminAnalytics,
     "AdminDashboard": AdminDashboard,
     "AdminVersions": AdminVersions,
     "CreateEventAI": CreateEventAI,
     "CreateEventManual": CreateEventManual,
+    "Home": Home,
     "JoinEvent": JoinEvent,
+    "WelcomePage": WelcomePage,
 }
 
 export const pagesConfig = {

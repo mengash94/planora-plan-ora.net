@@ -60,22 +60,31 @@ function LayoutContent({ children, currentPageName }) {
 
   // Check for available update
   useEffect(() => {
-    if (!isAuthenticated || !user) return;
+    if (!isAuthenticated || !user || typeof window === 'undefined') return;
     
-    const updateAvailable = localStorage.getItem('planora_update_available');
-    if (updateAvailable) {
-      setUpdateVersion(updateAvailable);
-      setShowUpdateDialog(true);
+    try {
+      const updateAvailable = localStorage.getItem('planora_update_available');
+      if (updateAvailable) {
+        setUpdateVersion(updateAvailable);
+        setShowUpdateDialog(true);
+      }
+    } catch (error) {
+      console.warn('[Layout] Error checking for updates:', error);
     }
   }, [isAuthenticated, user]);
 
   const handleUpdateNow = () => {
-    const newVer = localStorage.getItem('planora_update_available');
-    if (newVer) {
-      localStorage.setItem('planora_app_version', newVer);
-      localStorage.removeItem('planora_update_available');
+    try {
+      const newVer = localStorage.getItem('planora_update_available');
+      if (newVer) {
+        localStorage.setItem('planora_app_version', newVer);
+        localStorage.removeItem('planora_update_available');
+      }
+      window.location.reload();
+    } catch (error) {
+      console.error('[Layout] Error updating:', error);
+      window.location.reload();
     }
-    window.location.reload();
   };
 
   // PWA Manifest and Meta Data Setup
