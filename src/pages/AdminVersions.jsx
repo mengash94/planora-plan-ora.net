@@ -369,18 +369,22 @@ export default function AdminVersionsPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    {/* כפתור פרסום - מופיע כשהגרסה עדיין לא מפורסמת */}
-                    {!version.is_published && !version.isPublished && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handlePublishVersion(version)}
-                        className="text-green-600 border-green-200"
-                      >
-                        <CheckCircle className="w-4 h-4 ml-1" />
-                        פרסם
-                      </Button>
-                    )}
+                    {/* כפתור פרסום - תמיד מוצג, מושבת אם כבר פורסם */}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        if (!(version.is_published || version.isPublished)) {
+                          handlePublishVersion(version);
+                        }
+                      }}
+                      disabled={version.is_published || version.isPublished}
+                      className={(version.is_published || version.isPublished) ? 'text-gray-400 border-gray-200' : 'text-green-600 border-green-200'}
+                    >
+                      <CheckCircle className="w-4 h-4 ml-1" />
+                      {(version.is_published || version.isPublished) ? 'מפורסמת' : 'פרסם'}
+                    </Button>
+
                     {/* כפתור שליחת עדכון - מופיע אחרי פרסום */}
                     {(version.is_published || version.isPublished) && !version.notification_sent && !version.notificationSent && (
                       <Button
@@ -400,6 +404,7 @@ export default function AdminVersionsPage() {
                         )}
                       </Button>
                     )}
+
                     <Button size="sm" variant="ghost" onClick={() => handleOpenDialog(version)}>
                       <Edit className="w-4 h-4" />
                     </Button>
