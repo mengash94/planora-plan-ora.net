@@ -91,13 +91,14 @@ export default function AdminVersionsPage() {
   const loadVersions = async () => {
     try {
       const data = await listAppVersions();
+      console.log('[AdminVersions] Loaded versions:', data);
       // מיון לפי תאריך שחרור (החדש ביותר קודם)
       const sorted = (data || []).sort((a, b) => 
         new Date(b.release_date || b.created_date) - new Date(a.release_date || a.created_date)
       );
       setVersions(sorted);
     } catch (error) {
-      console.error('Failed to load versions:', error);
+      console.error('[AdminVersions] Failed to load versions:', error);
       toast.error('שגיאה בטעינת הגרסאות');
     } finally {
       setIsLoading(false);
