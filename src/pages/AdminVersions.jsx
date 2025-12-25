@@ -346,10 +346,13 @@ export default function AdminVersionsPage() {
                     <div>
                       <CardTitle className="text-lg flex items-center gap-2">
                         גרסה {version.version}
-                        {!version.is_published && (
+                        {!(version.is_published || version.isPublished) && (
                           <Badge variant="outline" className="text-xs">טיוטה</Badge>
                         )}
-                        {version.notification_sent && (
+                        {(version.is_published || version.isPublished) && !(version.notification_sent || version.notificationSent) && (
+                          <Badge className="bg-blue-100 text-blue-700 text-xs">מפורסמת</Badge>
+                        )}
+                        {(version.notification_sent || version.notificationSent) && (
                           <Badge className="bg-green-100 text-green-700 text-xs">
                             <CheckCircle className="w-3 h-3 ml-1" />
                             נשלח
