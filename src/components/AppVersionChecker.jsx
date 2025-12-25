@@ -24,25 +24,12 @@ export default function AppVersionChecker() {
     }
 
     const checkForUpdates = useCallback(async (forceRefresh = false) => {
-        // Skip version check in native Capacitor apps - they update via app stores
-        if (isNativeRef.current) {
-            console.log('[AppVersionChecker] Skipping version check in native app');
-            return;
-        }
+        if (isCheckingRef.current) return;
 
-        // מניעת בדיקות כפולות
-        if (isCheckingRef.current) {
-            return;
-        }
-
-        // בדיקת זמן מאז הבדיקה האחרונה
         if (!forceRefresh) {
             const lastCheck = localStorage.getItem(LAST_CHECK_KEY);
-            if (lastCheck) {
-                const timeSinceLastCheck = Date.now() - parseInt(lastCheck, 10);
-                if (timeSinceLastCheck < MIN_CHECK_INTERVAL) {
-                    return;
-                }
+            if (lastCheck && (Date.now() - parseInt(lastCheck, 10)) < MIN_CHECK_INTERVAL) {
+                return;
             }
         }
 
@@ -53,16 +40,14 @@ export default function AppVersionChecker() {
             const versions = await listAppVersions();
             const publishedVersions = versions.filter(v => v.isPublished || v.is_published);
             
-            if (publishedVersions.length === 0) {
+            if (!publishedVersions.length) {
                 localStorage.setItem(LAST_CHECK_KEY, String(Date.now()));
                 return;
             }
 
-            publishedVersions.sort((a, b) => {
-                const dateA = new Date(a.releaseDate || a.release_date || a.createdAt || 0);
-                const dateB = new Date(b.releaseDate || b.release_date || b.createdAt || 0);
-                return dateB - dateA;
-            });
+            publishedVersions.sort((a, b) => 
+                new Date(b.releaseDate || b.release_date || 0) - new Date(a.releaseDate || a.release_date || 0)
+            );
 
             const serverVersion = publishedVersions[0].version;
             localStorage.setItem(LAST_CHECK_KEY, String(Date.now()));
@@ -74,36 +59,38 @@ export default function AppVersionChecker() {
 
             if (localVersion !== serverVersion) {
                 localStorage.setItem(LOCAL_VERSION_KEY, serverVersion);
-                setTimeout(() => window.location.reload(), 100);
+                window.location.reload();
             }
         } catch (error) {
-            console.warn('[AppVersionChecker] Error:', error.message);
+            console.warn('[AppVersionChecker]', error.message);
         } finally {
             isCheckingRef.current = false;
         }
     }, []);
 
     useEffect(() => {
-        // Only run version checks for web (PWA), skip for native Capacitor
-        if (isNativeRef.current) {
-            return;
-        }
+        // Delayed check to not block initial load
+        const initialTimer = setTimeout(() => checkForUpdates(), 5000);
 
-        // Initial check on load (delayed to not block app startup)
-        const initialTimer = setTimeout(() => checkForUpdates(), 3000);
-
-        // Visibility change listener for web/PWA only
         const handleVisibilityChange = () => {
             if (!document.hidden) {
-                checkForUpdates();
+                setTimeout(() => checkForUpdates(), 1000);
             }
         };
+
+        let resumeListener = null;
+        if (isNativeRef.current && window.Capacitor?.Plugins?.App) {
+            window.Capacitor.Plugins.App.addListener('resume', () => {
+                setTimeout(() => checkForUpdates(true), 1000);
+            }).then(l => resumeListener = l).catch(() => {});
+        }
 
         document.addEventListener('visibilitychange', handleVisibilityChange);
 
         return () => {
             clearTimeout(initialTimer);
             document.removeEventListener('visibilitychange', handleVisibilityChange);
+            if (resumeListener?.remove) resumeListener.remove();
         };
     }, [checkForUpdates]);
 
