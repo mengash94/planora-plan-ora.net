@@ -313,29 +313,13 @@ export default function AdminVersionsPage() {
                 <p className="text-purple-100 text-sm">תיעוד פיצ'רים ושליחת עדכונים</p>
               </div>
             </div>
-            <div className="flex gap-2">
-              <Button 
-                onClick={handleQuickPublish}
-                disabled={isQuickPublishing}
-                className="bg-green-500 text-white hover:bg-green-600"
-              >
-                {isQuickPublishing ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4 ml-1" />
-                    פרסם v1.1
-                  </>
-                )}
-              </Button>
-              <Button 
-                onClick={() => handleOpenDialog()} 
-                className="bg-white text-purple-600 hover:bg-purple-50"
-              >
-                <Plus className="w-4 h-4 ml-1" />
-                גרסה חדשה
-              </Button>
-            </div>
+            <Button 
+              onClick={() => handleOpenDialog()} 
+              className="bg-white text-purple-600 hover:bg-purple-50"
+            >
+              <Plus className="w-4 h-4 ml-1" />
+              גרסה חדשה
+            </Button>
           </div>
         </div>
       </header>
