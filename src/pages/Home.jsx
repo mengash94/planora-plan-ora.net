@@ -339,7 +339,7 @@ export default function HomePage() {
   const recentOpenTasks = openTasks.slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-orange-50" style={{ direction: 'rtl', paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-orange-50" style={{ direction: 'rtl' }}>
       <SEOHead 
         title="Planora - דף הבית | תכנון אירועים חכם"
         description="נהל את האירועים שלך במקום אחד. משימות, צ'אטים, הצבעות וגלריות - הכל באפליקציה אחת."
