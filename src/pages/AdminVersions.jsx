@@ -207,44 +207,12 @@ export default function AdminVersionsPage() {
     if (!confirm(`האם לפרסם את גרסה ${version.version}?`)) return;
 
     try {
-      // פרסום הגרסה
       await updateAppVersion(version.id, { 
         is_published: true,
         isPublished: true,
         showPopup: true,
         show_popup: true
       });
-
-      // שליחת התראות OneSignal לכל המשתמשים (דרך InstaBack)
-      try {
-        const users = await listUsers();
-        const userIds = (users || []).map(u => u.id).filter(id => id && id !== user?.id);
-
-        if (userIds.length > 0) {
-          const featuresText = (version.features || [])
-            .slice(0, 3)
-            .map(f => `• ${f.title}`)
-            .join('\n');
-
-          const message = `${version.title}\n${featuresText}${(version.features || []).length > 3 ? '\n• ועוד...' : ''}`;
-
-          await createNotificationsAndSendPushBulk({
-            userIds,
-            type: 'update',
-            title: `🎉 גרסה חדשה: ${version.version}`,
-            message,
-            actionUrl: createPageUrl('WhatsNew'),
-            priority: 'normal'
-          });
-
-          await updateAppVersion(version.id, { notification_sent: true, notificationSent: true });
-          toast.success(`הודעת עדכון נשלחה ל-${userIds.length} משתמשים`);
-        }
-      } catch (notifyErr) {
-        console.warn('[Publish] Failed to send OneSignal notifications:', notifyErr);
-        toast.message?.('הגרסה פורסמה, אך שליחת ההתראות נכשלה');
-      }
-
       toast.success(`גרסה ${version.version} פורסמה בהצלחה! 🎉`);
       loadVersions();
     } catch (error) {
