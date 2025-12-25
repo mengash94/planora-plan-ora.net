@@ -202,6 +202,20 @@ export default function JoinEventPage() {
         console.warn('Failed to send notifications:', notifError);
       }
       
+      // Track analytics event - join
+      try {
+        const { trackAnalyticsEvent } = await import('@/functions/trackAnalyticsEvent');
+        await trackAnalyticsEvent({
+          eventType: 'event_joined',
+          metadata: {
+            eventId: eventId,
+            eventTitle: event.title
+          }
+        });
+      } catch (analyticsError) {
+        console.warn('[JoinEvent] Failed to track analytics:', analyticsError);
+      }
+
       localStorage.removeItem('pendingEventJoin');
       try {
         const arr = JSON.parse(localStorage.getItem('pendingEventJoins') || '[]');

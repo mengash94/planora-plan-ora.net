@@ -1,419 +1,447 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/components/AuthProvider';
-import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { 
-    BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
-    XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer 
-} from 'recharts';
-import { 
-    ArrowLeft, TrendingUp, Users, Calendar, CheckSquare, 
-    Loader2, RefreshCw, Download, Filter, Sparkles, FileText
+  Loader2, 
+  ArrowRight, 
+  TrendingUp, 
+  Users, 
+  Calendar, 
+  Sparkles,
+  FileText,
+  UserPlus,
+  LogIn,
+  BarChart3,
+  PieChart,
+  Activity
 } from 'lucide-react';
-import { format, subDays } from 'date-fns';
-import { he } from 'date-fns/locale';
-
-const COLORS = ['#f97316', '#8b5cf6', '#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#06b6d4'];
+import { 
+  LineChart, 
+  Line, 
+  BarChart, 
+  Bar, 
+  PieChart as RechartsPie,
+  Pie,
+  Cell,
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  Legend, 
+  ResponsiveContainer 
+} from 'recharts';
+import { getAnalyticsData } from '@/functions/getAnalyticsData';
+import { toast } from 'sonner';
 
 export default function AdminAnalyticsPage() {
-    const navigate = useNavigate();
-    const { user, isAuthenticated } = useAuth();
-    const [analytics, setAnalytics] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
-    const [showFilters, setShowFilters] = useState(false);
+  const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
+  
+  const [isLoading, setIsLoading] = useState(true);
+  const [analyticsData, setAnalyticsData] = useState(null);
+  
+  // Filters
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  
+  // Chart colors
+  const COLORS = {
+    ai: '#f97316', // orange
+    manual: '#3b82f6', // blue
+    template: '#8b5cf6', // purple
+    joins: '#10b981', // green
+    logins: '#06b6d4', // cyan
+    active: '#22c55e',
+    churned: '#ef4444',
+    new: '#f59e0b'
+  };
 
-    useEffect(() => {
-        if (!isAuthenticated || user?.role !== 'admin') {
-            navigate(createPageUrl('Home'));
-        }
-    }, [isAuthenticated, user, navigate]);
-
-    useEffect(() => {
-        fetchAnalytics();
-    }, []);
-
-    const fetchAnalytics = async () => {
-        try {
-            setLoading(true);
-            const response = await base44.functions.invoke('getAdminAnalytics', {
-                startDate: startDate || null,
-                endDate: endDate || null
-            });
-
-            if (response.data?.success) {
-                setAnalytics(response.data.data);
-            } else {
-                console.error('Failed to fetch analytics:', response.data);
-            }
-        } catch (error) {
-            console.error('Error fetching analytics:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const applyDateFilter = () => {
-        fetchAnalytics();
-    };
-
-    const resetFilters = () => {
-        setStartDate('');
-        setEndDate('');
-        setTimeout(fetchAnalytics, 100);
-    };
-
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <Loader2 className="w-12 h-12 text-orange-500 animate-spin" />
-            </div>
-        );
+  // Redirect non-admin users
+  useEffect(() => {
+    if (!isAuthenticated || !user) {
+      toast.error('נדרשת התחברות');
+      navigate(createPageUrl('Auth'));
+      return;
     }
-
-    if (!analytics) {
-        return (
-            <div className="p-6 text-center">
-                <p className="text-gray-600">לא ניתן לטעון נתונים</p>
-                <Button onClick={fetchAnalytics} className="mt-4">
-                    נסה שוב
-                </Button>
-            </div>
-        );
+    
+    if (user.role !== 'admin') {
+      toast.error('גישה למנהלים בלבד');
+      navigate(createPageUrl('Home'));
+      return;
     }
+  }, [isAuthenticated, user, navigate]);
 
-    // Prepare chart data
-    const eventCreationData = [
-        { name: 'יצירה עם AI', value: analytics.eventCreationMethods.ai, color: '#8b5cf6' },
-        { name: 'תבניות', value: analytics.eventCreationMethods.template, color: '#10b981' },
-        { name: 'יצירה ידנית', value: analytics.eventCreationMethods.manual, color: '#3b82f6' }
-    ];
+  // Load analytics data
+  const loadAnalytics = async () => {
+    setIsLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (startDate) params.set('startDate', new Date(startDate).toISOString());
+      if (endDate) params.set('endDate', new Date(endDate).toISOString());
+      
+      const data = await getAnalyticsData(params);
+      
+      if (data.success) {
+        setAnalyticsData(data);
+      } else {
+        throw new Error(data.error || 'Failed to load analytics');
+      }
+    } catch (error) {
+      console.error('[AdminAnalytics] Error:', error);
+      toast.error('שגיאה בטעינת הנתונים: ' + error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    const userEngagementData = [
-        { name: 'משתמשים פעילים', value: analytics.userEngagement.activeUsers },
-        { name: 'משתמשים חוזרים', value: analytics.userEngagement.returningUsers },
-        { name: 'משתמשים חד-פעמיים', value: analytics.userEngagement.oneTimeUsers },
-        { name: 'משתמשים שנטשו', value: analytics.userEngagement.churnedUsers }
-    ];
+  useEffect(() => {
+    if (user?.role === 'admin') {
+      loadAnalytics();
+    }
+  }, [user]);
 
-    const eventStatusData = [
-        { name: 'פעיל', value: analytics.eventStatus.active, color: '#10b981' },
-        { name: 'הושלם', value: analytics.eventStatus.completed, color: '#3b82f6' },
-        { name: 'בוטל', value: analytics.eventStatus.cancelled, color: '#ef4444' }
-    ];
-
+  if (isLoading) {
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 to-orange-50 p-4 sm:p-6">
-            {/* Header */}
-            <div className="max-w-7xl mx-auto mb-6">
-                <div className="flex items-center justify-between mb-4">
-                    <Button
-                        variant="ghost"
-                        onClick={() => navigate(createPageUrl('AdminDashboard'))}
-                        className="gap-2"
-                    >
-                        <ArrowLeft className="w-4 h-4" />
-                        חזרה
-                    </Button>
-                    <div className="flex gap-2">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setShowFilters(!showFilters)}
-                        >
-                            <Filter className="w-4 h-4 ml-1" />
-                            סינון
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={fetchAnalytics}
-                        >
-                            <RefreshCw className="w-4 h-4 ml-1" />
-                            רענן
-                        </Button>
-                    </div>
-                </div>
-
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">ניתוח נתונים מתקדם</h1>
-                <p className="text-gray-600">תובנות ומגמות שימוש באפליקציה</p>
-
-                {/* Filters */}
-                {showFilters && (
-                    <Card className="mt-4">
-                        <CardContent className="pt-6">
-                            <div className="flex flex-wrap gap-4">
-                                <div className="flex-1 min-w-[200px]">
-                                    <label className="block text-sm font-medium mb-2">תאריך התחלה</label>
-                                    <input
-                                        type="date"
-                                        value={startDate}
-                                        onChange={(e) => setStartDate(e.target.value)}
-                                        className="w-full border rounded-lg p-2"
-                                    />
-                                </div>
-                                <div className="flex-1 min-w-[200px]">
-                                    <label className="block text-sm font-medium mb-2">תאריך סיום</label>
-                                    <input
-                                        type="date"
-                                        value={endDate}
-                                        onChange={(e) => setEndDate(e.target.value)}
-                                        className="w-full border rounded-lg p-2"
-                                    />
-                                </div>
-                                <div className="flex items-end gap-2">
-                                    <Button onClick={applyDateFilter}>החל</Button>
-                                    <Button variant="outline" onClick={resetFilters}>אפס</Button>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                )}
-            </div>
-
-            <div className="max-w-7xl mx-auto space-y-6">
-                {/* Key Metrics */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Card className="bg-gradient-to-br from-orange-500 to-orange-600 text-white">
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-sm font-medium flex items-center gap-2">
-                                <Users className="w-4 h-4" />
-                                סך משתמשים
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-3xl font-bold">{analytics.totalUsers}</div>
-                            <p className="text-xs opacity-80 mt-1">
-                                {analytics.userEngagement.retentionRate}% Retention
-                            </p>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white">
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-sm font-medium flex items-center gap-2">
-                                <Calendar className="w-4 h-4" />
-                                סך אירועים
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-3xl font-bold">{analytics.totalEvents}</div>
-                            <p className="text-xs opacity-80 mt-1">
-                                ממוצע {analytics.insights.avgEventsPerUser} לכל משתמש
-                            </p>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white">
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-sm font-medium flex items-center gap-2">
-                                <CheckSquare className="w-4 h-4" />
-                                משימות הושלמו
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-3xl font-bold">{analytics.completedTasks}</div>
-                            <p className="text-xs opacity-80 mt-1">
-                                {analytics.insights.taskCompletionRate}% שיעור השלמה
-                            </p>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white">
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-sm font-medium flex items-center gap-2">
-                                <Sparkles className="w-4 h-4" />
-                                אימוץ AI
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-3xl font-bold">{analytics.insights.aiAdoptionRate}%</div>
-                            <p className="text-xs opacity-80 mt-1">
-                                {analytics.eventCreationMethods.ai} אירועים עם AI
-                            </p>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                {/* Charts Row 1 */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Event Creation Methods */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <FileText className="w-5 h-5 text-orange-500" />
-                                שיטות יצירת אירועים
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <ResponsiveContainer width="100%" height={300}>
-                                <PieChart>
-                                    <Pie
-                                        data={eventCreationData}
-                                        cx="50%"
-                                        cy="50%"
-                                        labelLine={false}
-                                        label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-                                        outerRadius={80}
-                                        fill="#8884d8"
-                                        dataKey="value"
-                                    >
-                                        {eventCreationData.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={entry.color} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip />
-                                </PieChart>
-                            </ResponsiveContainer>
-                        </CardContent>
-                    </Card>
-
-                    {/* User Engagement */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Users className="w-5 h-5 text-purple-500" />
-                                מעורבות משתמשים
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <ResponsiveContainer width="100%" height={300}>
-                                <BarChart data={userEngagementData}>
-                                    <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis dataKey="name" />
-                                    <YAxis />
-                                    <Tooltip />
-                                    <Bar dataKey="value" fill="#8b5cf6" />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                {/* Charts Row 2 */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Top Templates */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <TrendingUp className="w-5 h-5 text-green-500" />
-                                תבניות פופולריות (Top 5)
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <ResponsiveContainer width="100%" height={300}>
-                                <BarChart data={analytics.topTemplates} layout="vertical">
-                                    <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis type="number" />
-                                    <YAxis dataKey="name" type="category" width={100} />
-                                    <Tooltip />
-                                    <Bar dataKey="count" fill="#10b981" />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </CardContent>
-                    </Card>
-
-                    {/* Event Status */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Calendar className="w-5 h-5 text-blue-500" />
-                                סטטוס אירועים
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <ResponsiveContainer width="100%" height={300}>
-                                <PieChart>
-                                    <Pie
-                                        data={eventStatusData}
-                                        cx="50%"
-                                        cy="50%"
-                                        labelLine={false}
-                                        label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-                                        outerRadius={80}
-                                        fill="#8884d8"
-                                        dataKey="value"
-                                    >
-                                        {eventStatusData.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={entry.color} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip />
-                                </PieChart>
-                            </ResponsiveContainer>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                {/* Daily Activity Trend */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <TrendingUp className="w-5 h-5 text-orange-500" />
-                            מגמת פעילות יומית (30 יום אחרונים)
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <LineChart data={analytics.dailyActivity}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis 
-                                    dataKey="date" 
-                                    tickFormatter={(date) => format(new Date(date), 'dd/MM')}
-                                />
-                                <YAxis />
-                                <Tooltip 
-                                    labelFormatter={(date) => format(new Date(date), 'dd/MM/yyyy')}
-                                />
-                                <Legend />
-                                <Line 
-                                    type="monotone" 
-                                    dataKey="count" 
-                                    name="פעילויות"
-                                    stroke="#f97316" 
-                                    strokeWidth={2}
-                                />
-                            </LineChart>
-                        </ResponsiveContainer>
-                    </CardContent>
-                </Card>
-
-                {/* Insights Summary */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>תובנות מרכזיות</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="p-4 bg-orange-50 rounded-lg">
-                                <div className="text-sm text-gray-600 mb-1">הצטרפויות לאירועים</div>
-                                <div className="text-2xl font-bold text-orange-600">
-                                    {analytics.totalEventJoins}
-                                </div>
-                                <div className="text-xs text-gray-500 mt-1">סך משתתפים שהצטרפו</div>
-                            </div>
-                            <div className="p-4 bg-purple-50 rounded-lg">
-                                <div className="text-sm text-gray-600 mb-1">משתמשים פעילים</div>
-                                <div className="text-2xl font-bold text-purple-600">
-                                    {analytics.userEngagement.recentlyActive}
-                                </div>
-                                <div className="text-xs text-gray-500 mt-1">פעילים ב-7 ימים אחרונים</div>
-                            </div>
-                            <div className="p-4 bg-red-50 rounded-lg">
-                                <div className="text-sm text-gray-600 mb-1">נטישה</div>
-                                <div className="text-2xl font-bold text-red-600">
-                                    {analytics.userEngagement.churnedUsers}
-                                </div>
-                                <div className="text-xs text-gray-500 mt-1">משתמשים שנטשו (30+ ימים)</div>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-purple-600 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">טוען נתוני ניתוח...</p>
         </div>
+      </div>
     );
+  }
+
+  const metrics = analyticsData?.metrics || {};
+  const timeline = metrics.timeline || [];
+
+  // Prepare pie chart data for event creation methods
+  const eventCreationData = [
+    { name: 'יצירה עם AI', value: metrics.eventsCreatedByAI || 0, color: COLORS.ai },
+    { name: 'יצירה ידנית', value: metrics.eventsCreatedManually || 0, color: COLORS.manual },
+    { name: 'יצירה מתבנית', value: metrics.eventsCreatedWithTemplate || 0, color: COLORS.template }
+  ].filter(d => d.value > 0);
+
+  // Prepare pie chart data for user status
+  const userStatusData = [
+    { name: 'משתמשים פעילים', value: metrics.activeUsers || 0, color: COLORS.active },
+    { name: 'משתמשים חדשים', value: metrics.newUsers || 0, color: COLORS.new },
+    { name: 'משתמשים נטושים', value: metrics.churnedUsers || 0, color: COLORS.churned }
+  ].filter(d => d.value > 0);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 pb-20" style={{ direction: 'rtl' }}>
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              onClick={() => navigate(createPageUrl('AdminDashboard'))}
+            >
+              <ArrowRight className="w-5 h-5" />
+            </Button>
+            <BarChart3 className="w-8 h-8 text-purple-600" />
+            <h1 className="text-3xl font-bold text-gray-900">ניתוח נתונים מתקדם</h1>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-lg">סינון נתונים</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="startDate">מתאריך</Label>
+                <Input
+                  id="startDate"
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="endDate">עד תאריך</Label>
+                <Input
+                  id="endDate"
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
+              </div>
+              <div className="flex items-end">
+                <Button onClick={loadAnalytics} className="w-full bg-purple-600 hover:bg-purple-700">
+                  <Activity className="w-4 h-4 ml-2" />
+                  החל סינון
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Key Metrics */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <Card className="bg-gradient-to-br from-orange-500 to-orange-600 text-white">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-orange-100 text-sm">יצירה עם AI</p>
+                  <p className="text-3xl font-bold">{metrics.eventsCreatedByAI || 0}</p>
+                </div>
+                <Sparkles className="w-10 h-10 text-orange-200" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-blue-100 text-sm">יצירה ידנית</p>
+                  <p className="text-3xl font-bold">{metrics.eventsCreatedManually || 0}</p>
+                </div>
+                <FileText className="w-10 h-10 text-blue-200" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-purple-100 text-sm">יצירה מתבנית</p>
+                  <p className="text-3xl font-bold">{metrics.eventsCreatedWithTemplate || 0}</p>
+                </div>
+                <Calendar className="w-10 h-10 text-purple-200" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-green-100 text-sm">הצטרפויות</p>
+                  <p className="text-3xl font-bold">{metrics.totalJoins || 0}</p>
+                </div>
+                <UserPlus className="w-10 h-10 text-green-200" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* User Activity Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <Card className="border-green-200 bg-green-50">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-green-700 text-sm font-medium">משתמשים פעילים</p>
+                  <p className="text-2xl font-bold text-green-900">{metrics.activeUsers || 0}</p>
+                  <p className="text-xs text-green-600 mt-1">פעילים ב-7 ימים האחרונים</p>
+                </div>
+                <Activity className="w-8 h-8 text-green-600" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-orange-200 bg-orange-50">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-orange-700 text-sm font-medium">משתמשים חדשים</p>
+                  <p className="text-2xl font-bold text-orange-900">{metrics.newUsers || 0}</p>
+                  <p className="text-xs text-orange-600 mt-1">הצטרפו ב-30 ימים האחרונים</p>
+                </div>
+                <UserPlus className="w-8 h-8 text-orange-600" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-red-200 bg-red-50">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-red-700 text-sm font-medium">משתמשים נטושים</p>
+                  <p className="text-2xl font-bold text-red-900">{metrics.churnedUsers || 0}</p>
+                  <p className="text-xs text-red-600 mt-1">לא פעילים יותר מ-7 ימים</p>
+                </div>
+                <Users className="w-8 h-8 text-red-600" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Charts Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          {/* Event Creation Methods Pie Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <PieChart className="w-5 h-5 text-purple-600" />
+                שיטות יצירת אירועים
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {eventCreationData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <RechartsPie>
+                    <Pie
+                      data={eventCreationData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {eventCreationData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </RechartsPie>
+                </ResponsiveContainer>
+              ) : (
+                <p className="text-gray-500 text-center py-8">אין נתונים להצגה</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* User Status Pie Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-blue-600" />
+                סטטוס משתמשים
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {userStatusData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <RechartsPie>
+                    <Pie
+                      data={userStatusData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {userStatusData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </RechartsPie>
+                </ResponsiveContainer>
+              ) : (
+                <p className="text-gray-500 text-center py-8">אין נתונים להצגה</p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Timeline Chart */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-purple-600" />
+              מגמות פעילות (30 ימים אחרונים)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {timeline.length > 0 ? (
+              <ResponsiveContainer width="100%" height={400}>
+                <LineChart data={timeline}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="date" 
+                    tickFormatter={(date) => new Date(date).toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit' })}
+                  />
+                  <YAxis />
+                  <Tooltip 
+                    labelFormatter={(date) => new Date(date).toLocaleDateString('he-IL')}
+                  />
+                  <Legend />
+                  <Line type="monotone" dataKey="ai" stroke={COLORS.ai} name="יצירה עם AI" strokeWidth={2} />
+                  <Line type="monotone" dataKey="manual" stroke={COLORS.manual} name="יצירה ידנית" strokeWidth={2} />
+                  <Line type="monotone" dataKey="template" stroke={COLORS.template} name="יצירה מתבנית" strokeWidth={2} />
+                  <Line type="monotone" dataKey="joins" stroke={COLORS.joins} name="הצטרפויות" strokeWidth={2} />
+                  <Line type="monotone" dataKey="logins" stroke={COLORS.logins} name="כניסות" strokeWidth={2} />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-gray-500 text-center py-8">אין נתונים להצגה בטווח זמן זה</p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Popular Templates */}
+        {metrics.popularTemplates && metrics.popularTemplates.length > 0 && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-purple-600" />
+                התבניות הפופולריות ביותר
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={metrics.popularTemplates}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="count" fill={COLORS.template} name="שימושים" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Top Events by Joins */}
+        {metrics.topEvents && metrics.topEvents.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-green-600" />
+                האירועים הפופולריים ביותר
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {metrics.topEvents.map((event, index) => (
+                  <div key={event.eventId} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center font-bold">
+                        {index + 1}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900">{event.title}</p>
+                        <p className="text-sm text-gray-500">מזהה: {event.eventId}</p>
+                      </div>
+                    </div>
+                    <div className="text-left">
+                      <p className="text-2xl font-bold text-green-600">{event.joins}</p>
+                      <p className="text-xs text-gray-500">הצטרפויות</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
 }

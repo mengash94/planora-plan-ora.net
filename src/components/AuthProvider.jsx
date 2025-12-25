@@ -140,7 +140,32 @@ export const AuthProvider = ({ children }) => {
         const loggedInUser = await instabackLogin(email, password);
         setUser(loggedInUser);
         setIsAuthenticated(true);
-        
+
+        // Track analytics - check if returning user
+        const lastLoginTime = sessionStorage.getItem('last_login_time');
+        const isReturningUser = !!lastLoginTime;
+
+        try {
+            const { trackAnalyticsEvent } = await import('@/functions/trackAnalyticsEvent');
+            const metadata = {};
+
+            if (isReturningUser) {
+                const lastLogin = new Date(Number(lastLoginTime));
+                const now = new Date();
+                const daysSinceLastLogin = Math.floor((now.getTime() - lastLogin.getTime()) / (1000 * 60 * 60 * 24));
+
+                metadata.lastLoginDate = lastLogin.toISOString();
+                metadata.daysSinceLastLogin = daysSinceLastLogin;
+            }
+
+            await trackAnalyticsEvent({
+                eventType: isReturningUser ? 'user_returned' : 'user_login',
+                metadata
+            });
+        } catch (analyticsError) {
+            console.warn('[AuthProvider] Failed to track login analytics:', analyticsError);
+        }
+
         sessionStorage.setItem('last_login_time', String(Date.now()));
 
         // 🔔 אתחול OneSignal ברקע

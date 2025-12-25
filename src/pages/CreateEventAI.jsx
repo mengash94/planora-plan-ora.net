@@ -57,6 +57,20 @@ export default function CreateEventAI() {
         console.warn('Failed to notify admins:', notifyError);
       }
 
+      // Track analytics event - AI creation
+      try {
+        const { trackAnalyticsEvent } = await import('@/functions/trackAnalyticsEvent');
+        await trackAnalyticsEvent({
+          eventType: 'event_created_ai',
+          metadata: {
+            eventId: eventResult.id,
+            eventTitle: eventResult.title
+          }
+        });
+      } catch (analyticsError) {
+        console.warn('[CreateEventAI] Failed to track analytics:', analyticsError);
+      }
+
       await new Promise(resolve => setTimeout(resolve, 2000));
 
       console.log('🚀 Navigating to event:', eventResult.id);

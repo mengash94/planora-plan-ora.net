@@ -558,6 +558,31 @@ export default function CreateEventManualPage() {
         console.warn('Failed to notify admins in bulk:', notifyError);
       }
 
+      // Track analytics event
+      try {
+        const { trackAnalyticsEvent } = await import('@/functions/trackAnalyticsEvent');
+        
+        let analyticsEventType = 'event_created_manual';
+        const analyticsMetadata = {
+          eventId: newEvent.id,
+          eventTitle: newEvent.title
+        };
+        
+        // Check if template was used
+        if (selectedTemplate?.templateId || selectedTemplate?.id) {
+          analyticsEventType = 'event_created_template';
+          analyticsMetadata.templateId = selectedTemplate.templateId || selectedTemplate.id;
+          analyticsMetadata.templateName = selectedTemplate.title || selectedTemplate.name || 'Unknown Template';
+        }
+        
+        await trackAnalyticsEvent({
+          eventType: analyticsEventType,
+          metadata: analyticsMetadata
+        });
+      } catch (analyticsError) {
+        console.warn('[CreateEventManual] Failed to track analytics:', analyticsError);
+      }
+
       toast.success('האירוע נוצר בהצלחה! 🎉', {
         description: 'מועבר לדף האירוע...'
       });
