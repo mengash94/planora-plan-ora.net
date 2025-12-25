@@ -35,8 +35,8 @@ import {
   Legend, 
   ResponsiveContainer 
 } from 'recharts';
-import { getAnalyticsData } from '@/functions/getAnalyticsData';
 import { toast } from 'sonner';
+import { base44 } from '@/api/base44Client';
 
 export default function AdminAnalyticsPage() {
   const navigate = useNavigate();
@@ -80,11 +80,11 @@ export default function AdminAnalyticsPage() {
   const loadAnalytics = async () => {
     setIsLoading(true);
     try {
-      const params = new URLSearchParams();
-      if (startDate) params.set('startDate', new Date(startDate).toISOString());
-      if (endDate) params.set('endDate', new Date(endDate).toISOString());
+      const payload = {};
+      if (startDate) payload.startDate = new Date(startDate).toISOString();
+      if (endDate) payload.endDate = new Date(endDate).toISOString();
       
-      const data = await getAnalyticsData(params);
+      const { data } = await base44.functions.invoke('getAnalyticsData', payload);
       
       if (data.success) {
         setAnalyticsData(data);

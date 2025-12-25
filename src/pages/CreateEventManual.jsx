@@ -23,6 +23,7 @@ import {
   createItineraryItem,
   createRecurringEventRule
 } from '@/components/instabackService';
+import { base44 } from '@/api/base44Client';
 import CreatePollDialog from '../components/event/CreatePollDialog';
 import DateRangePicker from '@/components/ui/DateRangePicker';
 import { compressImage } from '@/components/utils/imageCompressor';
@@ -560,8 +561,6 @@ export default function CreateEventManualPage() {
 
       // Track analytics event
       try {
-        const { trackAnalyticsEvent } = await import('@/functions/trackAnalyticsEvent');
-        
         let analyticsEventType = 'event_created_manual';
         const analyticsMetadata = {
           eventId: newEvent.id,
@@ -575,7 +574,7 @@ export default function CreateEventManualPage() {
           analyticsMetadata.templateName = selectedTemplate.title || selectedTemplate.name || 'Unknown Template';
         }
         
-        await trackAnalyticsEvent({
+        await base44.functions.invoke('trackAnalyticsEvent', {
           eventType: analyticsEventType,
           metadata: analyticsMetadata
         });

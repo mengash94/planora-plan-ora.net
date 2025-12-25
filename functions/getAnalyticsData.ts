@@ -10,9 +10,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized - Admin only' }, { status: 403 });
     }
 
-    const url = new URL(req.url);
-    const startDate = url.searchParams.get('startDate');
-    const endDate = url.searchParams.get('endDate');
+    const { startDate, endDate } = await req.json();
 
     // Build query filter
     const filter = {};

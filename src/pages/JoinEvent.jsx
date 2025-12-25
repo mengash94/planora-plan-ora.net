@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Loader2, Calendar, MapPin, PartyPopper, AlertCircle, Users, UserCheck, Sparkles, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
 import PaymentButton from '@/components/event/PaymentButton';
+import { base44 } from '@/api/base44Client';
 
 export default function JoinEventPage() {
   const navigate = useNavigate();
@@ -204,8 +205,7 @@ export default function JoinEventPage() {
       
       // Track analytics event - join
       try {
-        const { trackAnalyticsEvent } = await import('@/functions/trackAnalyticsEvent');
-        await trackAnalyticsEvent({
+        await base44.functions.invoke('trackAnalyticsEvent', {
           eventType: 'event_joined',
           metadata: {
             eventId: eventId,

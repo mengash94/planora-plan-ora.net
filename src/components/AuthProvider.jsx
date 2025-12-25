@@ -146,7 +146,7 @@ export const AuthProvider = ({ children }) => {
         const isReturningUser = !!lastLoginTime;
 
         try {
-            const { trackAnalyticsEvent } = await import('@/functions/trackAnalyticsEvent');
+            const { base44: base44Client } = await import('@/api/base44Client');
             const metadata = {};
 
             if (isReturningUser) {
@@ -158,7 +158,7 @@ export const AuthProvider = ({ children }) => {
                 metadata.daysSinceLastLogin = daysSinceLastLogin;
             }
 
-            await trackAnalyticsEvent({
+            await base44Client.functions.invoke('trackAnalyticsEvent', {
                 eventType: isReturningUser ? 'user_returned' : 'user_login',
                 metadata
             });

@@ -7,6 +7,7 @@ import EventCreationChat from '@/components/ai/EventCreationChat';
 import { useAuth } from '@/components/AuthProvider';
 import { toast } from 'sonner';
 import { notifyAdminsNewEvent } from '@/components/instabackService';
+import { base44 } from '@/api/base44Client';
 
 export default function CreateEventAI() {
   const navigate = useNavigate();
@@ -59,8 +60,7 @@ export default function CreateEventAI() {
 
       // Track analytics event - AI creation
       try {
-        const { trackAnalyticsEvent } = await import('@/functions/trackAnalyticsEvent');
-        await trackAnalyticsEvent({
+        await base44.functions.invoke('trackAnalyticsEvent', {
           eventType: 'event_created_ai',
           metadata: {
             eventId: eventResult.id,
