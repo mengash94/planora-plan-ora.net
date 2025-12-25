@@ -33,7 +33,6 @@ import Terms from './pages/Terms';
 import VerifiedVenueFinder from './pages/VerifiedVenueFinder';
 import WelcomePage from './pages/WelcomePage';
 import WhatsNew from './pages/WhatsNew';
-import AdminAnalytics from './pages/AdminAnalytics';
 import __Layout from './Layout.jsx';
 
 
@@ -73,7 +72,6 @@ export const PAGES = {
     "VerifiedVenueFinder": VerifiedVenueFinder,
     "WelcomePage": WelcomePage,
     "WhatsNew": WhatsNew,
-    "AdminAnalytics": AdminAnalytics,
 }
 
 export const pagesConfig = {

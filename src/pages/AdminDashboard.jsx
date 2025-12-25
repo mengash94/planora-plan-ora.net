@@ -586,10 +586,6 @@ export default function AdminDashboard() {
               <Users className="w-4 h-4 ml-1 sm:ml-2" />
               <span className="hidden sm:inline">ניהול </span>משתמשים
             </Button>
-            <Button variant="outline" size="sm" onClick={() => navigate(createPageUrl('AdminAnalytics'))} className="text-xs sm:text-sm">
-              <BarChart3 className="w-4 h-4 ml-1 sm:ml-2" />
-              <span className="hidden sm:inline">ניתוח </span>נתונים
-            </Button>
             <Button variant="outline" size="sm" onClick={() => navigate(createPageUrl('AdminSystemMessages'))} className="text-xs sm:text-sm">
               <Mail className="w-4 h-4 ml-1 sm:ml-2" />
               <span className="hidden sm:inline">הודעות </span>מערכת
