@@ -446,7 +446,7 @@ function LayoutContent({ children, currentPageName }) {
 
       <main 
         className={`w-full ${showBottomNav ? "pb-20" : ""}`}
-        style={{ paddingTop: '12px' }}
+        style={{ paddingTop: '20px' }}
       >
         {children}
       </main>
