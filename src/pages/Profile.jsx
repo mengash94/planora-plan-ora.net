@@ -453,10 +453,27 @@ export default function ProfilePage() {
                     )}
 
                     {activeTab === 'settings' && (
-                        <AppSettings
-                            user={user}
-                            onDeleteAccount={handleDeleteAccount}
-                        />
+                        <>
+                            <AppSettings
+                                user={user}
+                                onDeleteAccount={handleDeleteAccount}
+                            />
+                            
+                            {/* App Version Display */}
+                            <Card className="mt-4">
+                                <CardContent className="p-4">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <FileText className="w-4 h-4 text-gray-500" />
+                                            <span className="text-sm text-gray-600">גרסת האפליקציה</span>
+                                        </div>
+                                        <span className="text-sm font-mono font-semibold text-gray-900 bg-gray-100 px-3 py-1 rounded">
+                                            {typeof window !== 'undefined' && localStorage.getItem('planora_app_version') || 'לא זמין'}
+                                        </span>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </>
                     )}
 
                     {activeTab === 'journey' && (
