@@ -4,9 +4,7 @@ import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Calendar, Plus, MapPin, Sparkles, ArrowLeft, Clock, CheckSquare, MessageCircle, TrendingUp, Handshake, Share2 } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
-// PageGuide removed - using SideHelpTab instead
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/components/AuthProvider';
 import SEOHead from '@/components/SEOHead';
