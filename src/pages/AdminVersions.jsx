@@ -155,24 +155,35 @@ export default function AdminVersionsPage() {
     setIsSaving(true);
     try {
       const dataToSave = {
-        ...formData,
-        notification_sent: editingVersion ? formData.notification_sent : false,
+        version: formData.version,
+        title: formData.title,
+        release_date: formData.release_date,
+        releaseDate: formData.release_date,
+        features: formData.features,
+        notes: formData.notes,
+        is_published: formData.is_published,
+        isPublished: formData.is_published,
+        notification_sent: false,
+        notificationSent: false,
         showPopup: formData.is_published,
         show_popup: formData.is_published
       };
+      
+      console.log('[AdminVersions] Saving version:', dataToSave);
       
       if (editingVersion) {
         await updateAppVersion(editingVersion.id, dataToSave);
         toast.success('הגרסה עודכנה בהצלחה');
       } else {
-        await createAppVersion(dataToSave);
-        toast.success('הגרסה נוצרה בהצלחה');
+        const result = await createAppVersion(dataToSave);
+        console.log('[AdminVersions] Version created:', result);
+        toast.success('הגרסה נוצרה בהצלחה! ✨');
       }
       setIsDialogOpen(false);
-      loadVersions();
+      await loadVersions();
     } catch (error) {
-      console.error('Failed to save version:', error);
-      toast.error('שגיאה בשמירת הגרסה');
+      console.error('[AdminVersions] Failed to save version:', error);
+      toast.error('שגיאה בשמירת הגרסה: ' + error.message);
     } finally {
       setIsSaving(false);
     }
