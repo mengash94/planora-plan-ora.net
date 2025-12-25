@@ -16,6 +16,7 @@ import {
     setupOneSignalForUser,
     logoutOneSignal
 } from '@/components/onesignalService';
+import { base44 } from '@/api/base44Client';
 
 const AuthContext = createContext(null);
 
@@ -157,8 +158,7 @@ export const AuthProvider = ({ children }) => {
                 metadata.daysSinceLastLogin = daysSinceLastLogin;
             }
 
-            const { base44: base44Client } = await import('@/api/base44Client');
-            await base44Client.functions.invoke('trackAnalyticsEvent', {
+            await base44.functions.invoke('trackAnalyticsEvent', {
                 eventType: isReturningUser ? 'user_returned' : 'user_login',
                 metadata
             });
