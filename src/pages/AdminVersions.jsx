@@ -74,6 +74,49 @@ export default function AdminVersionsPage() {
     type: 'feature'
   });
 
+  const [isQuickPublishing, setIsQuickPublishing] = useState(false);
+
+  // פרסום מהיר של גרסה חדשה עם הפרטים שהוגדרו מראש
+  const handleQuickPublish = async () => {
+    setIsQuickPublishing(true);
+    try {
+      const newVersion = {
+        version: '1.1',
+        title: 'רענון אוטומטי בעדכון גרסה',
+        release_date: new Date().toISOString().split('T')[0],
+        releaseDate: new Date().toISOString(),
+        features: [
+          {
+            title: 'בדיקת גרסה אוטומטית',
+            description: 'האפליקציה בודקת אם יש גרסה חדשה כשחוזרים מהרקע ומרעננת אוטומטית',
+            type: 'feature'
+          },
+          {
+            title: 'שמירת גרסה מקומית',
+            description: 'שמירה של הגרסה הנוכחית ב-localStorage להשוואה',
+            type: 'improvement'
+          }
+        ],
+        notes: 'עדכון זה מוודא שמשתמשים תמיד יקבלו את הגרסה העדכנית ביותר של האפליקציה',
+        is_published: true,
+        isPublished: true,
+        showPopup: true,
+        show_popup: true,
+        notificationSent: false,
+        notification_sent: false
+      };
+
+      await createAppVersion(newVersion);
+      toast.success('גרסה 1.1 פורסמה בהצלחה!');
+      loadVersions();
+    } catch (error) {
+      console.error('Failed to quick publish:', error);
+      toast.error('שגיאה בפרסום הגרסה');
+    } finally {
+      setIsQuickPublishing(false);
+    }
+  };
+
   useEffect(() => {
     if (!isAuthenticated) {
       navigate(createPageUrl('Home'));
