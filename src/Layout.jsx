@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Calendar, Home, CheckSquare, User as UserIcon, MessageSquare } from 'lucide-react';
+import { Calendar, Home, CheckSquare, User as UserIcon, MessageSquare, RefreshCw } from 'lucide-react';
 import AnnouncementBanner from '@/components/AnnouncementBanner';
 import PwaUpdateBanner from "@/components/PwaUpdateBanner";
 import NetworkStatusBanner from '@/components/NetworkStatusBanner';
@@ -16,6 +16,8 @@ import SEOHead, { generateWebsiteStructuredData, generateOrganizationStructuredD
 import HelpChatbot from '@/components/HelpChatbot';
 import AppVersionChecker from '@/components/AppVersionChecker';
 import { getCachedData, setCachedData, CACHE_KEYS } from '@/components/utils/dataCache';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 export default function LayoutWrapper({ children, currentPageName }) {
   return (
     <AuthProvider>
@@ -40,6 +42,8 @@ function LayoutContent({ children, currentPageName }) {
   const lastCheckTimeRef = useRef(Date.now());
   const [newVersions, setNewVersions] = useState([]);
   const [showWhatsNew, setShowWhatsNew] = useState(false);
+  const [showUpdateDialog, setShowUpdateDialog] = useState(false);
+  const [updateVersion, setUpdateVersion] = useState(null);
   
   useDeepLinkHandler();
 
@@ -53,6 +57,26 @@ function LayoutContent({ children, currentPageName }) {
   useEffect(() => {
     document.documentElement.classList.remove('dark');
   }, []);
+
+  // Check for available update
+  useEffect(() => {
+    if (!isAuthenticated || !user) return;
+    
+    const updateAvailable = localStorage.getItem('planora_update_available');
+    if (updateAvailable) {
+      setUpdateVersion(updateAvailable);
+      setShowUpdateDialog(true);
+    }
+  }, [isAuthenticated, user]);
+
+  const handleUpdateNow = () => {
+    const newVer = localStorage.getItem('planora_update_available');
+    if (newVer) {
+      localStorage.setItem('planora_app_version', newVer);
+      localStorage.removeItem('planora_update_available');
+    }
+    window.location.reload();
+  };
 
   // PWA Manifest and Meta Data Setup
   useEffect(() => {
@@ -412,7 +436,45 @@ function LayoutContent({ children, currentPageName }) {
           ]
         }}
       />
-      
+
+      {/* Update Available Dialog */}
+      <Dialog open={showUpdateDialog} onOpenChange={setShowUpdateDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <RefreshCw className="w-6 h-6 text-orange-500" />
+              עדכון גרסה זמין!
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-gray-700 mb-4">
+              גרסה חדשה של Planora זמינה ({updateVersion}). 
+            </p>
+            <p className="text-gray-600 text-sm">
+              האפליקציה תתרענן כדי להביא לך את התכונות החדשות ביותר והשיפורים.
+            </p>
+          </div>
+          <DialogFooter className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                localStorage.removeItem('planora_update_available');
+                setShowUpdateDialog(false);
+              }}
+            >
+              אולי מאוחר יותר
+            </Button>
+            <Button
+              onClick={handleUpdateNow}
+              className="bg-orange-500 hover:bg-orange-600"
+            >
+              <RefreshCw className="w-4 h-4 ml-2" />
+              עדכן עכשיו
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Background layer */}
       <div className="fixed inset-0 -z-10 bg-white" />
 
