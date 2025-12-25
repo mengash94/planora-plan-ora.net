@@ -12,31 +12,31 @@ Deno.serve(async (req) => {
 
     const { eventType, metadata = {} } = await req.json();
 
-    if (!eventType) {
-      return Response.json({ error: 'eventType is required' }, { status: 400 });
-    }
+if (!eventType) {
+    return Response.json({ error: 'eventType is required' }, { status: 400 });
+}
 
-    // Valid event types
-    const validTypes = [
-      'event_created_ai',
-      'event_created_manual', 
-      'event_created_template',
-      'event_joined',
-      'user_login',
-      'user_returned'
-    ];
+// Valid event types
+const validTypes = [
+    'event_created_ai',
+    'event_created_manual', 
+    'event_created_template',
+    'event_joined',
+    'user_login',
+    'user_returned'
+];
 
-    if (!validTypes.includes(eventType)) {
-      return Response.json({ error: 'Invalid eventType' }, { status: 400 });
-    }
+if (!validTypes.includes(eventType)) {
+    return Response.json({ error: 'Invalid eventType' }, { status: 400 });
+}
 
-    // Create analytics event using service role
-    const analyticsEvent = await base44.asServiceRole.entities.AnalyticsEvent.create({
-      eventType,
-      userId: user.id,
-      metadata,
-      timestamp: new Date().toISOString()
-    });
+// Create analytics event using service role
+const analyticsEvent = await base44.asServiceRole.entities.AnalyticsEvent.create({
+    eventType,
+    userId: userId || 'anonymous',
+    metadata,
+    timestamp: new Date().toISOString()
+});
 
     console.log('[trackAnalyticsEvent] Created:', analyticsEvent);
 
