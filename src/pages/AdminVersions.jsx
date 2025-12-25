@@ -203,6 +203,24 @@ export default function AdminVersionsPage() {
     }
   };
 
+  const handlePublishVersion = async (version) => {
+    if (!confirm(`האם לפרסם את גרסה ${version.version}?`)) return;
+
+    try {
+      await updateAppVersion(version.id, { 
+        is_published: true,
+        isPublished: true,
+        showPopup: true,
+        show_popup: true
+      });
+      toast.success(`גרסה ${version.version} פורסמה בהצלחה! 🎉`);
+      loadVersions();
+    } catch (error) {
+      console.error('Failed to publish version:', error);
+      toast.error('שגיאה בפרסום הגרסה');
+    }
+  };
+
   const handleSendNotification = async (version) => {
     if (!confirm(`האם לשלוח עדכון לכל המשתמשים על גרסה ${version.version}?`)) return;
 
