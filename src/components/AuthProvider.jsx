@@ -142,31 +142,32 @@ export const AuthProvider = ({ children }) => {
         setUser(loggedInUser);
         setIsAuthenticated(true);
 
-        // Track analytics - check if returning user
-        const lastLoginTime = sessionStorage.getItem('last_login_time');
-        const isReturningUser = !!lastLoginTime;
-
-        try {
-            const metadata = {};
-
-            if (isReturningUser) {
-                const lastLogin = new Date(Number(lastLoginTime));
-                const now = new Date();
-                const daysSinceLastLogin = Math.floor((now.getTime() - lastLogin.getTime()) / (1000 * 60 * 60 * 24));
-
-                metadata.lastLoginDate = lastLogin.toISOString();
-                metadata.daysSinceLastLogin = daysSinceLastLogin;
-            }
-
-            await base44.functions.invoke('trackAnalyticsEvent', {
-                eventType: isReturningUser ? 'user_returned' : 'user_login',
-                metadata
-            });
-        } catch (analyticsError) {
-            console.warn('[AuthProvider] Failed to track login analytics:', analyticsError);
-        }
-
+        // Track analytics - non-blocking
         sessionStorage.setItem('last_login_time', String(Date.now()));
+        
+        setTimeout(() => {
+            try {
+                const lastLoginTime = sessionStorage.getItem('last_login_time');
+                const isReturningUser = !!lastLoginTime;
+                const metadata = {};
+
+                if (isReturningUser) {
+                    const lastLogin = new Date(Number(lastLoginTime));
+                    const now = new Date();
+                    const daysSinceLastLogin = Math.floor((now.getTime() - lastLogin.getTime()) / (1000 * 60 * 60 * 24));
+
+                    metadata.lastLoginDate = lastLogin.toISOString();
+                    metadata.daysSinceLastLogin = daysSinceLastLogin;
+                }
+
+                base44.functions.invoke('trackAnalyticsEvent', {
+                    eventType: isReturningUser ? 'user_returned' : 'user_login',
+                    metadata
+                }).catch(err => console.warn('[AuthProvider] Analytics failed:', err));
+            } catch (err) {
+                console.warn('[AuthProvider] Analytics error:', err);
+            }
+        }, 1000);
 
         // 🔔 אתחול OneSignal ברקע
         if (isNativeCapacitor() && loggedInUser.id) {
