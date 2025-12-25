@@ -14,6 +14,7 @@ import { isNativeCapacitor } from '@/components/onesignalService';
 import { useDeepLinkHandler } from '@/components/DeepLinkHandler';
 import SEOHead, { generateWebsiteStructuredData, generateOrganizationStructuredData } from '@/components/SEOHead';
 import HelpChatbot from '@/components/HelpChatbot';
+import AppVersionChecker from '@/components/AppVersionChecker';
 import { getCachedData, setCachedData, CACHE_KEYS } from '@/components/utils/dataCache';
 export default function LayoutWrapper({ children, currentPageName }) {
   return (
