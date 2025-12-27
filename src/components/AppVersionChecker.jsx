@@ -32,15 +32,28 @@ export default function AppVersionChecker() {
             if (!forceRefresh) {
                 const lastCheck = localStorage.getItem(LAST_CHECK_KEY);
                 if (lastCheck && (Date.now() - parseInt(lastCheck, 10)) < MIN_CHECK_INTERVAL) {
+                    console.log('[AppVersionChecker] Skipping check - too recent');
                     return;
                 }
             }
 
             isCheckingRef.current = true;
+            console.log('[AppVersionChecker] 🔍 Checking for updates...');
 
             const localVersion = localStorage.getItem(LOCAL_VERSION_KEY);
+            console.log('[AppVersionChecker] Local version:', localVersion);
+            
             const versions = await listAppVersions();
+            console.log('[AppVersionChecker] Server versions:', versions);
+            
+            if (!versions || !Array.isArray(versions)) {
+                console.warn('[AppVersionChecker] Invalid response from server:', versions);
+                localStorage.setItem(LAST_CHECK_KEY, String(Date.now()));
+                return;
+            }
+            
             const publishedVersions = versions.filter(v => v.isPublished || v.is_published);
+            console.log('[AppVersionChecker] Published versions:', publishedVersions.length);
             
             if (!publishedVersions.length) {
                 localStorage.setItem(LAST_CHECK_KEY, String(Date.now()));
