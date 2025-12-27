@@ -56,15 +56,26 @@ export default function AppVersionChecker() {
             console.log('[AppVersionChecker] Published versions:', publishedVersions.length);
             
             if (!publishedVersions.length) {
+                console.log('[AppVersionChecker] No published versions found');
                 localStorage.setItem(LAST_CHECK_KEY, String(Date.now()));
                 return;
             }
 
-            publishedVersions.sort((a, b) => 
-                new Date(b.releaseDate || b.release_date || 0) - new Date(a.releaseDate || a.release_date || 0)
-            );
+            // מיון לפי מספר גרסה (1.0.3 > 1.0.2 > 1.0.1)
+            publishedVersions.sort((a, b) => {
+                const vA = (a.version || '0.0.0').split('.').map(n => parseInt(n, 10) || 0);
+                const vB = (b.version || '0.0.0').split('.').map(n => parseInt(n, 10) || 0);
+                
+                for (let i = 0; i < Math.max(vA.length, vB.length); i++) {
+                    const numA = vA[i] || 0;
+                    const numB = vB[i] || 0;
+                    if (numB !== numA) return numB - numA;
+                }
+                return 0;
+            });
 
             const serverVersion = publishedVersions[0].version;
+            console.log('[AppVersionChecker] Latest server version:', serverVersion);
             localStorage.setItem(LAST_CHECK_KEY, String(Date.now()));
 
             if (!localVersion) {
