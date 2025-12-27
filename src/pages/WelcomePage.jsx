@@ -179,18 +179,26 @@ export default function WelcomePage() {
             <Calendar className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
-            תכנון אירועים מעולם לא היה קל כל כך
+            לתכנן הכל יחד עם חברים
           </h1>
           <p className="text-lg md:text-xl opacity-95 max-w-2xl mx-auto mb-8 leading-relaxed">
-            Planora - האפליקציה שמשנה את חווית תכנון האירועים: משימות, צ'אטים, סקרים, גלריות ועוד!
+            Planora - מיציאה לסרט ועד חתונה. תכנון שיתופי עם משימות, צ'אטים, הצבעות וגלריות!
           </p>
+          <div className="flex flex-wrap justify-center gap-2 mb-6 text-sm">
+            <span className="bg-white/20 px-3 py-1 rounded-full">🎬 סרט</span>
+            <span className="bg-white/20 px-3 py-1 rounded-full">🍕 ארוחה</span>
+            <span className="bg-white/20 px-3 py-1 rounded-full">🏃 אימון</span>
+            <span className="bg-white/20 px-3 py-1 rounded-full">🎂 מסיבה</span>
+            <span className="bg-white/20 px-3 py-1 rounded-full">🗺️ טיול</span>
+            <span className="bg-white/20 px-3 py-1 rounded-full">💒 חתונה</span>
+          </div>
           <div className="flex justify-center w-full">
             <Button
               onClick={handleLogin}
               className="h-14 px-8 text-lg bg-white text-orange-600 hover:bg-gray-100 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
             >
               <Sparkles className="w-5 h-5 ml-2" />
-              התחל לתכנן את האירוע הבא שלך!
+              התחל לתכנן עכשיו!
             </Button>
           </div>
           <p className="text-white/80 text-sm mt-4">
@@ -212,7 +220,7 @@ export default function WelcomePage() {
       {/* Feature Showcase */}
       <section className="py-16 md:py-20 px-6 max-w-6xl mx-auto">
         <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white text-center mb-12">
-          כלים שימושיים לכל אירוע
+          כלים שימושיים לכל תכנון
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <FeatureCard
@@ -224,12 +232,12 @@ export default function WelcomePage() {
           <FeatureCard
             icon={BarChart2}
             title="סקרים חכמים"
-            description="הצביעו על תאריכים, מקומות, תפריטים או כל נושא אחר. קבלו החלטות במהירות ובקלות."
+            description="איזה סרט לראות? איפה נאכל? מתי נוח? הצביעו וקבלו החלטות במהירות ובקלות."
             color="bg-green-100 text-green-600"
           />
           <FeatureCard
             icon={MessageSquare}
-            title="צ'אט ייעודי לאירוע"
+            title="צ'אט קבוצתי"
             description="תקשרו עם כל המשתתפים במקום אחד. שתפו רעיונות, עדכונים ותמונות."
             color="bg-purple-100 text-purple-600"
           />
@@ -241,8 +249,8 @@ export default function WelcomePage() {
           />
           <FeatureCard
             icon={Bot}
-            title="תכנון אירועים עם AI"
-            description="פשוט תארו את האירוע במילים, והעוזר החכם שלנו יבנה לכם תכנית מושלמת תוך שניות."
+            title="תכנון עם AI"
+            description="פשוט תארו מה אתם רוצים לעשות, והעוזר החכם שלנו יבנה לכם תכנית מושלמת תוך שניות."
             color="bg-pink-100 text-pink-600"
           />
           <FeatureCard
@@ -263,8 +271,8 @@ export default function WelcomePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <StepCard
               step="1"
-              title="צור את האירוע"
-              description="בחר תבנית מוכנה, תכנן עם AI חכם או התחל מאפס עם הפרטים שלך."
+              title="צור תכנון חדש"
+              description="בחר תבנית מוכנה (סרט, ארוחה, טיול...), תכנן עם AI או התחל מאפס."
               icon={PartyPopper}
             />
             <StepCard
@@ -312,10 +320,10 @@ export default function WelcomePage() {
       {/* Final CTA */}
       <section className="py-16 md:py-24 px-6 text-center bg-gradient-to-br from-orange-400 to-rose-500 text-white">
         <h2 className="text-3xl md:text-4xl font-bold mb-6">
-          מוכנים לתכנן את האירוע המושלם?
+          מוכנים לתכנן משהו יחד?
         </h2>
         <p className="text-lg opacity-95 max-w-2xl mx-auto mb-8">
-          הצטרפו עוד היום ל-Planora ותגלו כמה קל ומהנה יכול להיות תכנון אירועים משותף.
+          הצטרפו עוד היום ל-Planora ותגלו כמה קל ומהנה יכול להיות תכנון משותף עם חברים.
         </p>
         <Button
           onClick={handleLogin}

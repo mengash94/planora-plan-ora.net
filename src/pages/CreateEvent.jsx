@@ -114,7 +114,7 @@ export default function CreateEvent() {
             <span className="text-sm">חזרה</span>
           </Button>
           <h1 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">
-            יצירת אירוע חדש
+            יצירת תכנון חדש
           </h1>
           <div className="w-16"></div>
         </div>
@@ -162,7 +162,7 @@ export default function CreateEvent() {
                   תבניות מוכנות
                 </h3>
                 <p className="text-gray-600 mb-4 leading-relaxed">
-                  בחרו מתוך מגוון תבניות מוכנות לסוגי אירועים שונים עם משימות ותכנון מוגדרים מראש.
+                  סרט, ארוחה, אימון, טיול, מסיבה ועוד - בחרו תבנית מוכנה עם משימות מותאמות.
                 </p>
                 <div className="flex items-center justify-center gap-2 text-yellow-600 font-semibold">
                   <span>חיסכון בזמן!</span>
@@ -205,7 +205,7 @@ export default function CreateEvent() {
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-3 text-2xl">
                   <Calendar className="w-7 h-7" />
-                  <span>בחר תבנית לאירוע</span>
+                  <span>בחר תבנית</span>
                 </CardTitle>
                 <Button
                   variant="ghost"

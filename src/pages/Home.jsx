@@ -264,20 +264,22 @@ export default function HomePage() {
 
   const handleWhatsAppShareApp = () => {
     const appUrl = window.location.origin;
-    const message = `🎉 היי! גיליתי אפליקציה מדהימה לתכנון אירועים!\n\n` +
-      `PlanOra הוא הדבר הכי טוב שקרה לי בתכנון - אפשר לתכנן יחד עם כל המשתתפים:\n` +
-      `✅ משימות משותפות\n💬 צ'אטים לכל אירוע\n📊 הצבעות על תאריכים ומקומות\n📸 גלריות תמונות\n🤖 יצירת אירועים עם AI\n\n` +
-      `בוא/י תנסה, זה חינם לגמרי:\n${appUrl}`;
+    const message = `🎉 היי! גיליתי אפליקציה מדהימה לתכנון משותף!\n\n` +
+      `Planora - לתכנן הכל יחד עם חברים:\n` +
+      `🎬 יציאה לסרט\n🍕 ארוחה משותפת\n🏃 אימון קבוצתי\n🎂 מסיבות ואירועים\n🗺️ טיולים\n\n` +
+      `✅ משימות משותפות\n💬 צ'אטים\n📊 הצבעות\n📸 גלריות\n\n` +
+      `בוא/י תנסה, זה חינם:\n${appUrl}`;
 
     window.location.href = `https://wa.me/?text=${encodeURIComponent(message)}`;
   };
 
   const handleShareApp = async () => {
     const appUrl = window.location.origin;
-    const message = `🎉 היי! גיליתי אפליקציה מדהימה לתכנון אירועים!\n\n` +
-      `PlanOra הוא הדבר הכי טוב שקרה לי בתכנון - אפשר לתכנן יחד עם כל המשתתפים:\n` +
-      `✅ משימות משותפות\n💬 צ'אטים לכל אירוע\n📊 הצבעות על תאריכים ומקומות\n📸 גלריות תמונות\n🤖 יצירת אירועים עם AI\n\n` +
-      `בוא/י תנסה, זה חינם לגמרי:\n${appUrl}`;
+    const message = `🎉 היי! גיליתי אפליקציה מדהימה לתכנון משותף!\n\n` +
+      `Planora - לתכנן הכל יחד עם חברים:\n` +
+      `🎬 יציאה לסרט\n🍕 ארוחה משותפת\n🏃 אימון קבוצתי\n🎂 מסיבות ואירועים\n🗺️ טיולים\n\n` +
+      `✅ משימות משותפות\n💬 צ'אטים\n📊 הצבעות\n📸 גלריות\n\n` +
+      `בוא/י תנסה, זה חינם:\n${appUrl}`;
 
     try {
       await navigator.clipboard.writeText(message);
@@ -339,8 +341,8 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-orange-50" style={{ direction: 'rtl' }}>
       <SEOHead 
-        title="Planora - דף הבית | תכנון אירועים חכם"
-        description="נהל את האירועים שלך במקום אחד. משימות, צ'אטים, הצבעות וגלריות - הכל באפליקציה אחת."
+        title="Planora - דף הבית | תכנון שיתופי חכם"
+        description="תכנן הכל עם חברים - יציאה לסרט, בילוי ערב, טיול, אימון או אירוע מיוחד. משימות, צ'אטים, הצבעות וגלריות - הכל באפליקציה אחת."
       />
       <div className="w-full px-4 py-6">
         <div className="flex items-center justify-between gap-3 mb-8">
@@ -367,7 +369,7 @@ export default function HomePage() {
             </button>
             <Button onClick={() => navigate(createPageUrl('CreateEvent'))} size="sm" className="bg-orange-500 hover:bg-orange-600 shadow-lg text-sm whitespace-nowrap">
               <Plus className="w-4 h-4 ml-1" />
-              <span className="hidden sm:inline">אירוע חדש</span>
+              <span className="hidden sm:inline">תכנון חדש</span>
               <span className="sm:hidden">חדש</span>
             </Button>
           </div>
@@ -615,26 +617,27 @@ export default function HomePage() {
 
 
 
-            {/* כרטיס יצירת אירוע */}
+            {/* כרטיס יצירת תכנון */}
             <Card 
               className="bg-gradient-to-br from-orange-400 to-pink-500 border-0 shadow-xl text-white cursor-pointer hover:shadow-2xl transition-shadow"
               onClick={() => navigate(createPageUrl('CreateEvent'))}
             >
               <CardContent className="p-4 text-center">
-                <h3 className="text-lg font-bold mb-2">יוצרים משהו חדש?</h3>
+                <h3 className="text-lg font-bold mb-2">מתכננים משהו?</h3>
+                <p className="text-white/90 text-sm mb-3">יציאה לסרט, בילוי עם חברים, טיול או אירוע מיוחד</p>
                 <Button
                   className="bg-white text-gray-900 hover:bg-gray-100 px-4 py-2 font-semibold shadow-lg text-sm"
                 >
                   <Sparkles className="w-4 h-4 ml-1" />
-                  צור אירוע חדש
+                  צור תכנון חדש
                 </Button>
               </CardContent>
             </Card>
 
             {events.length === 0 && (
               <div className="text-center mt-6 opacity-60">
-                <p className="text-gray-500 text-sm">עדיין לא יצרת אף אירוע</p>
-                <p className="text-xs text-gray-400 mt-1">זה הזמן להתחיל!</p>
+                <p className="text-gray-500 text-sm">עדיין לא יצרת אף תכנון</p>
+                <p className="text-xs text-gray-400 mt-1">בילוי ערב? יציאה לסרט? טיול? מסיבה? הכל מתחיל כאן!</p>
               </div>
             )}
           </>
