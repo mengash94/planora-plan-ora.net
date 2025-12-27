@@ -79,13 +79,32 @@ export default function AppVersionChecker() {
             localStorage.setItem(LAST_CHECK_KEY, String(Date.now()));
 
             if (!localVersion) {
+                console.log('[AppVersionChecker] No local version, setting to:', serverVersion);
                 localStorage.setItem(LOCAL_VERSION_KEY, serverVersion);
                 return;
             }
 
-            if (localVersion !== serverVersion) {
+            // השוואת גרסאות - בדיקה אם הגרסה מהשרת חדשה יותר
+            const isNewerVersion = (server, local) => {
+                const vServer = (server || '0.0.0').split('.').map(n => parseInt(n, 10) || 0);
+                const vLocal = (local || '0.0.0').split('.').map(n => parseInt(n, 10) || 0);
+                
+                for (let i = 0; i < Math.max(vServer.length, vLocal.length); i++) {
+                    const numServer = vServer[i] || 0;
+                    const numLocal = vLocal[i] || 0;
+                    if (numServer > numLocal) return true;
+                    if (numServer < numLocal) return false;
+                }
+                return false;
+            };
+
+            console.log('[AppVersionChecker] Comparing versions:', { local: localVersion, server: serverVersion });
+
+            if (isNewerVersion(serverVersion, localVersion)) {
+                console.log('[AppVersionChecker] ✅ Update available:', serverVersion, '> current:', localVersion);
                 localStorage.setItem(UPDATE_AVAILABLE_KEY, serverVersion);
-                console.log('[AppVersionChecker] Update available:', serverVersion);
+            } else {
+                console.log('[AppVersionChecker] ℹ️ No update needed, local version is up to date');
             }
         } catch (error) {
             console.error('[AppVersionChecker] ❌ Error checking versions:', error);
