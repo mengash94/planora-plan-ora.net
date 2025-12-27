@@ -141,11 +141,17 @@ export default function AppVersionChecker() {
             try {
                 const cap = window.Capacitor;
                 if (cap?.Plugins?.App?.addListener) {
-                    cap.Plugins.App.addListener('resume', () => {
+                    const listener = cap.Plugins.App.addListener('resume', () => {
                         setTimeout(() => {
                             checkForUpdates(true).catch(() => {});
                         }, 1000);
-                    }).then(l => { resumeListener = l; }).catch(() => {});
+                    });
+                    // Capacitor 3+ returns a Promise, older versions return the listener directly
+                    if (listener && typeof listener.then === 'function') {
+                        listener.then(l => { resumeListener = l; }).catch(() => {});
+                    } else {
+                        resumeListener = listener;
+                    }
                 }
             } catch (error) {
                 console.warn('[AppVersionChecker] Capacitor error:', error);
