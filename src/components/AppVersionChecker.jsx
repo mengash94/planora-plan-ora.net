@@ -77,7 +77,11 @@ export default function AppVersionChecker() {
                 console.log('[AppVersionChecker] Update available:', serverVersion);
             }
         } catch (error) {
-            console.warn('[AppVersionChecker]', error.message);
+            console.error('[AppVersionChecker] ❌ Error checking versions:', error);
+            console.error('[AppVersionChecker] Error details:', {
+                message: error.message,
+                stack: error.stack
+            });
         } finally {
             isCheckingRef.current = false;
         }
