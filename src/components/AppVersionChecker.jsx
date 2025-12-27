@@ -103,6 +103,16 @@ export default function AppVersionChecker() {
             if (isNewerVersion(serverVersion, localVersion)) {
                 console.log('[AppVersionChecker] ✅ Update available:', serverVersion, '> current:', localVersion);
                 localStorage.setItem(UPDATE_AVAILABLE_KEY, serverVersion);
+                
+                // Dispatch event to notify Layout immediately
+                try {
+                    window.dispatchEvent(new CustomEvent('planora:update-available', { 
+                        detail: { version: serverVersion } 
+                    }));
+                    console.log('[AppVersionChecker] 📢 Dispatched update event');
+                } catch (e) {
+                    console.warn('[AppVersionChecker] Failed to dispatch event:', e);
+                }
             } else {
                 console.log('[AppVersionChecker] ℹ️ No update needed, local version is up to date');
             }
