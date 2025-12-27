@@ -62,16 +62,40 @@ function LayoutContent({ children, currentPageName }) {
   useEffect(() => {
     if (!isAuthenticated || !user || typeof window === 'undefined') return;
     
-    try {
-      const updateAvailable = localStorage.getItem('planora_update_available');
-      if (updateAvailable) {
-        setUpdateVersion(updateAvailable);
+    const checkForUpdate = () => {
+      try {
+        const updateAvailable = localStorage.getItem('planora_update_available');
+        if (updateAvailable && !showUpdateDialog) {
+          console.log('[Layout] 🔔 Update available detected:', updateAvailable);
+          setUpdateVersion(updateAvailable);
+          setShowUpdateDialog(true);
+        }
+      } catch (error) {
+        console.warn('[Layout] Error checking for updates:', error);
+      }
+    };
+    
+    // Check immediately
+    checkForUpdate();
+    
+    // Also check periodically (every 10 seconds) in case AppVersionChecker updated localStorage
+    const interval = setInterval(checkForUpdate, 10000);
+    
+    // Listen for custom event from AppVersionChecker
+    const handleUpdateAvailable = (e) => {
+      console.log('[Layout] 🔔 Received update event:', e.detail);
+      if (e.detail?.version) {
+        setUpdateVersion(e.detail.version);
         setShowUpdateDialog(true);
       }
-    } catch (error) {
-      console.warn('[Layout] Error checking for updates:', error);
-    }
-  }, [isAuthenticated, user]);
+    };
+    window.addEventListener('planora:update-available', handleUpdateAvailable);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('planora:update-available', handleUpdateAvailable);
+    };
+  }, [isAuthenticated, user, showUpdateDialog]);
 
   const handleUpdateNow = () => {
     try {
