@@ -4,8 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Save, Search, Sparkles, Users, Plus, X } from 'lucide-react';
+import { Loader2, Save, Search, Sparkles, Users, Plus, X, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
+import { getEventTypeConfig, saveEventTypeConfig } from '@/components/instabackService';
 
 // Default category classifications
 const DEFAULT_CLASSIFICATIONS = {
@@ -26,19 +27,44 @@ export default function EventTypeClassification() {
   const [newProductionCategory, setNewProductionCategory] = useState('');
   const [newSocialCategory, setNewSocialCategory] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [configId, setConfigId] = useState(null);
 
-  // Load from localStorage on mount
+  // Load from InstaBack on mount
   useEffect(() => {
-    const saved = localStorage.getItem('event_type_classifications');
-    if (saved) {
+    const loadConfig = async () => {
+      setIsLoading(true);
       try {
-        const parsed = JSON.parse(saved);
-        setClassifications(parsed);
-      } catch (e) {
-        console.warn('Failed to parse saved classifications');
+        const config = await getEventTypeConfig();
+        if (config) {
+          setConfigId(config.id);
+          setClassifications({
+            production: config.productionCategories || DEFAULT_CLASSIFICATIONS.production,
+            social: config.socialCategories || DEFAULT_CLASSIFICATIONS.social
+          });
+          // Also update localStorage for quick access in other components
+          localStorage.setItem('event_type_classifications', JSON.stringify({
+            production: config.productionCategories || DEFAULT_CLASSIFICATIONS.production,
+            social: config.socialCategories || DEFAULT_CLASSIFICATIONS.social
+          }));
+        }
+      } catch (error) {
+        console.warn('Failed to load event type config from server, using localStorage');
+        // Fallback to localStorage
+        const saved = localStorage.getItem('event_type_classifications');
+        if (saved) {
+          try {
+            setClassifications(JSON.parse(saved));
+          } catch (e) {
+            console.warn('Failed to parse saved classifications');
+          }
+        }
+      } finally {
+        setIsLoading(false);
       }
-    }
+    };
+    loadConfig();
   }, []);
 
   const handleAddCategory = (type, value) => {
@@ -83,10 +109,25 @@ export default function EventTypeClassification() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
+      // Save to InstaBack
+      const result = await saveEventTypeConfig({
+        id: configId,
+        productionCategories: classifications.production,
+        socialCategories: classifications.social
+      });
+      
+      if (result?.id) {
+        setConfigId(result.id);
+      }
+      
+      // Also update localStorage for quick access
       localStorage.setItem('event_type_classifications', JSON.stringify(classifications));
       toast.success('סיווג הקטגוריות נשמר בהצלחה!');
     } catch (error) {
-      toast.error('שגיאה בשמירת הסיווג');
+      console.error('Failed to save to server:', error);
+      // Fallback - save to localStorage only
+      localStorage.setItem('event_type_classifications', JSON.stringify(classifications));
+      toast.warning('נשמר מקומית בלבד - בעיה בשמירה לשרת');
     } finally {
       setIsSaving(false);
     }
@@ -112,12 +153,28 @@ export default function EventTypeClassification() {
     );
   }, [classifications.social, searchTerm]);
 
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="p-8 flex items-center justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-orange-500" />
+          <span className="mr-2 text-gray-600">טוען הגדרות...</span>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-orange-600" />
           סיווג קטגוריות אירועים
+          {configId && (
+            <Badge variant="outline" className="text-xs text-green-600 border-green-300">
+              מסונכרן עם השרת
+            </Badge>
+          )}
         </CardTitle>
         <p className="text-sm text-gray-500 mt-1">
           קבע אילו קטגוריות שייכות לאירועי הפקה ואילו למפגשים חברתיים. 
@@ -313,7 +370,7 @@ export default function EventTypeClassification() {
   );
 }
 
-// Export helper function to get event type by category
+// Export helper function to get event type by category (sync - uses localStorage cache)
 export function getEventTypeByCategory(category) {
   if (!category) return 'social';
   
@@ -337,4 +394,38 @@ export function getEventTypeByCategory(category) {
   
   if (defaultProduction.includes(category)) return 'production';
   return 'social';
+}
+
+// Async version that fetches from server if needed
+export async function getEventTypeByCategory Async(category) {
+  if (!category) return 'social';
+  
+  // First try localStorage (fast)
+  const localResult = getEventTypeByCategory(category);
+  
+  // If we have local data, use it
+  const saved = localStorage.getItem('event_type_classifications');
+  if (saved) {
+    return localResult;
+  }
+  
+  // Otherwise fetch from server
+  try {
+    const { getEventTypeConfig } = await import('@/components/instabackService');
+    const config = await getEventTypeConfig();
+    if (config) {
+      // Cache it
+      localStorage.setItem('event_type_classifications', JSON.stringify({
+        production: config.productionCategories || [],
+        social: config.socialCategories || []
+      }));
+      
+      if (config.productionCategories?.includes(category)) return 'production';
+      if (config.socialCategories?.includes(category)) return 'social';
+    }
+  } catch (e) {
+    console.warn('Failed to fetch event type config from server');
+  }
+  
+  return localResult;
 }
