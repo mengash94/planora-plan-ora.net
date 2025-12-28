@@ -17,6 +17,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { formatIsraelDateTime, formatIsraelDate } from '@/components/utils/dateHelpers';
 import { Textarea } from '@/components/ui/textarea';
 import ManageFeedback from '@/components/profile/ManageFeedback';
+import EventTypeClassification from '@/components/admin/EventTypeClassification';
 
 export default function AdminDashboard() {
   const { user, isAuthenticated } = useAuth();
@@ -1116,6 +1117,9 @@ export default function AdminDashboard() {
 
           {/* Settings Tab */}
           <TabsContent value="settings" className="space-y-6">
+            {/* Event Type Classification */}
+            <EventTypeClassification />
+
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
