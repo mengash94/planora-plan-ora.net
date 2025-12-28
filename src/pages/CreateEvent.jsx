@@ -209,7 +209,7 @@ export default function CreateEvent() {
             >
               <div className="aspect-[4/3] relative">
                 <img
-                  src="https://images.unsplash.com/photo-1519167758481-83f29da8c2b6?w=800&q=80"
+                  src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&q=80"
                   alt="אירוע הפקה"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
