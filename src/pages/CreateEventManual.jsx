@@ -64,7 +64,9 @@ export default function CreateEventManualPage() {
     bankDetails: null,
     // Recurring event settings
     isRecurring: false,
-    recurrenceRule: null
+    recurrenceRule: null,
+    // Event type - chameleon mode
+    eventType: 'social'
   });
 
   const [selectedTemplate, setSelectedTemplate] = useState(null);
@@ -111,7 +113,13 @@ export default function CreateEventManualPage() {
         paymentMethod: templateData.paymentMethod || '',
         paymentMethods: templateData.paymentMethods || [],
         paymentPhone: templateData.paymentPhone || '',
-        bankDetails: templateData.bankDetails || null
+        bankDetails: templateData.bankDetails || null,
+        eventType: templateData.eventType || 'social'
+      }));
+    } else if (location.state?.eventType) {
+      setFormData(prev => ({
+        ...prev,
+        eventType: location.state.eventType
       }));
     }
   }, [location.state]);
@@ -190,6 +198,8 @@ export default function CreateEventManualPage() {
         cover_image_url: formData.coverImageUrl || '', // Add snake_case
         budget: formData.budget ? Number(formData.budget) : null,
         status: 'active',
+        event_type: formData.eventType || 'social',
+        eventType: formData.eventType || 'social',
         // Payment fields - available for all events (private and public)
         participationCost: formData.participationCost ? Number(formData.participationCost) : null,
         participation_cost: formData.participationCost ? Number(formData.participationCost) : null,
@@ -651,7 +661,15 @@ export default function CreateEventManualPage() {
           חזור לבחירת שיטה
         </Button>
 
-        <h2 className="text-2xl font-semibold mb-6 text-center">צור אירוע חדש</h2>
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-semibold mb-2">צור תכנון חדש</h2>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-orange-100 to-pink-100 border border-orange-200">
+            <span className="text-2xl">{formData.eventType === 'production' ? '💍' : '🎉'}</span>
+            <span className="font-medium text-gray-700">
+              {formData.eventType === 'production' ? 'אירוע הפקה' : 'מפגש חברתי'}
+            </span>
+          </div>
+        </div>
 
         <form onSubmit={handleCreateEvent} className="space-y-6">
           <div>

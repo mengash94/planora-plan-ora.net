@@ -369,7 +369,7 @@ export default function HomePage() {
             </button>
             <Button onClick={() => navigate(createPageUrl('CreateEvent'))} size="sm" className="bg-orange-500 hover:bg-orange-600 shadow-lg text-sm whitespace-nowrap">
               <Plus className="w-4 h-4 ml-1" />
-              <span className="hidden sm:inline">תכנון חדש</span>
+              <span className="hidden sm:inline">ארגון חדש</span>
               <span className="sm:hidden">חדש</span>
             </Button>
           </div>
@@ -617,26 +617,26 @@ export default function HomePage() {
 
 
 
-            {/* כרטיס יצירת תכנון */}
+            {/* כרטיס יצירת ארגון */}
             <Card 
               className="bg-gradient-to-br from-orange-400 to-pink-500 border-0 shadow-xl text-white cursor-pointer hover:shadow-2xl transition-shadow"
               onClick={() => navigate(createPageUrl('CreateEvent'))}
             >
               <CardContent className="p-4 text-center">
-                <h3 className="text-lg font-bold mb-2">מתכננים משהו?</h3>
-                <p className="text-white/90 text-sm mb-3">יציאה לסרט, בילוי עם חברים, טיול או אירוע מיוחד</p>
+                <h3 className="text-lg font-bold mb-2">מארגנים משהו?</h3>
+                <p className="text-white/90 text-sm mb-3">יציאה לסרט, ארוחה עם חברים, טיול או אירוע מיוחד</p>
                 <Button
                   className="bg-white text-gray-900 hover:bg-gray-100 px-4 py-2 font-semibold shadow-lg text-sm"
                 >
                   <Sparkles className="w-4 h-4 ml-1" />
-                  צור תכנון חדש
+                  בואו נארגן משהו
                 </Button>
               </CardContent>
             </Card>
 
             {events.length === 0 && (
               <div className="text-center mt-6 opacity-60">
-                <p className="text-gray-500 text-sm">עדיין לא יצרת אף תכנון</p>
+                <p className="text-gray-500 text-sm">עדיין לא ארגנת כלום</p>
                 <p className="text-xs text-gray-400 mt-1">בילוי ערב? יציאה לסרט? טיול? מסיבה? הכל מתחיל כאן!</p>
               </div>
             )}

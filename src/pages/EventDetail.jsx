@@ -860,12 +860,25 @@ export default function EventDetailPage() {
   };
   const rsvpCategories = getRsvpCategories();
 
-  // Filter function to check if tab should be visible
+  // Filter function to check if tab should be visible based on event type
   const isTabVisible = (tabId) => {
+    const eventType = event?.eventType || event?.event_type || 'social';
+    
     // RSVP tab - only for specific event categories (managers always see it)
     if (tabId === 'rsvp') {
       if (canManage) return rsvpCategories.includes(event?.category);
       return rsvpCategories.includes(event?.category);
+    }
+    
+    // Event type specific tab visibility
+    if (eventType === 'production') {
+      // Production events: hide polls, show budget/professionals/rsvp
+      const productionHiddenTabs = ['polls'];
+      if (productionHiddenTabs.includes(tabId)) return false;
+    } else if (eventType === 'social') {
+      // Social events: show polls, hide budget unless set
+      const socialHiddenTabs = event?.budget ? [] : ['budget'];
+      if (socialHiddenTabs.includes(tabId)) return false;
     }
     
     // Managers always see all other tabs
@@ -876,20 +889,61 @@ export default function EventDetailPage() {
     return eventVisibleTabs.includes(tabId);
   };
 
+  // Dynamic tab labels based on event type
+  const getTabLabel = (tabId) => {
+    const eventType = event?.eventType || event?.event_type || 'social';
+    
+    if (eventType === 'production') {
+      const productionLabels = {
+        'updates': 'עדכוני הפקה',
+        'tasks': 'משימות הפקה',
+        'chat': 'תקשורת צוות',
+        'polls': 'החלטות',
+        'itinerary': 'לוח זמנים',
+        'professionals': 'ספקים',
+        'participants': 'מוזמנים',
+        'rsvp': 'אישורי הגעה',
+        'budget': 'תקציב',
+        'payments': 'ניהול תשלומים',
+        'links': 'קישורים',
+        'gallery': 'גלריה',
+        'documents': 'מסמכים'
+      };
+      return productionLabels[tabId] || tabId;
+    } else {
+      const socialLabels = {
+        'updates': 'עדכונים',
+        'tasks': 'משימות',
+        'chat': 'צ\'אט',
+        'polls': 'סקרים',
+        'itinerary': 'לו"ז',
+        'professionals': 'ספקים',
+        'participants': 'משתתפים',
+        'rsvp': 'אישורי הגעה',
+        'budget': 'תקציב',
+        'payments': 'תשלומים',
+        'links': 'קישורים',
+        'gallery': 'גלריה',
+        'documents': 'מסמכים'
+      };
+      return socialLabels[tabId] || tabId;
+    }
+  };
+
   const allTabs = [
-    { id: 'updates', label: 'עדכונים', icon: Megaphone },
-    { id: 'rsvp', label: 'אישורי הגעה', icon: ClipboardCheck },
-    { id: 'tasks', label: 'משימות', icon: CheckSquare },
-    { id: 'chat', label: 'צ\'אט', icon: MessageSquare },
-    { id: 'polls', label: 'סקרים', icon: BarChart3 },
-    { id: 'itinerary', label: 'לו"ז', icon: Calendar },
-    { id: 'professionals', label: 'ספקים', icon: Briefcase },
-    { id: 'links', label: 'קישורים', icon: LinkIcon },
-    { id: 'gallery', label: 'גלריה', icon: Image },
-    { id: 'documents', label: 'מסמכים', icon: FileText },
-    { id: 'participants', label: 'משתתפים', icon: Users },
-    { id: 'budget', label: 'תקציב', icon: Wallet },
-    { id: 'payments', label: 'תשלומים', icon: Wallet }
+    { id: 'updates', label: getTabLabel('updates'), icon: Megaphone },
+    { id: 'rsvp', label: getTabLabel('rsvp'), icon: ClipboardCheck },
+    { id: 'tasks', label: getTabLabel('tasks'), icon: CheckSquare },
+    { id: 'chat', label: getTabLabel('chat'), icon: MessageSquare },
+    { id: 'polls', label: getTabLabel('polls'), icon: BarChart3 },
+    { id: 'itinerary', label: getTabLabel('itinerary'), icon: Calendar },
+    { id: 'professionals', label: getTabLabel('professionals'), icon: Briefcase },
+    { id: 'links', label: getTabLabel('links'), icon: LinkIcon },
+    { id: 'gallery', label: getTabLabel('gallery'), icon: Image },
+    { id: 'documents', label: getTabLabel('documents'), icon: FileText },
+    { id: 'participants', label: getTabLabel('participants'), icon: Users },
+    { id: 'budget', label: getTabLabel('budget'), icon: Wallet },
+    { id: 'payments', label: getTabLabel('payments'), icon: Wallet }
   ];
 
   // Filter tabs based on visibility settings and payment tab logic
