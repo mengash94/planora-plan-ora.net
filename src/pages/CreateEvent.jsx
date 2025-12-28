@@ -15,6 +15,7 @@ export default function CreateEvent() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [mode, setMode] = useState(null);
+  const [selectedEventType, setSelectedEventType] = useState(null);
 
   // Scroll to top on mount
   React.useEffect(() => {
@@ -49,7 +50,8 @@ export default function CreateEvent() {
               defaultTasks: eventResult.defaultTasks || [],
               defaultItinerary: eventResult.defaultItinerary || [],
               canBePublic: eventResult.canBePublic ?? true,
-              templateId: eventResult.templateId
+              templateId: eventResult.templateId,
+              eventType: selectedEventType || 'social'
             },
             fromTemplate: true
           }
@@ -107,19 +109,80 @@ export default function CreateEvent() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate(createPageUrl('Home'))}
+            onClick={() => {
+              if (selectedEventType && !mode) {
+                setSelectedEventType(null);
+              } else if (mode) {
+                setMode(null);
+              } else {
+                navigate(createPageUrl('Home'));
+              }
+            }}
             className="flex items-center gap-1 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white px-2"
           >
             <ArrowRight className="w-4 h-4" />
-            <span className="text-sm">חזרה</span>
+            <span className="text-sm">
+              {selectedEventType && !mode ? 'חזור' : mode ? 'חזור' : 'חזרה'}
+            </span>
           </Button>
           <h1 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">
-            יצירת תכנון חדש
+            {!selectedEventType ? 'איזה סוג ארגון?' : 'יצירת תכנון חדש'}
           </h1>
           <div className="w-16"></div>
         </div>
 
-        {!mode && (
+        {!selectedEventType ? (
+          /* Event Type Selection - The Fork */
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            {/* Production Event */}
+            <button
+              onClick={() => setSelectedEventType('production')}
+              className="group relative overflow-hidden rounded-2xl border-2 border-gray-200 hover:border-orange-400 transition-all hover:shadow-xl bg-white"
+            >
+              <div className="aspect-[4/3] relative">
+                <img
+                  src="https://images.unsplash.com/photo-1519167758481-83f29da8c2b6?w=800&q=80"
+                  alt="אירוע הפקה"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                <div className="absolute bottom-0 right-0 left-0 p-6 text-white">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-3xl">💍</span>
+                    <h3 className="text-2xl font-bold">אירוע הפקה</h3>
+                  </div>
+                  <p className="text-white/90 text-sm leading-relaxed">
+                    לחתונות, בר/בת מצווה, כנסים ואירועים הדורשים ניהול מקיף
+                  </p>
+                </div>
+              </div>
+            </button>
+
+            {/* Social Gathering */}
+            <button
+              onClick={() => setSelectedEventType('social')}
+              className="group relative overflow-hidden rounded-2xl border-2 border-gray-200 hover:border-orange-400 transition-all hover:shadow-xl bg-white"
+            >
+              <div className="aspect-[4/3] relative">
+                <img
+                  src="https://images.unsplash.com/photo-1543007630-9710e4a00a20?w=800&q=80"
+                  alt="מפגש חברתי"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                <div className="absolute bottom-0 right-0 left-0 p-6 text-white">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-3xl">🎉</span>
+                    <h3 className="text-2xl font-bold">מפגש חברתי</h3>
+                  </div>
+                  <p className="text-white/90 text-sm leading-relaxed">
+                    ליציאות, ארוחות, מסיבות ביתיות ומפגשים ספונטניים
+                  </p>
+                </div>
+              </div>
+            </button>
+          </div>
+        ) : !mode ? (
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {/* AI Mode */}
             <Card
@@ -217,7 +280,7 @@ export default function CreateEvent() {
               </div>
             </CardHeader>
             <CardContent className="p-4 h-[600px] overflow-y-auto">
-              <EventTemplateSelector onTemplateSelected={handleEventCreated} />
+              <EventTemplateSelector onTemplateSelected={handleEventCreated} eventType={selectedEventType} />
             </CardContent>
           </Card>
         )}
