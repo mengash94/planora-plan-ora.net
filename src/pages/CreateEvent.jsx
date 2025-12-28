@@ -132,7 +132,6 @@ export default function CreateEvent() {
         </div>
 
         {!selectedEventType ? (
-          /* Event Type Selection - The Fork */
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl mx-auto">
             {/* Production Event */}
             <button
@@ -259,7 +258,7 @@ export default function CreateEvent() {
               </CardContent>
             </Card>
           </div>
-        )}
+        ) : null}
 
         {/* Template Selector Mode */}
         {mode === 'template' && (
