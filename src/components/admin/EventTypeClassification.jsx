@@ -6,7 +6,78 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Save, Search, Sparkles, Users, Plus, X, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
-import { getEventTypeConfig, saveEventTypeConfig } from '@/components/instabackService';
+
+// InstaBack API helpers for EventTypeConfig
+const INSTABACK_BASE = 'https://instaback.io/project/f78de3ce-0cab-4ccb-8442-0c5749792fe8/api';
+
+const getAuthToken = () => {
+  return typeof window !== 'undefined' ? localStorage.getItem('instaback_token') : null;
+};
+
+const getEventTypeConfig = async () => {
+  const token = getAuthToken();
+  if (!token) return null;
+  
+  try {
+    const response = await fetch(`${INSTABACK_BASE}/EventTypeConfig`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'accept': 'application/json'
+      }
+    });
+    
+    if (!response.ok) return null;
+    
+    const data = await response.json();
+    // Return the first config record (should only be one)
+    return Array.isArray(data) ? data[0] : data;
+  } catch (error) {
+    console.error('Failed to get EventTypeConfig:', error);
+    return null;
+  }
+};
+
+const saveEventTypeConfig = async (config) => {
+  const token = getAuthToken();
+  if (!token) throw new Error('No auth token');
+  
+  const payload = {
+    configKey: 'category_classifications',
+    productionCategories: config.productionCategories,
+    socialCategories: config.socialCategories,
+    isActive: true
+  };
+  
+  // If we have an ID, update; otherwise create
+  if (config.id) {
+    const response = await fetch(`${INSTABACK_BASE}/EventTypeConfig/${config.id}`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'accept': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+    
+    if (!response.ok) throw new Error('Failed to update config');
+    return await response.json();
+  } else {
+    const response = await fetch(`${INSTABACK_BASE}/EventTypeConfig`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'accept': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+    
+    if (!response.ok) throw new Error('Failed to create config');
+    return await response.json();
+  }
+};
 
 // Default category classifications
 const DEFAULT_CLASSIFICATIONS = {
