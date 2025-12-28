@@ -8,7 +8,9 @@ import { toast } from 'sonner';
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 
-export default function EventTemplateSelector({ onTemplateSelected, onClose }) {
+import { getEventTypeByCategory } from '@/components/admin/EventTypeClassification';
+
+export default function EventTemplateSelector({ onTemplateSelected, onClose, eventType }) {
     const [templates, setTemplates] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
@@ -40,16 +42,23 @@ export default function EventTemplateSelector({ onTemplateSelected, onClose }) {
         return Array.from(cats);
     }, [templates]);
 
-    // Filter templates by search and category
+    // Filter templates by search, category, AND event type
     const filteredTemplates = useMemo(() => {
         return templates.filter(t => {
             const matchesSearch = !searchQuery || 
                 (t.title || t.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
                 (t.description || '').toLowerCase().includes(searchQuery.toLowerCase());
             const matchesCategory = selectedCategory === 'all' || t.category === selectedCategory;
+            
+            // Filter by event type if provided
+            if (eventType) {
+                const templateEventType = getEventTypeByCategory(t.category);
+                if (templateEventType !== eventType) return false;
+            }
+            
             return matchesSearch && matchesCategory;
         });
-    }, [templates, searchQuery, selectedCategory]);
+    }, [templates, searchQuery, selectedCategory, eventType]);
 
     const pickColor = (i) => {
         const palette = [
