@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Calendar, Bot, Sparkles, ClipboardList, Star } from 'lucide-react';
+import { ArrowRight, Calendar, Bot, Sparkles, ClipboardList, Star, Users, Briefcase } from 'lucide-react';
 import EventTemplateSelector from '@/components/event/EventTemplateSelector';
 import { useAuth } from '@/components/AuthProvider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +10,68 @@ import toast from 'react-hot-toast';
 import {
   notifyAdminsNewEvent,
 } from '@/components/instabackService';
+
+// Event type configurations for styling and content
+const EVENT_TYPE_CONFIG = {
+  production: {
+    title: 'יצירת אירוע הפקה',
+    subtitle: 'חתונה, בר מצווה, כנס או אירוע עסקי',
+    bgGradient: 'from-amber-50 via-white to-orange-50',
+    accentColor: 'orange',
+    borderColor: 'border-orange-400',
+    ai: {
+      title: 'תכנון עם AI',
+      description: 'העוזר החכם שלנו יעזור לך לתכנן את כל הפרטים - ספקים, תקציב, לוח זמנים ומשימות מקצועיות.',
+      badge: 'מומלץ למפיקים!',
+      gradient: 'from-orange-500 to-amber-500',
+      hoverBorder: 'hover:border-orange-500'
+    },
+    template: {
+      title: 'תבניות הפקה',
+      description: 'חתונה, בר מצווה, כנס מקצועי - תבניות מוכנות עם רשימות ספקים ומשימות הפקה.',
+      badge: 'התחל מוכן!',
+      gradient: 'from-amber-500 to-yellow-500',
+      hoverBorder: 'hover:border-amber-500',
+      headerGradient: 'from-amber-500 to-orange-500'
+    },
+    manual: {
+      title: 'יצירה מותאמת',
+      description: 'בנה את האירוע שלך מאפס - הגדר תקציב, ספקים, אישורי הגעה ולוח זמנים מדויק.',
+      badge: 'שליטה מלאה!',
+      gradient: 'from-orange-600 to-red-500',
+      hoverBorder: 'hover:border-orange-600'
+    }
+  },
+  social: {
+    title: 'יצירת מפגש חברתי',
+    subtitle: 'יציאה לסרט, ארוחה, טיול או בילוי עם חברים',
+    bgGradient: 'from-blue-50 via-white to-purple-50',
+    accentColor: 'blue',
+    borderColor: 'border-blue-400',
+    ai: {
+      title: 'תכנון עם AI',
+      description: 'ספר לעוזר החכם מה בא לך לעשות והוא יעזור לארגן את המפגש המושלם עם החברים!',
+      badge: 'הכי קל!',
+      gradient: 'from-blue-500 to-purple-500',
+      hoverBorder: 'hover:border-blue-500'
+    },
+    template: {
+      title: 'תבניות מוכנות',
+      description: 'סרט, פיצה, טיול, אימון - בחר תבנית ותתחיל לתאם עם החברים תוך שניות!',
+      badge: 'מהיר וקל!',
+      gradient: 'from-purple-500 to-pink-500',
+      hoverBorder: 'hover:border-purple-500',
+      headerGradient: 'from-purple-500 to-blue-500'
+    },
+    manual: {
+      title: 'יצירה חופשית',
+      description: 'צור מפגש מאפס - הוסף סקר לתאריך ומקום, משימות קלילות וצ\'אט קבוצתי.',
+      badge: 'גמישות מלאה!',
+      gradient: 'from-teal-500 to-cyan-500',
+      hoverBorder: 'hover:border-teal-500'
+    }
+  }
+};
 
 export default function CreateEvent() {
   const navigate = useNavigate();
@@ -101,8 +163,10 @@ export default function CreateEvent() {
     }
   };
 
+  const config = selectedEventType ? EVENT_TYPE_CONFIG[selectedEventType] : null;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-pink-50 dark:from-black dark:via-black dark:to-gray-900 pb-20" style={{ direction: 'rtl' }}>
+    <div className={`min-h-screen bg-gradient-to-br ${selectedEventType ? config.bgGradient : 'from-orange-50 via-white to-pink-50'} dark:from-black dark:via-black dark:to-gray-900 pb-20`} style={{ direction: 'rtl' }}>
       <div className="max-w-6xl mx-auto px-3 py-3 sm:px-4 sm:py-6">
         {/* Compact Header */}
         <div className="flex items-center justify-between mb-2 sm:mb-4">
@@ -125,9 +189,14 @@ export default function CreateEvent() {
               {selectedEventType && !mode ? 'חזור' : mode ? 'חזור' : 'חזרה'}
             </span>
           </Button>
-          <h1 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">
-            {!selectedEventType ? 'איזה סוג ארגון?' : 'יצירת תכנון חדש'}
-          </h1>
+          <div className="text-center">
+            <h1 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">
+              {!selectedEventType ? 'איזה סוג ארגון?' : config.title}
+            </h1>
+            {selectedEventType && !mode && (
+              <p className="text-sm text-gray-500 mt-1">{config.subtitle}</p>
+            )}
+          </div>
           <div className="w-16"></div>
         </div>
 
@@ -147,11 +216,11 @@ export default function CreateEvent() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                 <div className="absolute bottom-0 right-0 left-0 p-6 text-white">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-3xl">💍</span>
+                    <Briefcase className="w-7 h-7" />
                     <h3 className="text-2xl font-bold">אירוע הפקה</h3>
                   </div>
                   <p className="text-white/90 text-sm leading-relaxed">
-                    לחתונות, בר/בת מצווה, כנסים ואירועים הדורשים ניהול מקיף
+                    חתונות, בר/בת מצווה, כנסים - ניהול מקצועי עם תקציב, ספקים ואישורי הגעה
                   </p>
                 </div>
               </div>
@@ -160,7 +229,7 @@ export default function CreateEvent() {
             {/* Social Gathering */}
             <button
               onClick={() => setSelectedEventType('social')}
-              className="group relative overflow-hidden rounded-2xl border-2 border-gray-200 hover:border-orange-400 transition-all hover:shadow-xl bg-white"
+              className="group relative overflow-hidden rounded-2xl border-2 border-gray-200 hover:border-blue-400 transition-all hover:shadow-xl bg-white"
             >
               <div className="aspect-[4/3] relative">
                 <img
@@ -171,11 +240,11 @@ export default function CreateEvent() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                 <div className="absolute bottom-0 right-0 left-0 p-6 text-white">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-3xl">🎉</span>
+                    <Users className="w-7 h-7" />
                     <h3 className="text-2xl font-bold">מפגש חברתי</h3>
                   </div>
                   <p className="text-white/90 text-sm leading-relaxed">
-                    ליציאות, ארוחות, מסיבות ביתיות ומפגשים ספונטניים
+                    סרט, ארוחה, טיול, מסיבה - תיאום קל ומהיר עם החברים
                   </p>
                 </div>
               </div>
@@ -185,24 +254,24 @@ export default function CreateEvent() {
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {/* AI Mode */}
             <Card
-              className="cursor-pointer hover:shadow-2xl transition-all duration-300 border-2 hover:border-orange-500 group"
-              onClick={() => navigate(createPageUrl('CreateEventAI'))}
+              className={`cursor-pointer hover:shadow-2xl transition-all duration-300 border-2 ${config.ai.hoverBorder} group`}
+              onClick={() => navigate(createPageUrl(`CreateEventAI?eventType=${selectedEventType}`))}
             >
               <CardContent className="p-8 text-center">
                 <div className="mb-6 relative">
-                  <div className="absolute inset-0 bg-gradient-to-br from-orange-400 to-pink-500 rounded-full blur-2xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
-                  <div className="relative bg-gradient-to-br from-orange-500 to-pink-500 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto transform group-hover:scale-110 transition-transform">
+                  <div className={`absolute inset-0 bg-gradient-to-br ${config.ai.gradient} rounded-full blur-2xl opacity-20 group-hover:opacity-40 transition-opacity`}></div>
+                  <div className={`relative bg-gradient-to-br ${config.ai.gradient} w-20 h-20 rounded-2xl flex items-center justify-center mx-auto transform group-hover:scale-110 transition-transform`}>
                     <Sparkles className="w-10 h-10 text-white" />
                   </div>
                 </div>
                 <h3 className="text-2xl font-bold mb-3 text-gray-900">
-                  יצירה עם AI
+                  {config.ai.title}
                 </h3>
                 <p className="text-gray-600 mb-4 leading-relaxed">
-                  שוחח עם העוזר החכם שלנו - הוא ילווה אותך בכל שלב, יציע רעיונות ויצור אירוע מושלם!
+                  {config.ai.description}
                 </p>
-                <div className="flex items-center justify-center gap-2 text-orange-600 font-semibold">
-                  <span>מומלץ ביותר!</span>
+                <div className={`flex items-center justify-center gap-2 text-${config.accentColor}-600 font-semibold`}>
+                  <span>{config.ai.badge}</span>
                   <Star className="w-5 h-5 fill-current" />
                 </div>
               </CardContent>
@@ -210,50 +279,50 @@ export default function CreateEvent() {
 
             {/* Template Mode */}
             <Card
-              className="cursor-pointer hover:shadow-2xl transition-all duration-300 border-2 hover:border-yellow-500 group"
+              className={`cursor-pointer hover:shadow-2xl transition-all duration-300 border-2 ${config.template.hoverBorder} group`}
               onClick={() => setMode('template')}
             >
               <CardContent className="p-8 text-center">
                 <div className="mb-6 relative">
-                  <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full blur-2xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
-                  <div className="relative bg-gradient-to-br from-yellow-500 to-orange-500 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto transform group-hover:scale-110 transition-transform">
+                  <div className={`absolute inset-0 bg-gradient-to-br ${config.template.gradient} rounded-full blur-2xl opacity-20 group-hover:opacity-40 transition-opacity`}></div>
+                  <div className={`relative bg-gradient-to-br ${config.template.gradient} w-20 h-20 rounded-2xl flex items-center justify-center mx-auto transform group-hover:scale-110 transition-transform`}>
                     <Calendar className="w-10 h-10 text-white" />
                   </div>
                 </div>
                 <h3 className="text-2xl font-bold mb-3 text-gray-900">
-                  תבניות מוכנות
+                  {config.template.title}
                 </h3>
                 <p className="text-gray-600 mb-4 leading-relaxed">
-                  סרט, ארוחה, אימון, טיול, מסיבה ועוד - בחרו תבנית מוכנה עם משימות מותאמות.
+                  {config.template.description}
                 </p>
-                <div className="flex items-center justify-center gap-2 text-yellow-600 font-semibold">
-                  <span>חיסכון בזמן!</span>
-                  <ClipboardList className="w-5 h-5 fill-current" />
+                <div className={`flex items-center justify-center gap-2 text-${config.accentColor}-600 font-semibold`}>
+                  <span>{config.template.badge}</span>
+                  <ClipboardList className="w-5 h-5" />
                 </div>
               </CardContent>
             </Card>
 
             {/* Manual Mode */}
             <Card
-              className="cursor-pointer hover:shadow-2xl transition-all duration-300 border-2 hover:border-emerald-500 group"
-              onClick={() => navigate(createPageUrl('CreateEventManual?mode=custom'))}
+              className={`cursor-pointer hover:shadow-2xl transition-all duration-300 border-2 ${config.manual.hoverBorder} group`}
+              onClick={() => navigate(createPageUrl(`CreateEventManual?mode=custom&eventType=${selectedEventType}`))}
             >
               <CardContent className="p-8 text-center">
                 <div className="mb-6 relative">
-                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-400 to-green-500 rounded-full blur-2xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
-                  <div className="relative bg-gradient-to-br from-emerald-500 to-green-500 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto transform group-hover:scale-110 transition-transform">
+                  <div className={`absolute inset-0 bg-gradient-to-br ${config.manual.gradient} rounded-full blur-2xl opacity-20 group-hover:opacity-40 transition-opacity`}></div>
+                  <div className={`relative bg-gradient-to-br ${config.manual.gradient} w-20 h-20 rounded-2xl flex items-center justify-center mx-auto transform group-hover:scale-110 transition-transform`}>
                     <ClipboardList className="w-10 h-10 text-white" />
                   </div>
                 </div>
                 <h3 className="text-2xl font-bold mb-3 text-gray-900">
-                  יצירה ידנית מותאמת
+                  {config.manual.title}
                 </h3>
                 <p className="text-gray-600 mb-4 leading-relaxed">
-                  התחילו מאפס והגדירו ידנית את כל פרטי האירוע, עם אפשרות להוסיף סקרים ומשימות כרצונכם.
+                  {config.manual.description}
                 </p>
-                <div className="flex items-center justify-center gap-2 text-emerald-600 font-semibold">
-                  <span>שליטה מלאה!</span>
-                  <Bot className="w-5 h-5 fill-current" />
+                <div className={`flex items-center justify-center gap-2 text-${config.accentColor}-600 font-semibold`}>
+                  <span>{config.manual.badge}</span>
+                  <Bot className="w-5 h-5" />
                 </div>
               </CardContent>
             </Card>
@@ -261,13 +330,15 @@ export default function CreateEvent() {
         ) : null}
 
         {/* Template Selector Mode */}
-        {mode === 'template' && (
-          <Card className="max-w-5xl mx-auto shadow-2xl border-2 border-yellow-200 mt-8">
-            <CardHeader className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
+        {mode === 'template' && config && (
+          <Card className={`max-w-5xl mx-auto shadow-2xl border-2 ${config.borderColor} mt-8`}>
+            <CardHeader className={`bg-gradient-to-r ${config.template.headerGradient} text-white`}>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-3 text-2xl">
                   <Calendar className="w-7 h-7" />
-                  <span>בחר תבנית</span>
+                  <span>
+                    {selectedEventType === 'production' ? 'בחר תבנית הפקה' : 'בחר תבנית'}
+                  </span>
                 </CardTitle>
                 <Button
                   variant="ghost"
