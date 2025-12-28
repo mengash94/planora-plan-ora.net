@@ -482,7 +482,6 @@ export async function getEventTypeByCategoryAsync(category) {
   
   // Otherwise fetch from server
   try {
-    const { getEventTypeConfig } = await import('@/components/instabackService');
     const config = await getEventTypeConfig();
     if (config) {
       // Cache it
