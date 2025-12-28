@@ -397,7 +397,7 @@ export function getEventTypeByCategory(category) {
 }
 
 // Async version that fetches from server if needed
-export async function getEventTypeByCategory Async(category) {
+export async function getEventTypeByCategoryAsync(category) {
   if (!category) return 'social';
   
   // First try localStorage (fast)
