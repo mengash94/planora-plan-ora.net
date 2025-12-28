@@ -8,7 +8,7 @@ import { Loader2, Save, Search, Sparkles, Users, Plus, X, RefreshCw } from 'luci
 import { toast } from 'sonner';
 
 // InstaBack API helpers for EventTypeConfig
-const INSTABACK_BASE = 'https://instaback.io/project/f78de3ce-0cab-4ccb-8442-0c5749792fe8/api';
+const INSTABACK_BASE = 'https://instaback.ai/project/f78de3ce-0cab-4ccb-8442-0c5749792fe8/api';
 
 const getAuthToken = () => {
   return typeof window !== 'undefined' ? localStorage.getItem('instaback_token') : null;
