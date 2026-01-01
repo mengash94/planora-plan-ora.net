@@ -35,8 +35,8 @@ import Tasks from './pages/Tasks';
 import Terms from './pages/Terms';
 import VerifiedVenueFinder from './pages/VerifiedVenueFinder';
 import WelcomePage from './pages/WelcomePage';
-import WhatsNew from './pages/WhatsNew';
 import WelcomeTest from './pages/WelcomeTest';
+import WhatsNew from './pages/WhatsNew';
 import __Layout from './Layout.jsx';
 
 
@@ -78,8 +78,8 @@ export const PAGES = {
     "Terms": Terms,
     "VerifiedVenueFinder": VerifiedVenueFinder,
     "WelcomePage": WelcomePage,
-    "WhatsNew": WhatsNew,
     "WelcomeTest": WelcomeTest,
+    "WhatsNew": WhatsNew,
 }
 
 export const pagesConfig = {
