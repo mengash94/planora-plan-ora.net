@@ -454,7 +454,7 @@ function LayoutContent({ children, currentPageName }) {
     return pathname.includes(pageName);
   }, [location]);
 
-  const hideBottomNavPages = useMemo(() => ['Auth', 'WelcomePage', 'CreateEvent', 'CreateEventAI', 'EventChat'], []);
+  const hideBottomNavPages = useMemo(() => ['Auth', 'WelcomePage', 'CreateEvent', 'CreateEventAI', 'EventChat', 'App'], []);
   const showBottomNav = isAuthenticated && !hideBottomNavPages.includes(currentPageName);
   
   return (
@@ -536,12 +536,12 @@ function LayoutContent({ children, currentPageName }) {
       {/* App Version Checker - Auto-reload on new version */}
       <AppVersionChecker />
 
-      {!isNative && (
-        <InstallPromptCustomBanner 
-          deferredPrompt={deferredInstallPrompt}
-          onPromptUsed={handlePromptUsed}
-        />
-      )}
+      {!isNative && currentPageName !== 'App' && (
+                <InstallPromptCustomBanner 
+                  deferredPrompt={deferredInstallPrompt}
+                  onPromptUsed={handlePromptUsed}
+                />
+              )}
 
       <main 
         className={`w-full ${showBottomNav ? "pb-20" : ""}`}
