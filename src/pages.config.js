@@ -26,16 +26,16 @@ import LandingPage from './pages/LandingPage';
 import MigrateImages from './pages/MigrateImages';
 import MyEventsList from './pages/MyEventsList';
 import NotificationCenter from './pages/NotificationCenter';
+import OnePager from './pages/OnePager';
 import Privacy from './pages/Privacy';
 import Profile from './pages/Profile';
 import ResetPassword from './pages/ResetPassword';
 import Tasks from './pages/Tasks';
 import Terms from './pages/Terms';
 import VerifiedVenueFinder from './pages/VerifiedVenueFinder';
-import WhatsNew from './pages/WhatsNew';
-import AppRedirect from './pages/AppRedirect';
-import OnePager from './pages/OnePager';
 import WelcomePage from './pages/WelcomePage';
+import WhatsNew from './pages/WhatsNew';
+import App from './pages/App';
 import __Layout from './Layout.jsx';
 
 
@@ -68,16 +68,16 @@ export const PAGES = {
     "MigrateImages": MigrateImages,
     "MyEventsList": MyEventsList,
     "NotificationCenter": NotificationCenter,
+    "OnePager": OnePager,
     "Privacy": Privacy,
     "Profile": Profile,
     "ResetPassword": ResetPassword,
     "Tasks": Tasks,
     "Terms": Terms,
     "VerifiedVenueFinder": VerifiedVenueFinder,
-    "WhatsNew": WhatsNew,
-    "AppRedirect": AppRedirect,
-    "OnePager": OnePager,
     "WelcomePage": WelcomePage,
+    "WhatsNew": WhatsNew,
+    "App": App,
 }
 
 export const pagesConfig = {
