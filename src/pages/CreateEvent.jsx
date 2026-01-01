@@ -77,12 +77,8 @@ export default function CreateEvent() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [mode, setMode] = useState(null);
-  const [selectedEventType, setSelectedEventType] = useState(null);
-
-  // Scroll to top on mount
-  React.useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+  // Always set to 'social' - event type selection is disabled
+  const [selectedEventType, setSelectedEventType] = useState('social');
 
   // Scroll to top on mount
   React.useEffect(() => {
@@ -174,9 +170,7 @@ export default function CreateEvent() {
             variant="ghost"
             size="sm"
             onClick={() => {
-              if (selectedEventType && !mode) {
-                setSelectedEventType(null);
-              } else if (mode) {
+              if (mode) {
                 setMode(null);
               } else {
                 navigate(createPageUrl('Home'));
@@ -186,71 +180,21 @@ export default function CreateEvent() {
           >
             <ArrowRight className="w-4 h-4" />
             <span className="text-sm">
-              {selectedEventType && !mode ? 'חזור' : mode ? 'חזור' : 'חזרה'}
+              {mode ? 'חזור' : 'חזרה'}
             </span>
           </Button>
           <div className="text-center">
             <h1 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">
-              {!selectedEventType ? 'איזה סוג ארגון?' : config.title}
+              יצירת ארגון חדש
             </h1>
-            {selectedEventType && !mode && (
-              <p className="text-sm text-gray-500 mt-1">{config.subtitle}</p>
+            {!mode && (
+              <p className="text-sm text-gray-500 mt-1">בחר איך תרצה להתחיל</p>
             )}
           </div>
           <div className="w-16"></div>
         </div>
 
-        {!selectedEventType ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            {/* Production Event */}
-            <button
-              onClick={() => setSelectedEventType('production')}
-              className="group relative overflow-hidden rounded-2xl border-2 border-gray-200 hover:border-orange-400 transition-all hover:shadow-xl bg-white"
-            >
-              <div className="aspect-[4/3] relative">
-                <img
-                  src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&q=80"
-                  alt="אירוע הפקה"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                <div className="absolute bottom-0 right-0 left-0 p-6 text-white">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Briefcase className="w-7 h-7" />
-                    <h3 className="text-2xl font-bold">אירוע הפקה</h3>
-                  </div>
-                  <p className="text-white/90 text-sm leading-relaxed">
-                    חתונות, בר/בת מצווה, כנסים - ניהול מקצועי עם תקציב, ספקים ואישורי הגעה
-                  </p>
-                </div>
-              </div>
-            </button>
-
-            {/* Social Gathering */}
-            <button
-              onClick={() => setSelectedEventType('social')}
-              className="group relative overflow-hidden rounded-2xl border-2 border-gray-200 hover:border-blue-400 transition-all hover:shadow-xl bg-white"
-            >
-              <div className="aspect-[4/3] relative">
-                <img
-                  src="https://images.unsplash.com/photo-1543007630-9710e4a00a20?w=800&q=80"
-                  alt="מפגש חברתי"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                <div className="absolute bottom-0 right-0 left-0 p-6 text-white">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Users className="w-7 h-7" />
-                    <h3 className="text-2xl font-bold">מפגש חברתי</h3>
-                  </div>
-                  <p className="text-white/90 text-sm leading-relaxed">
-                    סרט, ארוחה, טיול, מסיבה - תיאום קל ומהיר עם החברים
-                  </p>
-                </div>
-              </div>
-            </button>
-          </div>
-        ) : !mode ? (
+        {!mode ? (
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {/* AI Mode */}
             <Card
