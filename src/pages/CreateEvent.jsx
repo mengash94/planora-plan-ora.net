@@ -126,7 +126,7 @@ export default function CreateEvent() {
     }
   };
 
-  const config = selectedEventType ? EVENT_TYPE_CONFIG[selectedEventType] : null;
+  const config = CONFIG;
 
   return (
     <div className={`min-h-screen bg-gradient-to-br ${selectedEventType ? config.bgGradient : 'from-orange-50 via-white to-pink-50'} dark:from-black dark:via-black dark:to-gray-900 pb-20`} style={{ direction: 'rtl' }}>
