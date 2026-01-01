@@ -7,6 +7,7 @@ import AdminTemplatesManage from './pages/AdminTemplatesManage';
 import AdminTemplatesSeed from './pages/AdminTemplatesSeed';
 import AdminUsers from './pages/AdminUsers';
 import AdminVersions from './pages/AdminVersions';
+import App from './pages/App';
 import AppSpecification from './pages/AppSpecification';
 import Auth from './pages/Auth';
 import ChatOverview from './pages/ChatOverview';
@@ -35,7 +36,7 @@ import Terms from './pages/Terms';
 import VerifiedVenueFinder from './pages/VerifiedVenueFinder';
 import WelcomePage from './pages/WelcomePage';
 import WhatsNew from './pages/WhatsNew';
-import App from './pages/App';
+import WelcomeTest from './pages/WelcomeTest';
 import __Layout from './Layout.jsx';
 
 
@@ -49,6 +50,7 @@ export const PAGES = {
     "AdminTemplatesSeed": AdminTemplatesSeed,
     "AdminUsers": AdminUsers,
     "AdminVersions": AdminVersions,
+    "App": App,
     "AppSpecification": AppSpecification,
     "Auth": Auth,
     "ChatOverview": ChatOverview,
@@ -77,7 +79,7 @@ export const PAGES = {
     "VerifiedVenueFinder": VerifiedVenueFinder,
     "WelcomePage": WelcomePage,
     "WhatsNew": WhatsNew,
-    "App": App,
+    "WelcomeTest": WelcomeTest,
 }
 
 export const pagesConfig = {
