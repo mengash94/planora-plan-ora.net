@@ -32,10 +32,10 @@ import ResetPassword from './pages/ResetPassword';
 import Tasks from './pages/Tasks';
 import Terms from './pages/Terms';
 import VerifiedVenueFinder from './pages/VerifiedVenueFinder';
-import WelcomePage from './pages/WelcomePage';
 import WhatsNew from './pages/WhatsNew';
 import AppRedirect from './pages/AppRedirect';
 import OnePager from './pages/OnePager';
+import WelcomePage from './pages/WelcomePage';
 import __Layout from './Layout.jsx';
 
 
@@ -74,10 +74,10 @@ export const PAGES = {
     "Tasks": Tasks,
     "Terms": Terms,
     "VerifiedVenueFinder": VerifiedVenueFinder,
-    "WelcomePage": WelcomePage,
     "WhatsNew": WhatsNew,
     "AppRedirect": AppRedirect,
     "OnePager": OnePager,
+    "WelcomePage": WelcomePage,
 }
 
 export const pagesConfig = {

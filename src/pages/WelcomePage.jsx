@@ -109,47 +109,31 @@ export default function WelcomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-pink-50 dark:from-black dark:via-black dark:to-gray-900" style={{ direction: 'rtl' }}>
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-16 md:py-24 text-center bg-gradient-to-br from-orange-400 to-rose-500 text-white">
+      <section className="relative overflow-hidden py-20 md:py-28 text-center bg-gradient-to-b from-orange-400 via-orange-500 to-orange-600 text-white">
         <div className="relative z-10 max-w-4xl mx-auto px-6">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-3xl mb-8">
             <Calendar className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
-            לתכנן הכל יחד עם חברים
+          <h1 className="text-3xl md:text-5xl font-bold mb-6 leading-tight">
+            תכנון אירועים מעולם
+            <br />
+            לא היה קל כל כך
           </h1>
-          <p className="text-lg md:text-xl opacity-95 max-w-2xl mx-auto mb-8 leading-relaxed">
-            Planora - מיציאה לסרט ועד חתונה. תכנון שיתופי עם משימות, צ'אטים, הצבעות וגלריות!
+          <p className="text-base md:text-lg opacity-95 max-w-xl mx-auto mb-10 leading-relaxed">
+            Planora - האפליקציה שמשנה את חווית תכנון האירועים: משימות, צ'אטים, סקרים, גלריות ועוד!
           </p>
-          <div className="flex flex-wrap justify-center gap-2 mb-6 text-sm">
-            <span className="bg-white/20 px-3 py-1 rounded-full">🎬 סרט</span>
-            <span className="bg-white/20 px-3 py-1 rounded-full">🍕 ארוחה</span>
-            <span className="bg-white/20 px-3 py-1 rounded-full">🏃 אימון</span>
-            <span className="bg-white/20 px-3 py-1 rounded-full">🎂 מסיבה</span>
-            <span className="bg-white/20 px-3 py-1 rounded-full">🗺️ טיול</span>
-            <span className="bg-white/20 px-3 py-1 rounded-full">💒 חתונה</span>
-          </div>
           <div className="flex justify-center w-full">
             <Button
               onClick={handleLogin}
-              className="h-14 px-8 text-lg bg-white text-orange-600 hover:bg-gray-100 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+              className="h-14 px-10 text-lg bg-white text-orange-500 hover:bg-gray-100 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105 font-medium"
             >
               <Sparkles className="w-5 h-5 ml-2" />
-              התחל לתכנן עכשיו!
+              התחל לתכנן את האירוע הבא שלך!
             </Button>
           </div>
           <p className="text-white/80 text-sm mt-4">
             חינם לגמרי • ללא התחייבות • הצטרפות תוך דקה
           </p>
-          <div className="mt-6 pt-6 border-t border-white/30">
-            <p className="text-white/90 text-base mb-3">כבר יש לך חשבון?</p>
-            <Button
-              onClick={handleLogin}
-              variant="outline"
-              className="h-12 px-8 text-base bg-transparent border-2 border-white text-white hover:bg-white hover:text-orange-600 rounded-full transition-all"
-            >
-              התחבר לחשבון שלך
-            </Button>
-          </div>
         </div>
       </section>
 
