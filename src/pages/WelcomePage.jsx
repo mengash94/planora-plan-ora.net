@@ -55,71 +55,7 @@ export default function WelcomePage() {
     return isInApp;
   };
 
-  // Redirect to app stores based on device
-  // ALWAYS redirect if NOT in our native Capacitor app (except dev/preview)
-  useEffect(() => {
-    // ✅ אם אנחנו באפליקציה שלנו (Capacitor Native) - לא מפנים לחנות
-    if (isNativeStrict()) {
-      console.log('[WelcomePage] ✅ Running in native Capacitor app - no redirect');
-      return;
-    }
-
-    // Skip redirect in development/preview environments
-    const hostname = window.location.hostname || '';
-    const isDevOrPreview = hostname.includes('localhost') || 
-                           hostname.includes('base44.com') || 
-                           hostname.includes('base44.app') ||
-                           window.location.search.includes('preview');
-    
-    if (isDevOrPreview) {
-      console.log('[WelcomePage] Skipping store redirect in dev/preview environment');
-      return;
-    }
-
-    // ✅ לא באפליקציה שלנו - מפנים לחנות לפי סוג המכשיר
-    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-    let targetStoreUrl = null;
-
-    if (/android/i.test(userAgent)) {
-      targetStoreUrl = "https://play.google.com/store/apps/details?id=net.planora.app";
-    } else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
-      targetStoreUrl = "https://apps.apple.com/il/app/planora-%D7%90%D7%99%D7%A8%D7%95%D7%A2%D7%99%D7%9D/id6755497184";
-    }
-
-    if (targetStoreUrl) {
-      console.log('[WelcomePage] 📱 Not in native app - redirecting to store:', targetStoreUrl);
-      
-      // In-app browser: force auto-redirect to store (no button)
-      if (isInAppBrowser()) {
-        console.log('[WelcomePage] 🔒 In-app browser detected - auto-redirecting to store');
-        try {
-          if (/android/i.test(userAgent)) {
-            // Try to open Play Store app first
-            window.location.href = 'market://details?id=net.planora.app';
-            // Fallback to web Play Store if blocked
-            setTimeout(() => {
-              window.location.href = 'https://play.google.com/store/apps/details?id=net.planora.app';
-            }, 400);
-          } else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
-            // Try to open App Store app first
-            window.location.href = 'itms-apps://apps.apple.com/il/app/id6755497184';
-            // Fallback to web App Store if blocked
-            setTimeout(() => {
-              window.location.href = 'https://apps.apple.com/il/app/planora-%D7%90%D7%99%D7%A8%D7%95%D7%A2%D7%99%D7%9D/id6755497184';
-            }, 400);
-          } else {
-            window.location.href = targetStoreUrl;
-          }
-        } catch (e) {
-          window.location.href = targetStoreUrl;
-        }
-      } else {
-        // Regular browser - auto redirect works
-        console.log('[WelcomePage] 🌐 Regular browser - auto redirecting');
-        window.location.replace(targetStoreUrl);
-      }
-    }
-  }, []);
+  // Store redirect removed - now handled by /app page only
 
   useEffect(() => {
     if (isAuthenticated) {
