@@ -889,45 +889,24 @@ export default function EventDetailPage() {
     return eventVisibleTabs.includes(tabId);
   };
 
-  // Dynamic tab labels based on event type
+  // Tab labels - always use social/friendly labels
   const getTabLabel = (tabId) => {
-    const eventType = event?.eventType || event?.event_type || 'social';
-    
-    if (eventType === 'production') {
-      const productionLabels = {
-        'updates': 'עדכוני הפקה',
-        'tasks': 'משימות הפקה',
-        'chat': 'תקשורת צוות',
-        'polls': 'החלטות',
-        'itinerary': 'לוח זמנים',
-        'professionals': 'ספקים',
-        'participants': 'מוזמנים',
-        'rsvp': 'אישורי הגעה',
-        'budget': 'תקציב',
-        'payments': 'ניהול תשלומים',
-        'links': 'קישורים',
-        'gallery': 'גלריה',
-        'documents': 'מסמכים'
-      };
-      return productionLabels[tabId] || tabId;
-    } else {
-      const socialLabels = {
-        'updates': 'עדכונים',
-        'tasks': 'משימות',
-        'chat': 'צ\'אט',
-        'polls': 'סקרים',
-        'itinerary': 'לו"ז',
-        'professionals': 'ספקים',
-        'participants': 'משתתפים',
-        'rsvp': 'אישורי הגעה',
-        'budget': 'תקציב',
-        'payments': 'תשלומים',
-        'links': 'קישורים',
-        'gallery': 'גלריה',
-        'documents': 'מסמכים'
-      };
-      return socialLabels[tabId] || tabId;
-    }
+    const labels = {
+      'updates': 'עדכונים',
+      'tasks': 'משימות',
+      'chat': 'צ\'אט',
+      'polls': 'סקרים',
+      'itinerary': 'לו"ז',
+      'professionals': 'ספקים',
+      'participants': 'משתתפים',
+      'rsvp': 'אישורי הגעה',
+      'budget': 'תקציב',
+      'payments': 'תשלומים',
+      'links': 'קישורים',
+      'gallery': 'גלריה',
+      'documents': 'מסמכים'
+    };
+    return labels[tabId] || tabId;
   };
 
   const allTabs = [
