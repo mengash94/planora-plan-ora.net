@@ -11,65 +11,32 @@ import {
   notifyAdminsNewEvent,
 } from '@/components/instabackService';
 
-// Event type configurations for styling and content
-const EVENT_TYPE_CONFIG = {
-  production: {
-    title: 'יצירת אירוע הפקה',
-    subtitle: 'חתונה, בר מצווה, כנס או אירוע עסקי',
-    bgGradient: 'from-amber-50 via-white to-orange-50',
-    accentColor: 'orange',
-    borderColor: 'border-orange-400',
-    ai: {
-      title: 'תכנון עם AI',
-      description: 'העוזר החכם שלנו יעזור לך לתכנן את כל הפרטים - ספקים, תקציב, לוח זמנים ומשימות מקצועיות.',
-      badge: 'מומלץ למפיקים!',
-      gradient: 'from-orange-500 to-amber-500',
-      hoverBorder: 'hover:border-orange-500'
-    },
-    template: {
-      title: 'תבניות הפקה',
-      description: 'חתונה, בר מצווה, כנס מקצועי - תבניות מוכנות עם רשימות ספקים ומשימות הפקה.',
-      badge: 'התחל מוכן!',
-      gradient: 'from-amber-500 to-yellow-500',
-      hoverBorder: 'hover:border-amber-500',
-      headerGradient: 'from-amber-500 to-orange-500'
-    },
-    manual: {
-      title: 'יצירה מותאמת',
-      description: 'בנה את האירוע שלך מאפס - הגדר תקציב, ספקים, אישורי הגעה ולוח זמנים מדויק.',
-      badge: 'שליטה מלאה!',
-      gradient: 'from-orange-600 to-red-500',
-      hoverBorder: 'hover:border-orange-600'
-    }
+// Single unified styling config (no event type distinction)
+const CONFIG = {
+  bgGradient: 'from-orange-50 via-white to-pink-50',
+  accentColor: 'orange',
+  borderColor: 'border-orange-400',
+  ai: {
+    title: 'תכנון עם AI',
+    description: 'ספר לעוזר החכם מה בא לך לארגן והוא יעזור לך לתכנן את כל הפרטים!',
+    badge: 'הכי קל!',
+    gradient: 'from-orange-500 to-pink-500',
+    hoverBorder: 'hover:border-orange-500'
   },
-  social: {
-    title: 'יצירת מפגש חברתי',
-    subtitle: 'יציאה לסרט, ארוחה, טיול או בילוי עם חברים',
-    bgGradient: 'from-blue-50 via-white to-purple-50',
-    accentColor: 'blue',
-    borderColor: 'border-blue-400',
-    ai: {
-      title: 'תכנון עם AI',
-      description: 'ספר לעוזר החכם מה בא לך לעשות והוא יעזור לארגן את המפגש המושלם עם החברים!',
-      badge: 'הכי קל!',
-      gradient: 'from-blue-500 to-purple-500',
-      hoverBorder: 'hover:border-blue-500'
-    },
-    template: {
-      title: 'תבניות מוכנות',
-      description: 'סרט, פיצה, טיול, אימון - בחר תבנית ותתחיל לתאם עם החברים תוך שניות!',
-      badge: 'מהיר וקל!',
-      gradient: 'from-purple-500 to-pink-500',
-      hoverBorder: 'hover:border-purple-500',
-      headerGradient: 'from-purple-500 to-blue-500'
-    },
-    manual: {
-      title: 'יצירה חופשית',
-      description: 'צור מפגש מאפס - הוסף סקר לתאריך ומקום, משימות קלילות וצ\'אט קבוצתי.',
-      badge: 'גמישות מלאה!',
-      gradient: 'from-teal-500 to-cyan-500',
-      hoverBorder: 'hover:border-teal-500'
-    }
+  template: {
+    title: 'תבניות מוכנות',
+    description: 'בחר תבנית מוכנה והתחל לארגן תוך שניות - משימות, צ\'אט וסקרים כלולים!',
+    badge: 'מהיר וקל!',
+    gradient: 'from-purple-500 to-pink-500',
+    hoverBorder: 'hover:border-purple-500',
+    headerGradient: 'from-orange-500 to-pink-500'
+  },
+  manual: {
+    title: 'יצירה חופשית',
+    description: 'צור ארגון מאפס - הגדר את כל הפרטים בעצמך בצורה גמישה.',
+    badge: 'גמישות מלאה!',
+    gradient: 'from-teal-500 to-cyan-500',
+    hoverBorder: 'hover:border-teal-500'
   }
 };
 
