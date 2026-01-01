@@ -22,9 +22,7 @@ export default function OnePager() {
             </div>
             <span className="text-2xl font-bold">Planora</span>
           </div>
-          <a href="mailto:contact@plan-ora.net" className="text-white/90 hover:text-white text-sm">
-            contact@plan-ora.net
-          </a>
+
         </div>
       </header>
 
@@ -224,9 +222,9 @@ export default function OnePager() {
               <div className="w-24 h-24 bg-orange-100 rounded-full mx-auto mb-4 flex items-center justify-center">
                 <Users className="w-12 h-12 text-orange-500" />
               </div>
-              <h3 className="font-bold text-gray-900 text-xl mb-2">מייסד</h3>
-              <p className="text-gray-600">מנהל פרויקטים ומערכות מידע</p>
-              <p className="text-gray-500 text-sm mt-1">ניסיון של 5 שנים</p>
+              <h3 className="font-bold text-gray-900 text-xl mb-2">מנגשה אטלאי</h3>
+              <p className="text-gray-600">מייסד</p>
+              <p className="text-gray-500 text-sm mt-1">מנהל פרויקטים ומערכות מידע | 5 שנות ניסיון</p>
             </Card>
           </div>
         </div>
