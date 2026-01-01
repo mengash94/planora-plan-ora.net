@@ -60,11 +60,10 @@ export default function OnePager() {
             </div>
             <div className="relative">
               <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 border border-white/20">
-                <div className="grid grid-cols-2 gap-4">
-                  <StatBox number="10K+" label="משתמשים פעילים" />
-                  <StatBox number="25K+" label="אירועים נוצרו" />
-                  <StatBox number="4.8" label="דירוג בחנויות" icon={Star} />
-                  <StatBox number="98%" label="שביעות רצון" />
+                <div className="text-center">
+                  <Calendar className="w-16 h-16 mx-auto mb-4 opacity-80" />
+                  <p className="text-xl font-medium">אפליקציה זמינה ב-</p>
+                  <p className="text-lg opacity-90">App Store & Google Play</p>
                 </div>
               </div>
             </div>
@@ -211,86 +210,8 @@ export default function OnePager() {
         </div>
       </section>
 
-      {/* Business Model */}
-      <section className="py-20 px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              מודל עסקי
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card className="p-6 text-center border-2 border-gray-200">
-              <h3 className="text-xl font-bold text-gray-900 mb-2">חינם</h3>
-              <p className="text-3xl font-bold text-orange-500 mb-4">₪0</p>
-              <ul className="text-gray-600 text-sm space-y-2 text-right">
-                <li>✓ עד 3 אירועים</li>
-                <li>✓ כל התכונות הבסיסיות</li>
-                <li>✓ עד 20 משתתפים</li>
-              </ul>
-            </Card>
-
-            <Card className="p-6 text-center border-2 border-orange-500 bg-orange-50 relative">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-xs px-3 py-1 rounded-full">
-                פופולרי
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">פרימיום</h3>
-              <p className="text-3xl font-bold text-orange-500 mb-4">₪19<span className="text-lg text-gray-500">/חודש</span></p>
-              <ul className="text-gray-600 text-sm space-y-2 text-right">
-                <li>✓ אירועים ללא הגבלה</li>
-                <li>✓ משתתפים ללא הגבלה</li>
-                <li>✓ תכנון AI מתקדם</li>
-                <li>✓ גיבוי תמונות מלא</li>
-              </ul>
-            </Card>
-
-            <Card className="p-6 text-center border-2 border-gray-200">
-              <h3 className="text-xl font-bold text-gray-900 mb-2">עסקי</h3>
-              <p className="text-3xl font-bold text-orange-500 mb-4">₪49<span className="text-lg text-gray-500">/חודש</span></p>
-              <ul className="text-gray-600 text-sm space-y-2 text-right">
-                <li>✓ ניהול מרובה מארגנים</li>
-                <li>✓ מיתוג מותאם אישית</li>
-                <li>✓ דוחות וסטטיסטיקות</li>
-                <li>✓ תמיכה VIP</li>
-              </ul>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Traction */}
-      <section className="py-20 px-6 bg-gray-900 text-white">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              הישגים ומספרים
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-4 gap-8 text-center">
-            <div>
-              <div className="text-5xl font-bold text-orange-400 mb-2">10K+</div>
-              <div className="text-gray-400">משתמשים רשומים</div>
-            </div>
-            <div>
-              <div className="text-5xl font-bold text-orange-400 mb-2">25K+</div>
-              <div className="text-gray-400">אירועים נוצרו</div>
-            </div>
-            <div>
-              <div className="text-5xl font-bold text-orange-400 mb-2">150K+</div>
-              <div className="text-gray-400">משימות הושלמו</div>
-            </div>
-            <div>
-              <div className="text-5xl font-bold text-orange-400 mb-2">4.8⭐</div>
-              <div className="text-gray-400">דירוג ממוצע</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Team */}
-      <section className="py-20 px-6">
+      <section className="py-20 px-6 bg-gray-50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -298,27 +219,14 @@ export default function OnePager() {
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-3xl mx-auto">
-            <Card className="p-6 text-center">
-              <div className="w-20 h-20 bg-orange-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-                <Users className="w-10 h-10 text-orange-500" />
+          <div className="flex justify-center">
+            <Card className="p-8 text-center max-w-sm">
+              <div className="w-24 h-24 bg-orange-100 rounded-full mx-auto mb-4 flex items-center justify-center">
+                <Users className="w-12 h-12 text-orange-500" />
               </div>
-              <h3 className="font-bold text-gray-900">מייסד & CEO</h3>
-              <p className="text-gray-500 text-sm">ניסיון של 10+ שנים בפיתוח מוצר</p>
-            </Card>
-            <Card className="p-6 text-center">
-              <div className="w-20 h-20 bg-blue-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-                <Zap className="w-10 h-10 text-blue-500" />
-              </div>
-              <h3 className="font-bold text-gray-900">CTO</h3>
-              <p className="text-gray-500 text-sm">מומחה Full-Stack & AI</p>
-            </Card>
-            <Card className="p-6 text-center">
-              <div className="w-20 h-20 bg-green-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-                <TrendingUp className="w-10 h-10 text-green-500" />
-              </div>
-              <h3 className="font-bold text-gray-900">CMO</h3>
-              <p className="text-gray-500 text-sm">מומחה שיווק דיגיטלי</p>
+              <h3 className="font-bold text-gray-900 text-xl mb-2">מייסד</h3>
+              <p className="text-gray-600">מנהל פרויקטים ומערכות מידע</p>
+              <p className="text-gray-500 text-sm mt-1">ניסיון של 5 שנים</p>
             </Card>
           </div>
         </div>
@@ -370,17 +278,7 @@ export default function OnePager() {
   );
 }
 
-function StatBox({ number, label, icon: Icon }) {
-  return (
-    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center">
-      <div className="flex items-center justify-center gap-1">
-        <span className="text-2xl font-bold">{number}</span>
-        {Icon && <Icon className="w-5 h-5 fill-yellow-400 text-yellow-400" />}
-      </div>
-      <div className="text-sm text-white/80">{label}</div>
-    </div>
-  );
-}
+
 
 function FeatureCard({ icon: Icon, title, description, color }) {
   const colors = {
