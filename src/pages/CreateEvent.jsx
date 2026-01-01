@@ -129,7 +129,7 @@ export default function CreateEvent() {
   const config = CONFIG;
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br ${selectedEventType ? config.bgGradient : 'from-orange-50 via-white to-pink-50'} dark:from-black dark:via-black dark:to-gray-900 pb-20`} style={{ direction: 'rtl' }}>
+    <div className={`min-h-screen bg-gradient-to-br ${config.bgGradient} dark:from-black dark:via-black dark:to-gray-900 pb-20`} style={{ direction: 'rtl' }}>
       <div className="max-w-6xl mx-auto px-3 py-3 sm:px-4 sm:py-6">
         {/* Compact Header */}
         <div className="flex items-center justify-between mb-2 sm:mb-4">
