@@ -241,15 +241,13 @@ export default function CreateEvent() {
         ) : null}
 
         {/* Template Selector Mode */}
-        {mode === 'template' && config && (
+        {mode === 'template' && (
           <Card className={`max-w-5xl mx-auto shadow-2xl border-2 ${config.borderColor} mt-8`}>
             <CardHeader className={`bg-gradient-to-r ${config.template.headerGradient} text-white`}>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-3 text-2xl">
                   <Calendar className="w-7 h-7" />
-                  <span>
-                    {selectedEventType === 'production' ? 'בחר תבנית הפקה' : 'בחר תבנית'}
-                  </span>
+                  <span>בחר תבנית</span>
                 </CardTitle>
                 <Button
                   variant="ghost"
@@ -261,7 +259,7 @@ export default function CreateEvent() {
               </div>
             </CardHeader>
             <CardContent className="p-4 h-[600px] overflow-y-auto">
-              <EventTemplateSelector onTemplateSelected={handleEventCreated} eventType={selectedEventType} />
+              <EventTemplateSelector onTemplateSelected={handleEventCreated} />
             </CardContent>
           </Card>
         )}
