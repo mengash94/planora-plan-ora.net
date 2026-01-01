@@ -672,9 +672,14 @@ export default function CreateEventManualPage() {
               id="title"
               value={formData.title || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value || '' }))}
-              placeholder="למשל: מסיבת יום הולדת"
+              placeholder={selectedTemplate?.title ? `לדוגמה: ${selectedTemplate.title}` : "למשל: מסיבת יום הולדת"}
               required
             />
+            {selectedTemplate?.title && !formData.title && (
+              <p className="text-xs text-orange-600 mt-1">
+                💡 טיפ: הכותרת מהתבנית היא "{selectedTemplate.title}" - תוכל להשתמש בה או לשנות
+              </p>
+            )}
           </div>
 
           <div>
