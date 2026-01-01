@@ -94,14 +94,16 @@ export default function CreateEventManualPage() {
       console.log('[CreateEventManual] defaultTasks:', templateData.defaultTasks);
       console.log('[CreateEventManual] defaultItinerary:', templateData.defaultItinerary);
 
+      const templateTitle = templateData.title || templateData.name || '';
       setSelectedTemplate({
         ...templateData,
+        title: templateTitle,
         defaultTasks: templateData.defaultTasks || templateData.default_tasks || [],
         defaultItinerary: templateData.defaultItinerary || templateData.default_itinerary || []
       });
       setFormData(prev => ({
         ...prev,
-        title: templateData.name || templateData.title || '',
+        title: templateTitle,
         description: templateData.description || '',
         coverImageUrl: templateData.coverImageUrl || templateData.cover_image_url || '',
         category: templateData.category || '',
