@@ -663,12 +663,6 @@ export default function CreateEventManualPage() {
 
         <div className="text-center mb-6">
           <h2 className="text-2xl font-semibold mb-2">צור תכנון חדש</h2>
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-orange-100 to-pink-100 border border-orange-200">
-            <span className="text-2xl">{formData.eventType === 'production' ? '💍' : '🎉'}</span>
-            <span className="font-medium text-gray-700">
-              {formData.eventType === 'production' ? 'אירוע הפקה' : 'מפגש חברתי'}
-            </span>
-          </div>
         </div>
 
         <form onSubmit={handleCreateEvent} className="space-y-6">
