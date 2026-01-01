@@ -91,33 +91,47 @@ export default function CreateEventManualPage() {
     if (location.state?.templateData) {
       const templateData = location.state.templateData;
       console.log('[CreateEventManual] Loading template data:', templateData);
-      console.log('[CreateEventManual] defaultTasks:', templateData.defaultTasks);
-      console.log('[CreateEventManual] defaultItinerary:', templateData.defaultItinerary);
+      console.log('[CreateEventManual] Template title:', templateData.title, 'name:', templateData.name);
 
       const templateTitle = templateData.title || templateData.name || '';
+      console.log('[CreateEventManual] Using title:', templateTitle);
+
       setSelectedTemplate({
         ...templateData,
         title: templateTitle,
         defaultTasks: templateData.defaultTasks || templateData.default_tasks || [],
         defaultItinerary: templateData.defaultItinerary || templateData.default_itinerary || []
       });
-      setFormData(prev => ({
-        ...prev,
+      
+      // Set form data with template values
+      setFormData({
         title: templateTitle,
         description: templateData.description || '',
-        coverImageUrl: templateData.coverImageUrl || templateData.cover_image_url || '',
-        category: templateData.category || '',
         location: templateData.location || '',
-        budget: templateData.budget ? String(templateData.budget) : '',
+        eventDate: null,
+        endDate: null,
+        coverImageUrl: templateData.coverImageUrl || templateData.cover_image_url || '',
         privacy: templateData.privacy || 'private',
+        category: templateData.category || '',
+        customCategory: '',
+        budget: templateData.budget ? String(templateData.budget) : '',
+        createDatePoll: false,
+        createLocationPoll: false,
+        dateOptions: [],
+        locationOptions: [],
+        datePollTitle: '',
+        locationPollTitle: '',
         participationCost: templateData.participationCost ? String(templateData.participationCost) : '',
         hidePaymentsFromMembers: templateData.hidePaymentsFromMembers || false,
+        visibleTabs: ['updates', 'tasks', 'chat', 'polls', 'itinerary', 'professionals', 'links', 'gallery', 'documents', 'participants', 'payments'],
         paymentMethod: templateData.paymentMethod || '',
         paymentMethods: templateData.paymentMethods || [],
         paymentPhone: templateData.paymentPhone || '',
         bankDetails: templateData.bankDetails || null,
+        isRecurring: false,
+        recurrenceRule: null,
         eventType: templateData.eventType || 'social'
-      }));
+      });
     } else if (location.state?.eventType) {
       setFormData(prev => ({
         ...prev,
