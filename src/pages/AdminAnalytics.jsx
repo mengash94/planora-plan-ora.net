@@ -128,11 +128,12 @@ export default function AdminAnalyticsPage() {
   ].filter(d => Number(d.value) > 0);
 
   // Prepare pie chart data for user status
+  const ue = metrics.userEngagement || {};
   const userStatusData = [
-    { name: 'משתמשים פעילים', value: metrics.activeUsers || 0, color: COLORS.active },
-    { name: 'משתמשים חדשים', value: metrics.newUsers || 0, color: COLORS.new },
-    { name: 'משתמשים נטושים', value: metrics.churnedUsers || 0, color: COLORS.churned }
-  ].filter(d => d.value > 0);
+    { name: 'משתמשים פעילים', value: ue.activeUsers ?? metrics.activeUsers ?? 0, color: COLORS.active },
+    { name: 'משתמשים חדשים', value: ue.recentlyActive ?? metrics.newUsers ?? 0, color: COLORS.new },
+    { name: 'משתמשים נטושים', value: ue.churnedUsers ?? metrics.churnedUsers ?? 0, color: COLORS.churned }
+  ].filter(d => Number(d.value) > 0);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 pb-20" style={{ direction: 'rtl' }}>
