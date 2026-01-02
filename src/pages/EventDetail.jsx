@@ -900,7 +900,7 @@ export default function EventDetailPage() {
         'chat': 'צ\'אט',
         'polls': 'סקרים',
         'itinerary': 'לוח זמנים',
-        'professionals': 'ספקים',
+        'professionals': 'הספקים שלי',
         'participants': 'מוזמנים',
         'rsvp': 'אישורי הגעה',
         'budget': 'תקציב',
@@ -917,14 +917,14 @@ export default function EventDetailPage() {
         'chat': 'צ\'אט',
         'polls': 'סקרים',
         'itinerary': 'לו"ז',
-        'professionals': 'ספקים',
+        'professionals': 'הספקים שלי',
         'participants': 'משתתפים',
         'rsvp': 'אישורי הגעה',
         'budget': 'תקציב',
         'payments': 'הוצאות',
         'links': 'קישורים',
         'gallery': 'תמונות',
-        'documents': ' חשובים מסמכים'
+        'documents': 'מסמכים חשובים'
       };
       return socialLabels[tabId] || tabId;
     }
