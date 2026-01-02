@@ -114,8 +114,8 @@ export default function AdminAnalyticsPage() {
     );
   }
 
-  const metrics = analyticsData?.metrics || {};
-  const timeline = metrics.timeline || [];
+  const metrics = analyticsData || {};
+  const timeline = metrics.timeline || metrics.dailyActivity || [];
 
   // Prepare pie chart data for event creation methods
   const eventCreationData = [
