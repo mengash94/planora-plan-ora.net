@@ -149,7 +149,7 @@ export default function CreateEventManualPage() {
       endDate: null
     }));
     setShowDatePollDialog(false);
-    toast.success('סקר תאריכים נשמר, ייווצר עם האירוע');
+    toast.success('סקר תאריכים נשמר, יווצר עם האירוע');
   };
 
   const handleLocationPollCreated = (pollData) => {
@@ -163,7 +163,7 @@ export default function CreateEventManualPage() {
       location: ''
     }));
     setShowLocationPollDialog(false);
-    toast.success('סקר מקום נשמר, ייווצר עם האירוע');
+    toast.success('סקר מקום נשמר, יווצר עם האירוע');
   };
 
   const handleCreateEvent = async (e) => {
