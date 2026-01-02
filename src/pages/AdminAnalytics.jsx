@@ -119,12 +119,13 @@ export default function AdminAnalyticsPage() {
   const metrics = analyticsData || {};
   const timeline = metrics.timeline || metrics.dailyActivity || [];
 
-  // Prepare pie chart data for event creation methods
+  // Prepare pie chart data for event creation methods (supports multiple shapes)
+  const m = metrics.eventCreationMethods || {};
   const eventCreationData = [
-    { name: 'יצירה עם AI', value: metrics.eventsCreatedByAI || 0, color: COLORS.ai },
-    { name: 'יצירה ידנית', value: metrics.eventsCreatedManually || 0, color: COLORS.manual },
-    { name: 'יצירה מתבנית', value: metrics.eventsCreatedWithTemplate || 0, color: COLORS.template }
-  ].filter(d => d.value > 0);
+    { name: 'יצירה עם AI', value: m.ai ?? metrics.eventsCreatedByAI ?? 0, color: COLORS.ai },
+    { name: 'יצירה ידנית', value: m.manual ?? metrics.eventsCreatedManually ?? 0, color: COLORS.manual },
+    { name: 'יצירה מתבנית', value: m.template ?? metrics.eventsCreatedWithTemplate ?? 0, color: COLORS.template }
+  ].filter(d => Number(d.value) > 0);
 
   // Prepare pie chart data for user status
   const userStatusData = [
