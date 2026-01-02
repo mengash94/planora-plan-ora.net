@@ -895,10 +895,10 @@ export default function EventDetailPage() {
     
     if (eventType === 'production') {
       const productionLabels = {
-        'updates': 'עדכוני הפקה',
-        'tasks': 'משימות הפקה',
-        'chat': 'תקשורת צוות',
-        'polls': 'החלטות',
+        'updates': 'עדכונים ',
+        'tasks': 'משימות',
+        'chat': 'צ\'אט',
+        'polls': 'סקרים',
         'itinerary': 'לוח זמנים',
         'professionals': 'ספקים',
         'participants': 'מוזמנים',
@@ -913,7 +913,7 @@ export default function EventDetailPage() {
     } else {
       const socialLabels = {
         'updates': 'עדכונים',
-        'tasks': 'משימות',
+        'tasks': 'מה צריך לעשות?',
         'chat': 'צ\'אט',
         'polls': 'סקרים',
         'itinerary': 'לו"ז',
@@ -921,10 +921,10 @@ export default function EventDetailPage() {
         'participants': 'משתתפים',
         'rsvp': 'אישורי הגעה',
         'budget': 'תקציב',
-        'payments': 'תשלומים',
+        'payments': 'הוצאות',
         'links': 'קישורים',
-        'gallery': 'גלריה',
-        'documents': 'מסמכים'
+        'gallery': 'תמונות',
+        'documents': ' חשובים מסמכים'
       };
       return socialLabels[tabId] || tabId;
     }
