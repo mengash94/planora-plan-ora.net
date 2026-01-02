@@ -15,8 +15,6 @@ export default function CreateEvent() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [mode, setMode] = useState(null);
-  // Always set to 'social' - event type selection is disabled
-  const [selectedEventType, setSelectedEventType] = useState('social');
 
   // Scroll to top on mount
   React.useEffect(() => {
