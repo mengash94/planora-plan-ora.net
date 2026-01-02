@@ -308,7 +308,7 @@ export default function AdminAnalyticsPage() {
                 <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg border border-purple-200">
                   <div>
                     <p className="font-semibold text-gray-900">משתמשים עם אירועים</p>
-                    <p className="text-sm text-gray-500">{((metrics.usersWithEvents / metrics.totalUsers) * 100).toFixed(1)}% engagement</p>
+                    <p className="text-sm text-gray-500">{metrics.totalUsers ? (((metrics.usersWithEvents || 0) / metrics.totalUsers) * 100).toFixed(1) : 0}% engagement</p>
                   </div>
                   <p className="text-2xl font-bold text-purple-600">{metrics.usersWithEvents || 0}</p>
                 </div>
