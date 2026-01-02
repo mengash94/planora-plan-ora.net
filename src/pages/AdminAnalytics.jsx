@@ -219,7 +219,7 @@ export default function AdminAnalyticsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-orange-100 text-xs uppercase tracking-wide mb-1">ממוצע אירועים</p>
-                  <p className="text-4xl font-bold">{metrics.avgEventsPerUser || 0}</p>
+                  <p className="text-4xl font-bold">{Number(metrics.avgEventsPerUser ?? metrics.insights?.avgEventsPerUser ?? 0)}</p>
                   <p className="text-xs text-orange-200 mt-1">לכל משתמש</p>
                 </div>
                 <Target className="w-12 h-12 text-orange-300" />
