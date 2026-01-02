@@ -188,13 +188,158 @@ export default function AdminAnalyticsPage() {
           </CardContent>
         </Card>
 
-        {/* Key Metrics */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <Card className="bg-gradient-to-br from-orange-500 to-orange-600 text-white">
-            <CardContent className="p-4">
+        {/* Overview Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <Card className="bg-gradient-to-br from-purple-600 to-purple-700 text-white shadow-lg">
+            <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-orange-100 text-sm">יצירה עם AI</p>
+                  <p className="text-purple-100 text-xs uppercase tracking-wide mb-1">סה"כ משתמשים</p>
+                  <p className="text-4xl font-bold">{metrics.totalUsers || 0}</p>
+                </div>
+                <Users className="w-12 h-12 text-purple-300" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-green-600 to-green-700 text-white shadow-lg">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-green-100 text-xs uppercase tracking-wide mb-1">משתמשים פעילים</p>
+                  <p className="text-4xl font-bold">{metrics.activeUsers || 0}</p>
+                  <p className="text-xs text-green-200 mt-1">7 ימים אחרונים</p>
+                </div>
+                <Activity className="w-12 h-12 text-green-300" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-orange-600 to-orange-700 text-white shadow-lg">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-orange-100 text-xs uppercase tracking-wide mb-1">ממוצע אירועים</p>
+                  <p className="text-4xl font-bold">{metrics.avgEventsPerUser || 0}</p>
+                  <p className="text-xs text-orange-200 mt-1">לכל משתמש</p>
+                </div>
+                <Target className="w-12 h-12 text-orange-300" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-cyan-600 to-cyan-700 text-white shadow-lg">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-cyan-100 text-xs uppercase tracking-wide mb-1">כניסות חוזרות</p>
+                  <p className="text-4xl font-bold">{metrics.returningUsers || 0}</p>
+                  <p className="text-xs text-cyan-200 mt-1">משתמשים נאמנים</p>
+                </div>
+                <LogIn className="w-12 h-12 text-cyan-300" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Platform & Engagement Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          {/* Platform Distribution */}
+          <Card className="shadow-lg border-2 border-blue-100">
+            <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 border-b">
+              <CardTitle className="flex items-center gap-2 text-blue-900">
+                <Smartphone className="w-6 h-6" />
+                התפלגות לפי פלטפורמה
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
+                      <Smartphone className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900">Android</p>
+                      <p className="text-sm text-gray-500">{((metrics.androidUsers / metrics.totalUsers) * 100).toFixed(1)}%</p>
+                    </div>
+                  </div>
+                  <p className="text-2xl font-bold text-green-600">{metrics.androidUsers || 0}</p>
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
+                      <Smartphone className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900">iOS</p>
+                      <p className="text-sm text-gray-500">{((metrics.iosUsers / metrics.totalUsers) * 100).toFixed(1)}%</p>
+                    </div>
+                  </div>
+                  <p className="text-2xl font-bold text-blue-600">{metrics.iosUsers || 0}</p>
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-gray-500 rounded-full flex items-center justify-center">
+                      <Monitor className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900">Web</p>
+                      <p className="text-sm text-gray-500">{((metrics.webUsers / metrics.totalUsers) * 100).toFixed(1)}%</p>
+                    </div>
+                  </div>
+                  <p className="text-2xl font-bold text-gray-600">{metrics.webUsers || 0}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* User Engagement */}
+          <Card className="shadow-lg border-2 border-purple-100">
+            <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 border-b">
+              <CardTitle className="flex items-center gap-2 text-purple-900">
+                <Target className="w-6 h-6" />
+                מעורבות משתמשים
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg border border-purple-200">
+                  <div>
+                    <p className="font-semibold text-gray-900">משתמשים עם אירועים</p>
+                    <p className="text-sm text-gray-500">{((metrics.usersWithEvents / metrics.totalUsers) * 100).toFixed(1)}% engagement</p>
+                  </div>
+                  <p className="text-2xl font-bold text-purple-600">{metrics.usersWithEvents || 0}</p>
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <div>
+                    <p className="font-semibold text-gray-900">משתמשים ללא אירועים</p>
+                    <p className="text-sm text-gray-500">הזדמנות לצמיחה</p>
+                  </div>
+                  <p className="text-2xl font-bold text-gray-600">{metrics.usersWithoutEvents || 0}</p>
+                </div>
+
+                <div className="p-4 bg-gradient-to-r from-orange-50 to-pink-50 rounded-lg border-2 border-orange-200">
+                  <div className="flex items-center justify-between">
+                    <p className="font-semibold text-orange-900">ממוצע אירועים למשתמש</p>
+                    <p className="text-3xl font-bold text-orange-600">{metrics.avgEventsPerUser || 0}</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Event Creation Methods */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <Card className="bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-lg hover:shadow-xl transition-shadow">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-orange-100 text-xs uppercase tracking-wide mb-1">יצירה עם AI</p>
                   <p className="text-3xl font-bold">{metrics.eventsCreatedByAI || 0}</p>
                 </div>
                 <Sparkles className="w-10 h-10 text-orange-200" />
@@ -202,11 +347,11 @@ export default function AdminAnalyticsPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white">
-            <CardContent className="p-4">
+          <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl transition-shadow">
+            <CardContent className="p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-blue-100 text-sm">יצירה ידנית</p>
+                  <p className="text-blue-100 text-xs uppercase tracking-wide mb-1">יצירה ידנית</p>
                   <p className="text-3xl font-bold">{metrics.eventsCreatedManually || 0}</p>
                 </div>
                 <FileText className="w-10 h-10 text-blue-200" />
@@ -214,11 +359,11 @@ export default function AdminAnalyticsPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white">
-            <CardContent className="p-4">
+          <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg hover:shadow-xl transition-shadow">
+            <CardContent className="p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-purple-100 text-sm">יצירה מתבנית</p>
+                  <p className="text-purple-100 text-xs uppercase tracking-wide mb-1">יצירה מתבנית</p>
                   <p className="text-3xl font-bold">{metrics.eventsCreatedWithTemplate || 0}</p>
                 </div>
                 <Calendar className="w-10 h-10 text-purple-200" />
@@ -226,11 +371,11 @@ export default function AdminAnalyticsPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white">
-            <CardContent className="p-4">
+          <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white shadow-lg hover:shadow-xl transition-shadow">
+            <CardContent className="p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-green-100 text-sm">הצטרפויות</p>
+                  <p className="text-green-100 text-xs uppercase tracking-wide mb-1">הצטרפויות</p>
                   <p className="text-3xl font-bold">{metrics.totalJoins || 0}</p>
                 </div>
                 <UserPlus className="w-10 h-10 text-green-200" />
