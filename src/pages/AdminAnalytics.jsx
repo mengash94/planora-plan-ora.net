@@ -94,12 +94,14 @@ export default function AdminAnalyticsPage() {
       return;
     }
     
-    if (user.role !== 'admin') {
+    // Allow both admin and owner roles from InstaBack
+    const role = (user.role || user.roles || '').toString().toLowerCase();
+    if (!['admin', 'owner', 'superadmin'].includes(role)) {
       toast.error('גישה למנהלים בלבד');
       navigate(createPageUrl('Home'));
       return;
     }
-    
+
     loadAnalytics();
   }, [isAuthenticated, user, navigate]);
 
