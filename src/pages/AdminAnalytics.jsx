@@ -72,13 +72,10 @@ export default function AdminAnalyticsPage() {
       if (startDate) payload.startDate = new Date(startDate).toISOString();
       if (endDate) payload.endDate = new Date(endDate).toISOString();
       
-      const { data } = await base44.functions.invoke('getAnalyticsData', payload);
-      
-      if (data.success) {
-        setAnalyticsData(data);
-      } else {
-        throw new Error(data.error || 'Failed to load analytics');
-      }
+      const res = await getDashboardOverview(payload);
+      const data = res?.data || res;
+      if (!data) throw new Error('Empty analytics response');
+      setAnalyticsData({ success: true, ...data });
     } catch (error) {
       console.error('[AdminAnalytics] Error:', error);
       toast.error('שגיאה בטעינת הנתונים: ' + error.message);
