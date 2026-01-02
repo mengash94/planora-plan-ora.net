@@ -76,7 +76,7 @@ export default function AdminAnalyticsPage() {
       if (startDate) payload.startDate = new Date(startDate).toISOString();
       if (endDate) payload.endDate = new Date(endDate).toISOString();
       
-      const res = await getDashboardOverview(payload);
+      const res = await getAdminAnalyticsData(payload);
       const data = res?.data || res;
       if (!data) throw new Error('Empty analytics response');
       setAnalyticsData({ success: true, ...data });
