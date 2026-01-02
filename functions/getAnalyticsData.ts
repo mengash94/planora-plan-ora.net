@@ -29,7 +29,14 @@ Deno.serve(async (req) => {
     }
 
     // Fetch all analytics events (admin access)
-    const events = await base44.asServiceRole.entities.AnalyticsEvent.filter(filter);
+    const rawEvents = await base44.asServiceRole.entities.AnalyticsEvent.filter(filter);
+    // Normalize possible nested 'data' shape
+    const events = rawEvents.map(e => ({
+      eventType: e.eventType ?? e.data?.eventType,
+      timestamp: e.timestamp ?? e.data?.timestamp ?? e.created_date,
+      userId: e.userId ?? e.data?.userId ?? e.created_by_id,
+      metadata: e.metadata ?? e.data?.metadata ?? {}
+    }));
     
     // Fetch all users for retention analysis
     const users = await base44.asServiceRole.entities.User.list();
