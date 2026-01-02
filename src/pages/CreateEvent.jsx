@@ -45,7 +45,7 @@ export default function CreateEvent() {
               defaultItinerary: eventResult.defaultItinerary || [],
               canBePublic: eventResult.canBePublic ?? true,
               templateId: eventResult.templateId,
-              eventType: selectedEventType || 'social'
+              eventType: 'social'
             },
             fromTemplate: true
           }
