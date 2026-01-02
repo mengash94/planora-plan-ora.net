@@ -194,7 +194,7 @@ export default function AdminAnalyticsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-purple-100 text-xs uppercase tracking-wide mb-1">סה"כ משתמשים</p>
-                  <p className="text-4xl font-bold">{metrics.totalUsers || 0}</p>
+                  <p className="text-4xl font-bold">{metrics.totalUsers || metrics.userCount || 0}</p>
                 </div>
                 <Users className="w-12 h-12 text-purple-300" />
               </div>
