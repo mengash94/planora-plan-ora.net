@@ -162,6 +162,23 @@ Deno.serve(async (req) => {
       .sort((a, b) => b.joins - a.joins)
       .slice(0, 10);
 
+    // Calculate engagement metrics
+    const allEventMembers = await base44.asServiceRole.entities.EventMember.list();
+    const usersWithEventsSet = new Set(allEventMembers.map(m => m.userId || m.user_id).filter(Boolean));
+    metrics.usersWithEvents = usersWithEventsSet.size;
+    metrics.usersWithoutEvents = Math.max(0, users.length - metrics.usersWithEvents);
+    
+    // Average events per user
+    if (metrics.usersWithEvents > 0) {
+      const eventCounts = {};
+      allEventMembers.forEach(m => {
+        const uid = m.userId || m.user_id;
+        if (uid) eventCounts[uid] = (eventCounts[uid] || 0) + 1;
+      });
+      const totalEventsCount = Object.values(eventCounts).reduce((sum, count) => sum + count, 0);
+      metrics.avgEventsPerUser = (totalEventsCount / metrics.usersWithEvents).toFixed(1);
+    }
+
     // Return comprehensive analytics
     return Response.json({
       success: true,
