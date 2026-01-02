@@ -18,7 +18,10 @@ import {
   LogIn,
   BarChart3,
   PieChart,
-  Activity
+  Activity,
+  Smartphone,
+  Monitor,
+  Target
 } from 'lucide-react';
 import { 
   LineChart, 
