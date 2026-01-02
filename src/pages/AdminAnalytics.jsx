@@ -39,7 +39,7 @@ import {
   ResponsiveContainer 
 } from 'recharts';
 import { toast } from 'sonner';
-import { base44 } from '@/api/base44Client';
+import { getDashboardOverview } from '@/components/instabackService';
 
 export default function AdminAnalyticsPage() {
   const navigate = useNavigate();
@@ -259,7 +259,7 @@ export default function AdminAnalyticsPage() {
                     </div>
                     <div>
                       <p className="font-semibold text-gray-900">Android</p>
-                      <p className="text-sm text-gray-500">{metrics.totalUsers > 0 ? ((metrics.androidUsers / metrics.totalUsers) * 100).toFixed(1) : 0}%</p>
+                      <p className="text-sm text-gray-500">{((metrics.androidUsers / metrics.totalUsers) * 100).toFixed(1)}%</p>
                     </div>
                   </div>
                   <p className="text-2xl font-bold text-green-600">{metrics.androidUsers || 0}</p>
@@ -272,7 +272,7 @@ export default function AdminAnalyticsPage() {
                     </div>
                     <div>
                       <p className="font-semibold text-gray-900">iOS</p>
-                      <p className="text-sm text-gray-500">{metrics.totalUsers > 0 ? ((metrics.iosUsers / metrics.totalUsers) * 100).toFixed(1) : 0}%</p>
+                      <p className="text-sm text-gray-500">{((metrics.iosUsers / metrics.totalUsers) * 100).toFixed(1)}%</p>
                     </div>
                   </div>
                   <p className="text-2xl font-bold text-blue-600">{metrics.iosUsers || 0}</p>
@@ -285,7 +285,7 @@ export default function AdminAnalyticsPage() {
                     </div>
                     <div>
                       <p className="font-semibold text-gray-900">Web</p>
-                      <p className="text-sm text-gray-500">{metrics.totalUsers > 0 ? ((metrics.webUsers / metrics.totalUsers) * 100).toFixed(1) : 0}%</p>
+                      <p className="text-sm text-gray-500">{((metrics.webUsers / metrics.totalUsers) * 100).toFixed(1)}%</p>
                     </div>
                   </div>
                   <p className="text-2xl font-bold text-gray-600">{metrics.webUsers || 0}</p>
@@ -307,7 +307,7 @@ export default function AdminAnalyticsPage() {
                 <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg border border-purple-200">
                   <div>
                     <p className="font-semibold text-gray-900">משתמשים עם אירועים</p>
-                    <p className="text-sm text-gray-500">{metrics.totalUsers > 0 ? ((metrics.usersWithEvents / metrics.totalUsers) * 100).toFixed(1) : 0}% engagement</p>
+                    <p className="text-sm text-gray-500">{((metrics.usersWithEvents / metrics.totalUsers) * 100).toFixed(1)}% engagement</p>
                   </div>
                   <p className="text-2xl font-bold text-purple-600">{metrics.usersWithEvents || 0}</p>
                 </div>
