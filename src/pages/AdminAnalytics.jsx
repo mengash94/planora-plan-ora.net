@@ -39,7 +39,7 @@ import {
   ResponsiveContainer 
 } from 'recharts';
 import { toast } from 'sonner';
-import { getDashboardOverview } from '@/components/instabackService';
+import { getAdminAnalyticsData } from '@/functions/getAdminAnalyticsData';
 
 export default function AdminAnalyticsPage() {
   const navigate = useNavigate();
