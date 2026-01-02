@@ -286,7 +286,7 @@ export default function AdminAnalyticsPage() {
                     </div>
                     <div>
                       <p className="font-semibold text-gray-900">Web</p>
-                      <p className="text-sm text-gray-500">{((metrics.webUsers / metrics.totalUsers) * 100).toFixed(1)}%</p>
+                      <p className="text-sm text-gray-500">{metrics.totalUsers ? (((metrics.webUsers || 0) / metrics.totalUsers) * 100).toFixed(1) : 0}%</p>
                     </div>
                   </div>
                   <p className="text-2xl font-bold text-gray-600">{metrics.webUsers || 0}</p>
