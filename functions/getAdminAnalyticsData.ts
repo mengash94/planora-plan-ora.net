@@ -23,13 +23,15 @@ async function fetchFromInstaback(endpoint, token) {
 
 Deno.serve(async (req) => {
     try {
-        // Get token from request headers
-        const authHeader = req.headers.get('Authorization');
-        const token = authHeader?.replace('Bearer ', '') || Deno.env.get('INSTABACK_TOKEN');
+        // Use INSTABACK_TOKEN from environment
+        const token = Deno.env.get('INSTABACK_TOKEN');
         
         if (!token) {
-            return Response.json({ error: 'No authentication token' }, { status: 401 });
+            console.error('[getAdminAnalyticsData] INSTABACK_TOKEN not set');
+            return Response.json({ error: 'No authentication token configured' }, { status: 401 });
         }
+        
+        console.log('[getAdminAnalyticsData] Using INSTABACK_TOKEN from environment');
 
         // Parse request body for date filters
         let startDate = null;
