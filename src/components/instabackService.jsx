@@ -674,6 +674,9 @@ export const createEvent = async (data) => {
         cover_image_url: data.cover_image_url || data.coverImageUrl || '',
         budget: data.budget || null,
         status: data.status || 'active',
+        // Event type - always 'social'
+        event_type: data.event_type || data.eventType || 'social',
+        eventType: data.event_type || data.eventType || 'social',
         datePollEnabled: data.datePollEnabled || false,
         locationPollEnabled: data.locationPollEnabled || false,
         // Payment fields
