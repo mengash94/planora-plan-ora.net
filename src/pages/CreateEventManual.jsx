@@ -684,7 +684,7 @@ export default function CreateEventManualPage() {
               id="title"
               value={formData.title || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value || '' }))}
-              placeholder="למשל: מסיבת יום הולדת"
+              placeholder={selectedTemplate ? (selectedTemplate.title || selectedTemplate.name) : "למשל: מסיבת יום הולדת"}
               required
             />
             {selectedTemplate && (
