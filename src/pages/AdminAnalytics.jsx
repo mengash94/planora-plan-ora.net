@@ -273,7 +273,7 @@ export default function AdminAnalyticsPage() {
                     </div>
                     <div>
                       <p className="font-semibold text-gray-900">iOS</p>
-                      <p className="text-sm text-gray-500">{((metrics.iosUsers / metrics.totalUsers) * 100).toFixed(1)}%</p>
+                      <p className="text-sm text-gray-500">{metrics.totalUsers ? (((metrics.iosUsers || 0) / metrics.totalUsers) * 100).toFixed(1) : 0}%</p>
                     </div>
                   </div>
                   <p className="text-2xl font-bold text-blue-600">{metrics.iosUsers || 0}</p>
