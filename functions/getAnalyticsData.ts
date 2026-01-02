@@ -37,6 +37,7 @@ Deno.serve(async (req) => {
     // Calculate metrics
     const metrics = {
       totalEvents: events.length,
+      totalUsers: users.length,
       
       // Event creation by method
       eventsCreatedByAI: events.filter(e => e.eventType === 'event_created_ai').length,
@@ -49,6 +50,11 @@ Deno.serve(async (req) => {
       // User activity
       totalLogins: events.filter(e => e.eventType === 'user_login').length,
       returningUsers: events.filter(e => e.eventType === 'user_returned').length,
+      
+      // Platform distribution
+      androidUsers: users.filter(u => u.app === 'android').length,
+      iosUsers: users.filter(u => u.app === 'ios').length,
+      webUsers: users.filter(u => !u.app || u.app === 'web').length,
       
       // Template usage breakdown
       templateUsage: {},
@@ -65,7 +71,14 @@ Deno.serve(async (req) => {
       topEvents: [],
       
       // Most popular templates
-      popularTemplates: []
+      popularTemplates: [],
+      
+      // Average events per user
+      avgEventsPerUser: 0,
+      
+      // Engagement metrics
+      usersWithEvents: 0,
+      usersWithoutEvents: 0
     };
 
     // Calculate template usage
