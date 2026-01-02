@@ -81,7 +81,8 @@ export default function EventTemplateSelector({ onTemplateSelected, onClose, eve
             if (onTemplateSelected) {
                 onTemplateSelected({
                     templateId: template.id || template.templateId || template.template_id,
-                    title: template.title,
+                    title: template.title || template.name,
+                    name: template.name || template.title,
                     description: template.description,
                     category: template.category,
                     coverImageUrl: template.cover_image_url || template.coverImageUrl,
