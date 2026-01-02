@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
-const INSTABACK_API_URL = 'https://instaback.ai/project/f78de3ce-0cab-4ccb-8442-0c5749792fe8/api';
+const INSTABACK_API_URL = 'https://instaback.ai/project/f78de3ce-0cab-4ccb-8442-0c574979fe8/api';
 
 async function fetchFromInstaback(endpoint, token) {
     const response = await fetch(`${INSTABACK_API_URL}${endpoint}`, {
