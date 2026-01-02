@@ -206,7 +206,7 @@ export default function AdminAnalyticsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-green-100 text-xs uppercase tracking-wide mb-1">משתמשים פעילים</p>
-                  <p className="text-4xl font-bold">{metrics.activeUsers || 0}</p>
+                  <p className="text-4xl font-bold">{ue.activeUsers ?? metrics.activeUsers ?? 0}</p>
                   <p className="text-xs text-green-200 mt-1">7 ימים אחרונים</p>
                 </div>
                 <Activity className="w-12 h-12 text-green-300" />
