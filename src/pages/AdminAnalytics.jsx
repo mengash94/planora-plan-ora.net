@@ -384,47 +384,63 @@ export default function AdminAnalyticsPage() {
           </Card>
         </div>
 
-        {/* User Activity Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <Card className="border-green-200 bg-green-50">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-green-700 text-sm font-medium">משתמשים פעילים</p>
-                  <p className="text-2xl font-bold text-green-900">{metrics.activeUsers || 0}</p>
-                  <p className="text-xs text-green-600 mt-1">פעילים ב-7 ימים האחרונים</p>
+        {/* User Retention Analysis */}
+        <Card className="mb-6 shadow-lg border-2 border-purple-100">
+          <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 border-b">
+            <CardTitle className="flex items-center gap-2 text-purple-900">
+              <Users className="w-6 h-6" />
+              ניתוח שימור משתמשים
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="relative p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border-2 border-green-200 overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-green-200 rounded-full -translate-y-16 translate-x-16 opacity-20"></div>
+                <div className="relative">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Activity className="w-5 h-5 text-green-700" />
+                    <p className="text-green-800 font-semibold text-sm">משתמשים פעילים</p>
+                  </div>
+                  <p className="text-4xl font-bold text-green-900 mb-1">{metrics.activeUsers || 0}</p>
+                  <p className="text-xs text-green-600">
+                    {metrics.totalUsers > 0 ? ((metrics.activeUsers / metrics.totalUsers) * 100).toFixed(1) : 0}% מסך המשתמשים
+                  </p>
+                  <p className="text-xs text-green-500 mt-2">פעילים ב-7 ימים אחרונים</p>
                 </div>
-                <Activity className="w-8 h-8 text-green-600" />
               </div>
-            </CardContent>
-          </Card>
 
-          <Card className="border-orange-200 bg-orange-50">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-orange-700 text-sm font-medium">משתמשים חדשים</p>
-                  <p className="text-2xl font-bold text-orange-900">{metrics.newUsers || 0}</p>
-                  <p className="text-xs text-orange-600 mt-1">הצטרפו ב-30 ימים האחרונים</p>
+              <div className="relative p-6 bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl border-2 border-orange-200 overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-orange-200 rounded-full -translate-y-16 translate-x-16 opacity-20"></div>
+                <div className="relative">
+                  <div className="flex items-center gap-2 mb-2">
+                    <UserPlus className="w-5 h-5 text-orange-700" />
+                    <p className="text-orange-800 font-semibold text-sm">משתמשים חדשים</p>
+                  </div>
+                  <p className="text-4xl font-bold text-orange-900 mb-1">{metrics.newUsers || 0}</p>
+                  <p className="text-xs text-orange-600">
+                    {metrics.totalUsers > 0 ? ((metrics.newUsers / metrics.totalUsers) * 100).toFixed(1) : 0}% מסך המשתמשים
+                  </p>
+                  <p className="text-xs text-orange-500 mt-2">הצטרפו ב-30 ימים אחרונים</p>
                 </div>
-                <UserPlus className="w-8 h-8 text-orange-600" />
               </div>
-            </CardContent>
-          </Card>
 
-          <Card className="border-red-200 bg-red-50">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-red-700 text-sm font-medium">משתמשים נטושים</p>
-                  <p className="text-2xl font-bold text-red-900">{metrics.churnedUsers || 0}</p>
-                  <p className="text-xs text-red-600 mt-1">לא פעילים יותר מ-7 ימים</p>
+              <div className="relative p-6 bg-gradient-to-br from-red-50 to-red-100 rounded-xl border-2 border-red-200 overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-red-200 rounded-full -translate-y-16 translate-x-16 opacity-20"></div>
+                <div className="relative">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Users className="w-5 h-5 text-red-700" />
+                    <p className="text-red-800 font-semibold text-sm">משתמשים נטושים</p>
+                  </div>
+                  <p className="text-4xl font-bold text-red-900 mb-1">{metrics.churnedUsers || 0}</p>
+                  <p className="text-xs text-red-600">
+                    {metrics.totalUsers > 0 ? ((metrics.churnedUsers / metrics.totalUsers) * 100).toFixed(1) : 0}% מסך המשתמשים
+                  </p>
+                  <p className="text-xs text-red-500 mt-2">לא פעילים +7 ימים</p>
                 </div>
-                <Users className="w-8 h-8 text-red-600" />
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
