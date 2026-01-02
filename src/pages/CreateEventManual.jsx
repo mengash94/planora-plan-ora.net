@@ -130,7 +130,7 @@ export default function CreateEventManualPage() {
         bankDetails: templateData.bankDetails || null,
         isRecurring: false,
         recurrenceRule: null,
-        eventType: templateData.eventType || 'social'
+        eventType: 'social'
       });
     }
     // Event type is always 'social' - removed event type selection
