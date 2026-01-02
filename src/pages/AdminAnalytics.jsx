@@ -232,7 +232,7 @@ export default function AdminAnalyticsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-cyan-100 text-xs uppercase tracking-wide mb-1">כניסות חוזרות</p>
-                  <p className="text-4xl font-bold">{metrics.returningUsers || 0}</p>
+                  <p className="text-4xl font-bold">{ue.returningUsers ?? metrics.returningUsers ?? 0}</p>
                   <p className="text-xs text-cyan-200 mt-1">משתמשים נאמנים</p>
                 </div>
                 <LogIn className="w-12 h-12 text-cyan-300" />
