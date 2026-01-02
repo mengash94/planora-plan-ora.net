@@ -16,6 +16,7 @@ import CreateEventAI from './pages/CreateEventAI';
 import CreateEventManual from './pages/CreateEventManual';
 import EditEvent from './pages/EditEvent';
 import EventChat from './pages/EventChat';
+import EventDetail from './pages/EventDetail';
 import EventRSVP from './pages/EventRSVP';
 import ForgotPassword from './pages/ForgotPassword';
 import Home from './pages/Home';
@@ -36,7 +37,6 @@ import VerifiedVenueFinder from './pages/VerifiedVenueFinder';
 import WelcomePage from './pages/WelcomePage';
 import WelcomeTest from './pages/WelcomeTest';
 import WhatsNew from './pages/WhatsNew';
-import EventDetail from './pages/EventDetail';
 import __Layout from './Layout.jsx';
 
 
@@ -59,6 +59,7 @@ export const PAGES = {
     "CreateEventManual": CreateEventManual,
     "EditEvent": EditEvent,
     "EventChat": EventChat,
+    "EventDetail": EventDetail,
     "EventRSVP": EventRSVP,
     "ForgotPassword": ForgotPassword,
     "Home": Home,
@@ -79,7 +80,6 @@ export const PAGES = {
     "WelcomePage": WelcomePage,
     "WelcomeTest": WelcomeTest,
     "WhatsNew": WhatsNew,
-    "EventDetail": EventDetail,
 }
 
 export const pagesConfig = {
