@@ -324,7 +324,7 @@ export default function AdminAnalyticsPage() {
                 <div className="p-4 bg-gradient-to-r from-orange-50 to-pink-50 rounded-lg border-2 border-orange-200">
                   <div className="flex items-center justify-between">
                     <p className="font-semibold text-orange-900">ממוצע אירועים למשתמש</p>
-                    <p className="text-3xl font-bold text-orange-600">{metrics.avgEventsPerUser || 0}</p>
+                    <p className="text-3xl font-bold text-orange-600">{Number(metrics.avgEventsPerUser ?? metrics.insights?.avgEventsPerUser ?? 0)}</p>
                   </div>
                 </div>
               </div>
