@@ -132,12 +132,8 @@ export default function CreateEventManualPage() {
         recurrenceRule: null,
         eventType: templateData.eventType || 'social'
       });
-    } else if (location.state?.eventType) {
-      setFormData(prev => ({
-        ...prev,
-        eventType: location.state.eventType
-      }));
     }
+    // Event type is always 'social' - removed event type selection
   }, [location.state]);
 
   // Handlers for poll dialog results - now update formData

@@ -11,10 +11,12 @@ import App from './pages/App';
 import AppSpecification from './pages/AppSpecification';
 import Auth from './pages/Auth';
 import ChatOverview from './pages/ChatOverview';
+import CreateEvent from './pages/CreateEvent';
 import CreateEventAI from './pages/CreateEventAI';
 import CreateEventManual from './pages/CreateEventManual';
 import EditEvent from './pages/EditEvent';
 import EventChat from './pages/EventChat';
+import EventDetail from './pages/EventDetail';
 import EventRSVP from './pages/EventRSVP';
 import ForgotPassword from './pages/ForgotPassword';
 import Home from './pages/Home';
@@ -35,8 +37,6 @@ import VerifiedVenueFinder from './pages/VerifiedVenueFinder';
 import WelcomePage from './pages/WelcomePage';
 import WelcomeTest from './pages/WelcomeTest';
 import WhatsNew from './pages/WhatsNew';
-import CreateEvent from './pages/CreateEvent';
-import EventDetail from './pages/EventDetail';
 import __Layout from './Layout.jsx';
 
 
@@ -54,10 +54,12 @@ export const PAGES = {
     "AppSpecification": AppSpecification,
     "Auth": Auth,
     "ChatOverview": ChatOverview,
+    "CreateEvent": CreateEvent,
     "CreateEventAI": CreateEventAI,
     "CreateEventManual": CreateEventManual,
     "EditEvent": EditEvent,
     "EventChat": EventChat,
+    "EventDetail": EventDetail,
     "EventRSVP": EventRSVP,
     "ForgotPassword": ForgotPassword,
     "Home": Home,
@@ -78,8 +80,6 @@ export const PAGES = {
     "WelcomePage": WelcomePage,
     "WelcomeTest": WelcomeTest,
     "WhatsNew": WhatsNew,
-    "CreateEvent": CreateEvent,
-    "EventDetail": EventDetail,
 }
 
 export const pagesConfig = {
