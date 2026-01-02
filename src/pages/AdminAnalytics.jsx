@@ -64,21 +64,6 @@ export default function AdminAnalyticsPage() {
     new: '#f59e0b'
   };
 
-  // Redirect non-admin users
-  useEffect(() => {
-    if (!isAuthenticated || !user) {
-      toast.error('נדרשת התחברות');
-      navigate(createPageUrl('Auth'));
-      return;
-    }
-    
-    if (user.role !== 'admin') {
-      toast.error('גישה למנהלים בלבד');
-      navigate(createPageUrl('Home'));
-      return;
-    }
-  }, [isAuthenticated, user, navigate]);
-
   // Load analytics data
   const loadAnalytics = async () => {
     setIsLoading(true);
@@ -102,11 +87,24 @@ export default function AdminAnalyticsPage() {
     }
   };
 
+  // Check auth and load data
   useEffect(() => {
-    if (user?.role === 'admin') {
-      loadAnalytics();
+    if (!isAuthenticated) {
+      return;
     }
-  }, [user]);
+    
+    if (!user) {
+      return;
+    }
+    
+    if (user.role !== 'admin') {
+      toast.error('גישה למנהלים בלבד');
+      navigate(createPageUrl('Home'));
+      return;
+    }
+    
+    loadAnalytics();
+  }, [isAuthenticated, user, navigate]);
 
   if (isLoading) {
     return (
