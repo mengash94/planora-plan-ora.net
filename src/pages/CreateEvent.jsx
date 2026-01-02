@@ -37,7 +37,8 @@ export default function CreateEvent() {
         navigate(createPageUrl('CreateEventManual'), {
           state: {
             templateData: {
-              title: eventResult.title || '',
+              title: eventResult.title || eventResult.name || '',
+              name: eventResult.name || eventResult.title || '',
               description: eventResult.description || '',
               category: eventResult.category || '',
               coverImageUrl: eventResult.coverImageUrl || '',
