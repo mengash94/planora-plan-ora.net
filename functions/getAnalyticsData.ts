@@ -39,7 +39,12 @@ Deno.serve(async (req) => {
     }));
     
     // Fetch all users for retention analysis
-    const users = await base44.asServiceRole.entities.User.list();
+    let users = [];
+    try {
+      users = await base44.asServiceRole.entities.User.list();
+    } catch (_err) {
+      users = [];
+    }
 
     // Calculate metrics
     const metrics = {
@@ -152,6 +157,28 @@ Deno.serve(async (req) => {
     // Churned users = total users - active users - new users
     metrics.churnedUsers = Math.max(0, users.length - metrics.activeUsers - metrics.newUsers);
 
+    // Fallback when User entity is empty (use events-based estimation)
+    if (users.length === 0) {
+      const userIdsFromEvents = Array.from(new Set(events.map(e => e.userId).filter(Boolean)));
+      metrics.totalUsers = userIdsFromEvents.length;
+      // Platform distribution unknown without user records
+      metrics.androidUsers = 0;
+      metrics.iosUsers = 0;
+      metrics.webUsers = 0;
+
+      const userFirstSeen = {};
+      events.forEach(e => {
+        if (e.userId && e.timestamp) {
+          const ts = new Date(e.timestamp).getTime();
+          if (!userFirstSeen[e.userId] || ts < userFirstSeen[e.userId]) {
+            userFirstSeen[e.userId] = ts;
+          }
+        }
+      });
+      metrics.newUsers = Object.values(userFirstSeen).filter(ts => ts >= thirtyDaysAgoDate.getTime()).length;
+      metrics.churnedUsers = Math.max(0, metrics.totalUsers - metrics.activeUsers - metrics.newUsers);
+    }
+
     // Top events by joins
     const eventJoinCounts = {};
     events.filter(e => e.eventType === 'event_joined').forEach(e => {
@@ -173,7 +200,7 @@ Deno.serve(async (req) => {
     const allEventMembers = await base44.asServiceRole.entities.EventMember.list();
     const usersWithEventsSet = new Set(allEventMembers.map(m => m.userId || m.user_id).filter(Boolean));
     metrics.usersWithEvents = usersWithEventsSet.size;
-    metrics.usersWithoutEvents = Math.max(0, users.length - metrics.usersWithEvents);
+    metrics.usersWithoutEvents = Math.max(0, metrics.totalUsers - metrics.usersWithEvents);
     
     // Average events per user
     if (metrics.usersWithEvents > 0) {
