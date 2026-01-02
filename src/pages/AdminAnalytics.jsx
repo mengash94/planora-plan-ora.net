@@ -260,7 +260,7 @@ export default function AdminAnalyticsPage() {
                     </div>
                     <div>
                       <p className="font-semibold text-gray-900">Android</p>
-                      <p className="text-sm text-gray-500">{((metrics.androidUsers / metrics.totalUsers) * 100).toFixed(1)}%</p>
+                      <p className="text-sm text-gray-500">{metrics.totalUsers ? (((metrics.androidUsers || 0) / metrics.totalUsers) * 100).toFixed(1) : 0}%</p>
                     </div>
                   </div>
                   <p className="text-2xl font-bold text-green-600">{metrics.androidUsers || 0}</p>
