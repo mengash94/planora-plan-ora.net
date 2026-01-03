@@ -6,10 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Copy, MessageCircle, Mail, Users, Link as LinkIcon, Check, MessageSquare, Phone, Trash2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/components/AuthProvider';
-import { isNativeCapacitor } from '@/components/onesignalService';
 
 export default function InviteDialog({ isOpen, onOpenChange, event, onCopyLink, onShareWhatsApp }) {
-  const isNative = isNativeCapacitor();
   const { user: currentUser } = useAuth();
   const [copied, setCopied] = useState(false);
   const [contacts, setContacts] = useState([]);
@@ -68,50 +66,22 @@ export default function InviteDialog({ isOpen, onOpenChange, event, onCopyLink, 
 
     const message = `🎉 היי!\n\n${inviterName} מזמין/ה אותך לאירוע "${event.title}"!\n\nלחץ/י על הקישור כדי לראות את הפרטים ולהצטרף:\n${inviteLink}`;
 
-    // Use native share on Capacitor apps
-    if (isNative && window.Capacitor?.Plugins?.Share) {
-      try {
-        await window.Capacitor.Plugins.Share.share({
-          title: `הזמנה לאירוע: ${event.title}`,
-          text: message,
-          dialogTitle: 'שתף הזמנה'
-        });
-        if (onShareWhatsApp) onShareWhatsApp();
-        return;
-      } catch (err) {
-        console.warn('Native share failed, falling back to web:', err);
-      }
-    }
-
-    // Fallback to web
-    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+    // Use Universal Link format - works on all platforms
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    window.location.href = whatsappUrl;
     if (onShareWhatsApp) onShareWhatsApp();
   };
 
-  const sendWhatsAppInvitation = async (contact) => {
+  const sendWhatsAppInvitation = (contact) => {
     const inviteLink = generateInviteLink();
     if (!inviteLink) return;
 
     const message = `🎉 היי ${contact.first_name}!\n\n${inviterName} מזמין/ה אותך לאירוע "${event.title}"!\n\nלחץ/י על הקישור להצטרפות:\n${inviteLink}`;
 
-    // Use native share on Capacitor apps
-    if (isNative && window.Capacitor?.Plugins?.Share) {
-      try {
-        await window.Capacitor.Plugins.Share.share({
-          title: `הזמנה לאירוע: ${event.title}`,
-          text: message,
-          dialogTitle: 'שתף הזמנה'
-        });
-        return;
-      } catch (err) {
-        console.warn('Native share failed, falling back to web:', err);
-      }
-    }
-
     const cleanedPhoneNumber = contact.phone ? contact.phone.replace(/[^\d]/g, '') : '';
-    const whatsappUrl = `https://api.whatsapp.com/send?phone=${cleanedPhoneNumber}&text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+    // Use Universal Link format with phone number
+    const whatsappUrl = `https://wa.me/${cleanedPhoneNumber}?text=${encodeURIComponent(message)}`;
+    window.location.href = whatsappUrl;
   };
 
   const sendSMSInvitation = (contact) => {
