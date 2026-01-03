@@ -73,6 +73,7 @@ export default function InviteDialog({ isOpen, onOpenChange, event, onCopyLink, 
           title: `הזמנה לאירוע: ${event.title}`,
           text: message,
           url: inviteLink,
+          url: inviteLink,
         });
         if (onShareWhatsApp) onShareWhatsApp();
         return;
@@ -100,6 +101,7 @@ export default function InviteDialog({ isOpen, onOpenChange, event, onCopyLink, 
         await navigator.share({
           title: `הזמנה לאירוע: ${event.title}`,
           text: message,
+          url: inviteLink,
         });
         if (onShareWhatsApp) onShareWhatsApp();
         return;
@@ -132,6 +134,7 @@ export default function InviteDialog({ isOpen, onOpenChange, event, onCopyLink, 
         await window.Capacitor.Plugins.Share.share({
           title: `הזמנה לאירוע: ${event.title}`,
           text: message,
+          url: inviteLink,
           url: inviteLink,
         });
         return;
