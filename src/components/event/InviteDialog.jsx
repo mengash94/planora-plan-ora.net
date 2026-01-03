@@ -3,14 +3,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Copy, MessageCircle, Mail, Users, Link as LinkIcon, Check, MessageSquare, Phone, Trash2, ClipboardList } from 'lucide-react';
+import { Copy, MessageCircle, Mail, Users, Link as LinkIcon, Check, MessageSquare, Phone, Trash2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/components/AuthProvider';
 
 export default function InviteDialog({ isOpen, onOpenChange, event, onCopyLink, onShareWhatsApp }) {
   const { user: currentUser } = useAuth();
   const [copied, setCopied] = useState(false);
-  const [copiedRSVP, setCopiedRSVP] = useState(false);
   const [contacts, setContacts] = useState([]);
   const [newContact, setNewContact] = useState({ first_name: '', phone: '' });
 
@@ -37,13 +36,7 @@ export default function InviteDialog({ isOpen, onOpenChange, event, onCopyLink, 
     return `${baseUrl}/JoinEvent?id=${eventId}`;
   };
 
-  // Function to generate RSVP link (no registration required)
-  const generateRSVPLink = () => {
-    if (!event?.id) return '';
-    const baseUrl = 'https://register.plan-ora.net';
-    const eventId = encodeURIComponent(event.id.toString().trim());
-    return `${baseUrl}/EventRSVP?id=${eventId}`;
-  };
+
 
   const handleCopyLink = async () => {
     const inviteLink = generateInviteLink();
@@ -73,7 +66,8 @@ export default function InviteDialog({ isOpen, onOpenChange, event, onCopyLink, 
 
     const message = `🎉 היי!\n\n${inviterName} מזמין/ה אותך לאירוע "${event.title}"!\n\nלחץ/י על הקישור כדי לראות את הפרטים ולהצטרף:\n${inviteLink}`;
 
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    // Use https://api.whatsapp.com for better compatibility
+    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
     if (onShareWhatsApp) onShareWhatsApp();
   };
@@ -85,7 +79,8 @@ export default function InviteDialog({ isOpen, onOpenChange, event, onCopyLink, 
     const message = `🎉 היי ${contact.first_name}!\n\n${inviterName} מזמין/ה אותך לאירוע "${event.title}"!\n\nלחץ/י על הקישור להצטרפות:\n${inviteLink}`;
 
     const cleanedPhoneNumber = contact.phone ? contact.phone.replace(/[^\d]/g, '') : '';
-    const whatsappUrl = `https://wa.me/${cleanedPhoneNumber}?text=${encodeURIComponent(message)}`;
+    // Use https://api.whatsapp.com for better compatibility
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=${cleanedPhoneNumber}&text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
 
@@ -182,9 +177,8 @@ export default function InviteDialog({ isOpen, onOpenChange, event, onCopyLink, 
 
           {/* Share Options */}
           <Tabs defaultValue="quick" className="w-full">
-            <TabsList className="grid grid-cols-4 w-full">
+            <TabsList className="grid grid-cols-3 w-full">
               <TabsTrigger value="quick">שיתוף מהיר</TabsTrigger>
-              <TabsTrigger value="rsvp">שאלון הגעה</TabsTrigger>
               <TabsTrigger value="link">העתק קישור</TabsTrigger>
               <TabsTrigger value="contacts">אנשי קשר</TabsTrigger>
             </TabsList>
@@ -205,69 +199,6 @@ export default function InviteDialog({ isOpen, onOpenChange, event, onCopyLink, 
               >
                 <Mail className="w-5 h-5 ml-2" />
                 שתף באימייל
-              </Button>
-            </TabsContent>
-
-            <TabsContent value="rsvp" className="space-y-4 mt-4">
-              <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                <div className="flex items-start gap-3">
-                  <ClipboardList className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <h4 className="font-medium text-purple-900 mb-1">שאלון אישור הגעה</h4>
-                    <p className="text-sm text-purple-700">
-                      שלחו קישור שמאפשר לאנשים לאשר הגעה בלי צורך להירשם לאפליקציה
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="rsvp-link" className="text-sm font-medium text-gray-700">
-                  קישור לשאלון הגעה
-                </Label>
-                <div className="flex gap-2 mt-2">
-                  <input
-                    id="rsvp-link"
-                    value={generateRSVPLink()}
-                    readOnly
-                    className="flex-1 bg-gray-50 px-3 py-2 text-sm border rounded-md"
-                  />
-                  <Button
-                    onClick={async () => {
-                      try {
-                        await navigator.clipboard.writeText(generateRSVPLink());
-                        setCopiedRSVP(true);
-                        setTimeout(() => setCopiedRSVP(false), 2000);
-                      } catch (err) {
-                        console.error('Failed to copy:', err);
-                      }
-                    }}
-                    variant="outline"
-                    className={`px-3 ${copiedRSVP ? 'bg-green-50 border-green-200' : ''}`}
-                  >
-                    {copiedRSVP ? (
-                      <Check className="w-4 h-4 text-green-600" />
-                    ) : (
-                      <Copy className="w-4 h-4" />
-                    )}
-                  </Button>
-                </div>
-                {copiedRSVP && (
-                  <p className="text-xs text-green-600 mt-1">הקישור הועתק!</p>
-                )}
-              </div>
-
-              <Button
-                onClick={() => {
-                  const rsvpLink = generateRSVPLink();
-                  const message = `🎉 היי!\n\n${inviterName} מזמין/ה אותך לאירוע "${event.title}"!\n\n📋 לחץ/י על הקישור כדי לאשר הגעה:\n${rsvpLink}`;
-                  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-                  window.open(whatsappUrl, '_blank');
-                }}
-                className="w-full bg-green-500 hover:bg-green-600 text-white"
-              >
-                <MessageCircle className="w-5 h-5 ml-2" />
-                שלח שאלון בוואטסאפ
               </Button>
             </TabsContent>
 
