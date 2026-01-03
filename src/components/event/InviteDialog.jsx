@@ -107,8 +107,12 @@ export default function InviteDialog({ isOpen, onOpenChange, event, onCopyLink, 
       }
     }
 
-    // 4) Final fallback - open in new tab
-    window.open(whatsappUrl, '_blank');
+    // 4) Final fallback - open in new tab (https only)
+    if (whatsappUrl.startsWith('http')) {
+      window.open(whatsappUrl, '_blank');
+    } else {
+      window.location.href = whatsappUrl;
+    }
     if (onShareWhatsApp) onShareWhatsApp();
   };
 
@@ -144,8 +148,12 @@ export default function InviteDialog({ isOpen, onOpenChange, event, onCopyLink, 
       }
     }
 
-    // Web fallback
-    window.open(whatsappUrl, '_blank');
+    // Web fallback (https only)
+    if (whatsappUrl.startsWith('http')) {
+      window.open(whatsappUrl, '_blank');
+    } else {
+      window.location.href = whatsappUrl;
+    }
   };
 
   const sendSMSInvitation = (contact) => {
