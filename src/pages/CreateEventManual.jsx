@@ -176,10 +176,12 @@ export default function CreateEventManualPage() {
   const handleCreateEvent = async (e) => {
     e.preventDefault();
 
+    // Collect all missing required fields
+    const missingFields = [];
+
     const titleValue = formData?.title;
     if (!titleValue || (typeof titleValue === 'string' && titleValue.trim().length === 0)) {
-      toast.error('שם האירוע הוא שדה חובה');
-      return;
+      missingFields.push('שם האירוע');
     }
 
     if (!user?.id) {
@@ -187,18 +189,21 @@ export default function CreateEventManualPage() {
       return;
     }
 
-    // Validation for date/poll: one must be present (only for non-custom mode)
-    const searchParams = new URLSearchParams(location.search);
-    const isCustomMode = searchParams.get('mode') === 'custom';
-    
+    // Validation for date/poll: one must be present
     if (!formData.createDatePoll && !formData.eventDate) {
-      toast.error('יש לבחור תאריך לאירוע או ליצור סקר תאריכים.');
-      return;
+      missingFields.push('תאריך האירוע (או סקר תאריכים)');
     }
 
     // Validation - category is required for all events
     if (!formData.category) {
-      toast.error('יש לבחור קטגוריה לאירוע');
+      missingFields.push('קטגוריית האירוע');
+    }
+
+    // Show all missing fields at once
+    if (missingFields.length > 0) {
+      toast.error(`יש למלא את השדות הבאים: ${missingFields.join(', ')}`, {
+        duration: 5000
+      });
       return;
     }
     
