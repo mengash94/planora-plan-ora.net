@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar, MapPin, Upload, Loader2, ArrowRight, Image as ImageIcon } from 'lucide-react';
-import { toast } from 'sonner';
+import toast from 'react-hot-toast';
 import {
   createEvent,
   createEventMember,
@@ -691,7 +691,7 @@ export default function CreateEventManualPage() {
 
         <form onSubmit={handleCreateEvent} className="space-y-6">
           <div>
-            <Label htmlFor="title">שם האירוע *</Label>
+            <Label htmlFor="title">שם האירוע <span className="text-red-500">*</span></Label>
             <Input
               id="title"
               value={formData.title || ''}
@@ -844,7 +844,7 @@ export default function CreateEventManualPage() {
 
           {/* Category Selection - For all events (required) - auto-filled from template */}
           <div>
-            <Label htmlFor="category">קטגוריית האירוע *</Label>
+            <Label htmlFor="category">קטגוריית האירוע <span className="text-red-500">*</span></Label>
             {selectedTemplate?.category && (
               <p className="text-xs text-green-600 mb-2">
                 ✓ הקטגוריה נבחרה אוטומטית מהתבנית
