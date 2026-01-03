@@ -187,7 +187,10 @@ export default function CreateEventManualPage() {
       return;
     }
 
-    // Validation for date/poll: one must be present
+    // Validation for date/poll: one must be present (only for non-custom mode)
+    const searchParams = new URLSearchParams(location.search);
+    const isCustomMode = searchParams.get('mode') === 'custom';
+    
     if (!formData.createDatePoll && !formData.eventDate) {
       toast.error('יש לבחור תאריך לאירוע או ליצור סקר תאריכים.');
       return;
@@ -198,6 +201,8 @@ export default function CreateEventManualPage() {
       toast.error('יש לבחור קטגוריה לאירוע');
       return;
     }
+    
+    console.log('[CreateEventManual] handleCreateEvent called - all validations passed');
 
     setIsCreating(true);
 
