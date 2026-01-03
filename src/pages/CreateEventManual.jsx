@@ -86,8 +86,11 @@ export default function CreateEventManualPage() {
     window.scrollTo(0, 0);
   }, []);
 
-  // Load template data from navigation state
+  // Load template data from navigation state or handle custom mode
   useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const mode = searchParams.get('mode');
+    
     if (location.state?.templateData) {
       const templateData = location.state.templateData;
       console.log('[CreateEventManual] Loading template data:', templateData);
@@ -132,9 +135,13 @@ export default function CreateEventManualPage() {
         recurrenceRule: null,
         eventType: 'social'
       });
+    } else if (mode === 'custom') {
+      // Custom mode - no template, just empty form
+      console.log('[CreateEventManual] Starting in custom mode - no template');
+      setSelectedTemplate(null);
+      // Form data is already initialized with empty values in useState
     }
-    // Event type is always 'social' - removed event type selection
-  }, [location.state]);
+  }, [location.state, location.search]);
 
   // Handlers for poll dialog results - now update formData
   const handleDatePollCreated = (pollData) => {
@@ -181,7 +188,7 @@ export default function CreateEventManualPage() {
     }
 
     // Validation for date/poll: one must be present
-    if (!formData.createDatePoll && (!formData.eventDate && !formData.endDate)) {
+    if (!formData.createDatePoll && !formData.eventDate) {
       toast.error('יש לבחור תאריך לאירוע או ליצור סקר תאריכים.');
       return;
     }
