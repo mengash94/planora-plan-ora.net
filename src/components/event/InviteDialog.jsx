@@ -66,9 +66,29 @@ export default function InviteDialog({ isOpen, onOpenChange, event, onCopyLink, 
 
     const message = `🎉 היי!\n\n${inviterName} מזמין/ה אותך לאירוע "${event.title}"!\n\nלחץ/י על הקישור כדי לראות את הפרטים ולהצטרף:\n${inviteLink}`;
 
-    // Use Universal Link format - works on all platforms
+    // Try Web Share API first (native sharing sheet)
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `הזמנה לאירוע: ${event.title}`,
+          text: message,
+          // url: inviteLink, // Some apps prefer URL in text, some in url field
+        });
+        if (onShareWhatsApp) onShareWhatsApp();
+        return;
+      } catch (err) {
+        console.warn('Web Share API failed or cancelled:', err);
+        // Continue to fallback if user cancelled or error occurred
+      }
+    }
+
+    // Fallback: Open WhatsApp directly
+    // Use Universal Link format
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-    window.location.href = whatsappUrl;
+    
+    // Use window.open with _blank for better compatibility in WebViews
+    window.open(whatsappUrl, '_blank');
+    
     if (onShareWhatsApp) onShareWhatsApp();
   };
 
@@ -81,7 +101,9 @@ export default function InviteDialog({ isOpen, onOpenChange, event, onCopyLink, 
     const cleanedPhoneNumber = contact.phone ? contact.phone.replace(/[^\d]/g, '') : '';
     // Use Universal Link format with phone number
     const whatsappUrl = `https://wa.me/${cleanedPhoneNumber}?text=${encodeURIComponent(message)}`;
-    window.location.href = whatsappUrl;
+    
+    // Use window.open with _blank for better compatibility in WebViews
+    window.open(whatsappUrl, '_blank');
   };
 
   const sendSMSInvitation = (contact) => {
