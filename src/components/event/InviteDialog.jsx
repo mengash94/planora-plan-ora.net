@@ -65,56 +65,10 @@ export default function InviteDialog({ isOpen, onOpenChange, event, onCopyLink, 
     if (!inviteLink) return;
 
     const message = `🎉 היי!\n\n${inviterName} מזמין/ה אותך לאירוע "${event.title}"!\n\nלחץ/י על הקישור כדי לראות את הפרטים ולהצטרף:\n${inviteLink}`;
-
-    // 1) Native app (Capacitor) - prefer native Share sheet
-    if (typeof window !== 'undefined' && window.Capacitor?.Plugins?.Share) {
-      try {
-        await window.Capacitor.Plugins.Share.share({
-          title: `הזמנה לאירוע: ${event.title}`,
-          text: message,
-          url: inviteLink,
-        });
-        if (onShareWhatsApp) onShareWhatsApp();
-        return;
-      } catch (err) {
-        console.warn('Capacitor Share failed, fallback to Browser/Web:', err);
-      }
-    }
-
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
 
-    // 2) Native app - open externally via Capacitor Browser (avoids ERR_UNKNOWN_URL_SCHEME)
-    if (typeof window !== 'undefined' && window.Capacitor?.Plugins?.Browser?.open) {
-      try {
-        await window.Capacitor.Plugins.Browser.open({ url: whatsappUrl });
-        if (onShareWhatsApp) onShareWhatsApp();
-        return;
-      } catch (err) {
-        console.warn('Capacitor Browser open failed:', err);
-      }
-    }
-
-    // 3) Web/PWA - use Web Share if available
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `הזמנה לאירוע: ${event.title}`,
-          text: message,
-          url: inviteLink,
-        });
-        if (onShareWhatsApp) onShareWhatsApp();
-        return;
-      } catch (err) {
-        console.warn('Web Share API failed or cancelled:', err);
-      }
-    }
-
-    // 4) Final fallback - open in new tab (https only)
-    if (whatsappUrl.startsWith('http')) {
-      window.open(whatsappUrl, '_blank');
-    } else {
-      window.location.href = whatsappUrl;
-    }
+    // Always use https://wa.me/ URL - open externally
+    window.open(whatsappUrl, '_blank');
     if (onShareWhatsApp) onShareWhatsApp();
   };
 
@@ -127,36 +81,8 @@ export default function InviteDialog({ isOpen, onOpenChange, event, onCopyLink, 
     const cleanedPhoneNumber = contact.phone ? contact.phone.replace(/[^\d]/g, '') : '';
     const whatsappUrl = `https://wa.me/${cleanedPhoneNumber}?text=${encodeURIComponent(message)}`;
 
-    // Native first: Share sheet if available
-    if (typeof window !== 'undefined' && window.Capacitor?.Plugins?.Share) {
-      try {
-        await window.Capacitor.Plugins.Share.share({
-          title: `הזמנה לאירוע: ${event.title}`,
-          text: message,
-          url: inviteLink,
-        });
-        return;
-      } catch (err) {
-        console.warn('Capacitor Share failed for contact, fallback to Browser/Web:', err);
-      }
-    }
-
-    // Native: open externally via Capacitor Browser
-    if (typeof window !== 'undefined' && window.Capacitor?.Plugins?.Browser?.open) {
-      try {
-        await window.Capacitor.Plugins.Browser.open({ url: whatsappUrl });
-        return;
-      } catch (err) {
-        console.warn('Capacitor Browser open failed for contact:', err);
-      }
-    }
-
-    // Web fallback (https only)
-    if (whatsappUrl.startsWith('http')) {
-      window.open(whatsappUrl, '_blank');
-    } else {
-      window.location.href = whatsappUrl;
-    }
+    // Always use https://wa.me/ URL - open externally
+    window.open(whatsappUrl, '_blank');
   };
 
   const sendSMSInvitation = (contact) => {
