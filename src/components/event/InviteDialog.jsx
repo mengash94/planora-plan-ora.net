@@ -66,29 +66,49 @@ export default function InviteDialog({ isOpen, onOpenChange, event, onCopyLink, 
 
     const message = `🎉 היי!\n\n${inviterName} מזמין/ה אותך לאירוע "${event.title}"!\n\nלחץ/י על הקישור כדי לראות את הפרטים ולהצטרף:\n${inviteLink}`;
 
-    // Try Web Share API first (native sharing sheet)
+    // 1) Native app (Capacitor) - prefer native Share sheet
+    if (typeof window !== 'undefined' && window.Capacitor?.Plugins?.Share) {
+      try {
+        await window.Capacitor.Plugins.Share.share({
+          title: `הזמנה לאירוע: ${event.title}`,
+          text: message,
+        });
+        if (onShareWhatsApp) onShareWhatsApp();
+        return;
+      } catch (err) {
+        console.warn('Capacitor Share failed, fallback to Browser/Web:', err);
+      }
+    }
+
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+
+    // 2) Native app - open externally via Capacitor Browser (avoids ERR_UNKNOWN_URL_SCHEME)
+    if (typeof window !== 'undefined' && window.Capacitor?.Plugins?.Browser?.open) {
+      try {
+        await window.Capacitor.Plugins.Browser.open({ url: whatsappUrl });
+        if (onShareWhatsApp) onShareWhatsApp();
+        return;
+      } catch (err) {
+        console.warn('Capacitor Browser open failed:', err);
+      }
+    }
+
+    // 3) Web/PWA - use Web Share if available
     if (navigator.share) {
       try {
         await navigator.share({
           title: `הזמנה לאירוע: ${event.title}`,
           text: message,
-          // url: inviteLink, // Some apps prefer URL in text, some in url field
         });
         if (onShareWhatsApp) onShareWhatsApp();
         return;
       } catch (err) {
         console.warn('Web Share API failed or cancelled:', err);
-        // Continue to fallback if user cancelled or error occurred
       }
     }
 
-    // Fallback: Open WhatsApp directly
-    // Use Universal Link format
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-    
-    // Use window.open with _blank for better compatibility in WebViews
+    // 4) Final fallback - open in new tab
     window.open(whatsappUrl, '_blank');
-    
     if (onShareWhatsApp) onShareWhatsApp();
   };
 
