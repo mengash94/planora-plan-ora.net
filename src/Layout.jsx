@@ -58,6 +58,31 @@ function LayoutContent({ children, currentPageName }) {
     document.documentElement.classList.remove('dark');
   }, []);
 
+  // Google Analytics
+  useEffect(() => {
+    // Add gtag.js script
+    const gtagScript = document.createElement('script');
+    gtagScript.async = true;
+    gtagScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-9B9CTF7BEB';
+    document.head.appendChild(gtagScript);
+
+    // Add gtag initialization script
+    const gtagInitScript = document.createElement('script');
+    gtagInitScript.innerHTML = `
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-9B9CTF7BEB');
+    `;
+    document.head.appendChild(gtagInitScript);
+
+    return () => {
+      // Cleanup on unmount
+      if (gtagScript.parentNode) gtagScript.parentNode.removeChild(gtagScript);
+      if (gtagInitScript.parentNode) gtagInitScript.parentNode.removeChild(gtagInitScript);
+    };
+  }, []);
+
   // Check for available update
   useEffect(() => {
     if (!isAuthenticated || !user || typeof window === 'undefined') return;
