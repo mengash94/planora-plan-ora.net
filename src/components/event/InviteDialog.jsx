@@ -112,17 +112,39 @@ export default function InviteDialog({ isOpen, onOpenChange, event, onCopyLink, 
     if (onShareWhatsApp) onShareWhatsApp();
   };
 
-  const sendWhatsAppInvitation = (contact) => {
+  const sendWhatsAppInvitation = async (contact) => {
     const inviteLink = generateInviteLink();
     if (!inviteLink) return;
 
     const message = `🎉 היי ${contact.first_name}!\n\n${inviterName} מזמין/ה אותך לאירוע "${event.title}"!\n\nלחץ/י על הקישור להצטרפות:\n${inviteLink}`;
 
     const cleanedPhoneNumber = contact.phone ? contact.phone.replace(/[^\d]/g, '') : '';
-    // Use Universal Link format with phone number
     const whatsappUrl = `https://wa.me/${cleanedPhoneNumber}?text=${encodeURIComponent(message)}`;
-    
-    // Use window.open with _blank for better compatibility in WebViews
+
+    // Native first: Share sheet if available
+    if (typeof window !== 'undefined' && window.Capacitor?.Plugins?.Share) {
+      try {
+        await window.Capacitor.Plugins.Share.share({
+          title: `הזמנה לאירוע: ${event.title}`,
+          text: message,
+        });
+        return;
+      } catch (err) {
+        console.warn('Capacitor Share failed for contact, fallback to Browser/Web:', err);
+      }
+    }
+
+    // Native: open externally via Capacitor Browser
+    if (typeof window !== 'undefined' && window.Capacitor?.Plugins?.Browser?.open) {
+      try {
+        await window.Capacitor.Plugins.Browser.open({ url: whatsappUrl });
+        return;
+      } catch (err) {
+        console.warn('Capacitor Browser open failed for contact:', err);
+      }
+    }
+
+    // Web fallback
     window.open(whatsappUrl, '_blank');
   };
 
