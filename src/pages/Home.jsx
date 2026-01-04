@@ -17,6 +17,7 @@ import {
 // useFirstVisit removed - using SideHelpTab instead
 import { formatIsraelDate } from '@/components/utils/dateHelpers';
 import EventCalendarView from '@/components/event/EventCalendarView';
+import { openWhatsApp, shareContent } from '@/components/utils/shareHelper';
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -262,35 +263,36 @@ export default function HomePage() {
     return [...eventsWithFutureDate, ...eventsWithoutDate].slice(0, 3);
   };
 
-  const handleWhatsAppShareApp = () => {
-    const appUrl = window.location.origin;
+  const handleWhatsAppShareApp = async () => {
+    const appUrl = 'https://register.plan-ora.net';
     const message = `🎉 היי! גיליתי אפליקציה מדהימה לתכנון משותף!\n\n` +
       `Planora - לתכנן הכל יחד עם חברים:\n` +
       `🎬 יציאה לסרט\n🍕 ארוחה משותפת\n🏃 אימון קבוצתי\n🎂 מסיבות ואירועים\n🗺️ טיולים\n\n` +
       `✅ משימות משותפות\n💬 צ'אטים\n📊 הצבעות\n📸 גלריות\n\n` +
       `בוא/י תנסה, זה חינם:\n${appUrl}`;
 
-    window.location.href = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    await openWhatsApp(message);
   };
 
   const handleShareApp = async () => {
-    const appUrl = window.location.origin;
+    const appUrl = 'https://register.plan-ora.net';
     const message = `🎉 היי! גיליתי אפליקציה מדהימה לתכנון משותף!\n\n` +
       `Planora - לתכנן הכל יחד עם חברים:\n` +
       `🎬 יציאה לסרט\n🍕 ארוחה משותפת\n🏃 אימון קבוצתי\n🎂 מסיבות ואירועים\n🗺️ טיולים\n\n` +
       `✅ משימות משותפות\n💬 צ'אטים\n📊 הצבעות\n📸 גלריות\n\n` +
       `בוא/י תנסה, זה חינם:\n${appUrl}`;
 
-    try {
-      await navigator.clipboard.writeText(message);
+    const result = await shareContent({ text: message, url: appUrl, title: 'Planora - תכנון שיתופי' });
+    
+    if (result.method === 'clipboard') {
       toast({
         title: 'טקסט השיתוף הועתק! 📋',
         description: 'עכשיו אפשר לשלוח לחברים בכל מקום',
         duration: 3000,
       });
-    } catch (err) {
+    } else if (result.method === 'failed') {
       toast({
-        title: 'שגיאה בהעתקת הקישור',
+        title: 'שגיאה בשיתוף',
         variant: 'destructive',
       });
     }
