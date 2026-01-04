@@ -144,7 +144,8 @@ export default function DocumentsTab({ eventId, currentUser, initialDocuments = 
 
             toast({
                 title: 'הקובץ הועלה בהצלחה! 📄',
-                description: `${fileName} נוסף למסמכי האירוע`
+                description: `${fileName} נוסף למסמכי האירוע`,
+                duration: 3000
             });
 
             if (onDataRefresh) {
@@ -309,9 +310,20 @@ export default function DocumentsTab({ eventId, currentUser, initialDocuments = 
                         <Card key={doc.id} className="hover:shadow-md transition-shadow dark:bg-gray-800 dark:border-gray-700">
                             <CardContent className="p-4">
                                 <div className="flex items-start gap-3">
-                                    {/* File Icon */}
-                                    <div className="text-3xl flex-shrink-0 mt-1">
-                                        {getFileIcon(doc.fileType)}
+                                    {/* File Icon / Thumbnail */}
+                                    <div className="flex-shrink-0 mt-1">
+                                        {doc.fileType?.includes('image') && doc.fileUrl ? (
+                                            <img 
+                                                src={resolveInstabackFileUrl(doc.fileUrl)} 
+                                                alt={doc.fileName}
+                                                className="w-16 h-16 object-cover rounded-lg border border-gray-200 cursor-pointer hover:opacity-80 transition-opacity"
+                                                onClick={() => handleViewDocument(doc)}
+                                            />
+                                        ) : (
+                                            <div className="text-3xl">
+                                                {getFileIcon(doc.fileType)}
+                                            </div>
+                                        )}
                                     </div>
                                     
                                     {/* File Info */}
