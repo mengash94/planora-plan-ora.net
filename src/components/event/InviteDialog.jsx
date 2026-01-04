@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Copy, MessageCircle, Mail, Users, Link as LinkIcon, Check, MessageSquare, Phone, Trash2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/components/AuthProvider';
+import { openWhatsApp, openSMS, openEmail } from '@/components/utils/shareHelper';
 
 export default function InviteDialog({ isOpen, onOpenChange, event, onCopyLink, onShareWhatsApp }) {
   const { user: currentUser } = useAuth();
@@ -65,10 +66,8 @@ export default function InviteDialog({ isOpen, onOpenChange, event, onCopyLink, 
     if (!inviteLink) return;
 
     const message = `🎉 היי!\n\n${inviterName} מזמין/ה אותך לאירוע "${event.title}"!\n\nלחץ/י על הקישור כדי לראות את הפרטים ולהצטרף:\n${inviteLink}`;
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-
-    // Always use https://wa.me/ URL - open externally
-    window.open(whatsappUrl, '_blank');
+    
+    await openWhatsApp(message);
     if (onShareWhatsApp) onShareWhatsApp();
   };
 
@@ -77,32 +76,29 @@ export default function InviteDialog({ isOpen, onOpenChange, event, onCopyLink, 
     if (!inviteLink) return;
 
     const message = `🎉 היי ${contact.first_name}!\n\n${inviterName} מזמין/ה אותך לאירוע "${event.title}"!\n\nלחץ/י על הקישור להצטרפות:\n${inviteLink}`;
-
     const cleanedPhoneNumber = contact.phone ? contact.phone.replace(/[^\d]/g, '') : '';
-    const whatsappUrl = `https://wa.me/${cleanedPhoneNumber}?text=${encodeURIComponent(message)}`;
-
-    // Always use https://wa.me/ URL - open externally
-    window.open(whatsappUrl, '_blank');
+    
+    await openWhatsApp(message, cleanedPhoneNumber);
   };
 
-  const sendSMSInvitation = (contact) => {
+  const sendSMSInvitation = async (contact) => {
     const inviteLink = generateInviteLink();
     if (!inviteLink) return;
 
-    const message = `היי ${contact.first_name}! ${inviterName} מזמין/ה אותך לאירוע "${event.title}" ב-GroupPlan! הצטרף/י בקישור: ${inviteLink}`;
-
+    const message = `היי ${contact.first_name}! ${inviterName} מזמין/ה אותך לאירוע "${event.title}" ב-Planora! הצטרף/י בקישור: ${inviteLink}`;
     const cleanedPhoneNumber = contact.phone ? contact.phone.replace(/[^\d]/g, '') : '';
-    window.location.href = `sms:${cleanedPhoneNumber}?body=${encodeURIComponent(message)}`;
+    
+    await openSMS(cleanedPhoneNumber, message);
   };
 
-  const handleEmailShare = () => {
+  const handleEmailShare = async () => {
     const inviteLink = generateInviteLink();
     if (!inviteLink) return;
 
     const subject = `הזמנה לאירוע: ${event.title}`;
     const body = `היי!\n\n${inviterName} מזמין/ה אותך להצטרף לאירוע "${event.title}".\n\nלחצו על הקישור כדי לראות את הפרטים ולהצטרף:\n${inviteLink}\n\nמחכים לכם!`;
-    const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.open(mailtoUrl);
+    
+    await openEmail({ subject, body });
   };
 
   const handleAddContact = () => {
