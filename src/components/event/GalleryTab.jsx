@@ -154,7 +154,8 @@ export default function GalleryTab({ eventId, currentUser, initialMediaItems = [
 
             toast({
                 title: 'התמונה נמחקה בהצלחה',
-                description: 'התמונה הוסרה מהגלריה'
+                description: 'התמונה הוסרה מהגלריה',
+                duration: 3000
             });
 
             if (onDataRefresh) {

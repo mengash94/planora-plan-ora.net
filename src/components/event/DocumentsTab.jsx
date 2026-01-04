@@ -309,34 +309,34 @@ export default function DocumentsTab({ eventId, currentUser, initialDocuments = 
                     {documents.map((doc) => (
                         <Card key={doc.id} className="hover:shadow-md transition-shadow dark:bg-gray-800 dark:border-gray-700">
                             <CardContent className="p-4">
-                                <div className="flex items-start gap-3">
+                                <div className="flex items-center gap-3">
                                     {/* File Icon / Thumbnail */}
-                                    <div className="flex-shrink-0 mt-1">
+                                    <div className="flex-shrink-0">
                                         {doc.fileType?.includes('image') && doc.fileUrl ? (
                                             <img 
                                                 src={resolveInstabackFileUrl(doc.fileUrl)} 
                                                 alt={doc.fileName}
-                                                className="w-16 h-16 object-cover rounded-lg border border-gray-200 cursor-pointer hover:opacity-80 transition-opacity"
+                                                className="w-14 h-14 sm:w-16 sm:h-16 object-cover rounded-lg border border-gray-200 cursor-pointer hover:opacity-80 transition-opacity"
                                                 onClick={() => handleViewDocument(doc)}
                                             />
                                         ) : (
-                                            <div className="text-3xl">
+                                            <div className="text-2xl sm:text-3xl w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center bg-gray-50 rounded-lg">
                                                 {getFileIcon(doc.fileType)}
                                             </div>
                                         )}
                                     </div>
                                     
                                     {/* File Info */}
-                                    <div className="flex-1 min-w-0">
-                                        <h4 className="font-medium text-gray-900 dark:text-white truncate" title={doc.fileName}>
+                                    <div className="flex-1 min-w-0 overflow-hidden">
+                                        <h4 className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate" title={doc.fileName}>
                                             {doc.fileName}
                                         </h4>
                                         {doc.description && (
-                                            <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mt-1" title={doc.description}>
+                                            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 line-clamp-1 sm:line-clamp-2 mt-0.5" title={doc.description}>
                                                 {doc.description}
                                             </p>
                                         )}
-                                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
                                             {doc.fileSize ? `${(doc.fileSize / 1024).toFixed(0)} KB` : ''}
                                         </p>
                                     </div>
@@ -378,27 +378,30 @@ export default function DocumentsTab({ eventId, currentUser, initialDocuments = 
                                             <Button
                                                 variant="outline"
                                                 size="icon"
-                                                className="h-9 w-9"
+                                                className="h-10 w-10"
                                                 onClick={() => handleViewDocument(doc)}
+                                                title="צפייה"
                                             >
-                                                <Eye className="w-4 h-4" />
+                                                <Eye className="w-5 h-5" />
                                             </Button>
                                             <Button
                                                 variant="outline"
                                                 size="icon"
-                                                className="h-9 w-9"
+                                                className="h-10 w-10"
                                                 onClick={() => handleDownloadDocument(doc)}
+                                                title="הורדה"
                                             >
-                                                <Download className="w-4 h-4" />
+                                                <Download className="w-5 h-5" />
                                             </Button>
                                             {canDelete(doc) && (
                                                 <Button
                                                     variant="destructive"
                                                     size="icon"
-                                                    className="h-9 w-9"
+                                                    className="h-10 w-10"
                                                     onClick={() => handleDeleteDocument(doc)}
+                                                    title="מחיקה"
                                                 >
-                                                    <Trash2 className="w-4 h-4" />
+                                                    <Trash2 className="w-5 h-5" />
                                                 </Button>
                                             )}
                                         </div>
