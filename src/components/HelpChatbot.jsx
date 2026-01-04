@@ -345,7 +345,7 @@ ${APP_DOCUMENTATION}
         >
           {/* הכפתור עצמו - גדול יותר למובייל עם אנימציות */}
           <div className={`relative w-14 h-14 sm:w-12 sm:h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full shadow-lg flex items-center justify-center text-white transition-all duration-300 ${isDragging ? 'scale-110 shadow-xl' : 'hover:scale-110 hover:shadow-xl active:scale-95'}`}>
-            <HelpCircle className="w-7 h-7 sm:w-6 sm:h-6" />
+            <HelpCircle className="w-5 h-5 sm:w-3 sm:h-3" />
             
             {/* פולס אנימציה */}
             <span className="absolute inset-0 rounded-full bg-green-400 animate-ping opacity-30" />
