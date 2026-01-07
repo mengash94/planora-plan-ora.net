@@ -264,23 +264,25 @@ export default function HomePage() {
   };
 
   const handleWhatsAppShareApp = async () => {
+    const userName = user?.name || user?.firstName || 'חבר/ה';
     const appUrl = 'https://register.plan-ora.net';
-    const message = `🎉 היי! גיליתי אפליקציה מדהימה לתכנון משותף!\n\n` +
-      `Planora - לתכנן הכל יחד עם חברים:\n` +
-      `🎬 יציאה לסרט\n🍕 ארוחה משותפת\n🏃 אימון קבוצתי\n🎂 מסיבות ואירועים\n🗺️ טיולים\n\n` +
-      `✅ משימות משותפות\n💬 צ'אטים\n📊 הצבעות\n📸 גלריות\n\n` +
-      `בוא/י תנסה, זה חינם:\n${appUrl}`;
+    const message = `היי! זה ${userName} :)\n\n` +
+      `רציתי לשתף אותך באפליקציה שאני משתמש/ת בה לתכנון יציאות עם חברים - Planora\n\n` +
+      `היא עוזרת לתאם תאריכים, לחלק משימות, לשתף תמונות ולדבר בצ'אט קבוצתי.\n` +
+      `מושלם ליציאה לסרט, ארוחה משותפת, טיול או כל דבר אחר שמתכננים יחד.\n\n` +
+      `הנה הקישור (חינם לגמרי):\n${appUrl}`;
 
     await openWhatsApp(message);
   };
 
   const handleShareApp = async () => {
+    const userName = user?.name || user?.firstName || 'חבר/ה';
     const appUrl = 'https://register.plan-ora.net';
-    const message = `🎉 היי! גיליתי אפליקציה מדהימה לתכנון משותף!\n\n` +
-      `Planora - לתכנן הכל יחד עם חברים:\n` +
-      `🎬 יציאה לסרט\n🍕 ארוחה משותפת\n🏃 אימון קבוצתי\n🎂 מסיבות ואירועים\n🗺️ טיולים\n\n` +
-      `✅ משימות משותפות\n💬 צ'אטים\n📊 הצבעות\n📸 גלריות\n\n` +
-      `בוא/י תנסה, זה חינם:\n${appUrl}`;
+    const message = `היי! זה ${userName} :)\n\n` +
+      `רציתי לשתף אותך באפליקציה שאני משתמש/ת בה לתכנון יציאות עם חברים - Planora\n\n` +
+      `היא עוזרת לתאם תאריכים, לחלק משימות, לשתף תמונות ולדבר בצ'אט קבוצתי.\n` +
+      `מושלם ליציאה לסרט, ארוחה משותפת, טיול או כל דבר אחר שמתכננים יחד.\n\n` +
+      `הנה הקישור (חינם לגמרי):\n${appUrl}`;
 
     const result = await shareContent({ text: message, url: appUrl, title: 'Planora - תכנון שיתופי' });
     
