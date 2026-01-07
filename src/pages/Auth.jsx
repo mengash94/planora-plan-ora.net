@@ -45,7 +45,7 @@ export default function AuthPage() {
     // ✅ הסרת כל הקריאות המיותרות ל-OneSignal מכאן
     // OneSignal מטופל כבר ב-AuthProvider אחרי login/register
     
-    toast({ title: 'התחברת בהצלחה! 🎉' });
+    toast({ title: 'התחברת בהצלחה! 🎉', duration: 3000 });
 
     // Navigate
     let pendingId = null;
@@ -68,11 +68,11 @@ export default function AuthPage() {
 
     if (!isLogin) {
       if (!form.password || !form.confirmPassword) {
-        toast({ title: 'סיסמא נדרשת', description: 'נא למלא סיסמא ואימות סיסמא', variant: 'destructive' });
+        toast({ title: 'סיסמא נדרשת', description: 'נא למלא סיסמא ואימות סיסמא', variant: 'destructive', duration: 4000 });
         return;
       }
       if (form.password !== form.confirmPassword) {
-        toast({ title: 'אי התאמה בסיסמאות', description: 'הסיסמא ואימות הסיסמא אינן תואמות', variant: 'destructive' });
+        toast({ title: 'אי התאמה בסיסמאות', description: 'הסיסמא ואימות הסיסמא אינן תואמות', variant: 'destructive', duration: 4000 });
         return;
       }
     }
@@ -96,7 +96,7 @@ export default function AuthPage() {
       if (loggedInUser) {
         await handleLoginSuccess(loggedInUser);
       } else {
-        toast({ title: isLogin ? 'התחברת בהצלחה! 🎉' : 'נרשמת והתחברת בהצלחה! 🎉' });
+        toast({ title: isLogin ? 'התחברת בהצלחה! 🎉' : 'נרשמת והתחברת בהצלחה! 🎉', duration: 3000 });
         let pendingId = null;
         try { pendingId = localStorage.getItem('pendingEventJoin'); } catch (e) {
           console.error("Failed to read from localStorage:", e);
@@ -108,7 +108,7 @@ export default function AuthPage() {
         }
       }
     } catch (err) {
-      toast({ title: 'שגיאה', description: err.message || 'אירעה שגיאה', variant: 'destructive' });
+      toast({ title: 'שגיאה', description: err.message || 'אירעה שגיאה', variant: 'destructive', duration: 4000 });
     } finally {
       setIsLoading(false);
     }
