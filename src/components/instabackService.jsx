@@ -4442,13 +4442,17 @@ export const getInviteLinkByCode = async (code) => {
     try {
         console.log('[getInviteLinkByCode] Fetching invite link for code:', code);
         
+        const headers = {
+            'Content-Type': 'application/json',
+            'accept': 'application/json'
+        };
+        if (currentToken) {
+            headers['Authorization'] = `Bearer ${currentToken}`;
+        }
+        
         const response = await fetch(`${API_BASE_URL}/edge-function/invitelink_data`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': currentToken ? `Bearer ${currentToken}` : '',
-                'accept': 'application/json'
-            },
+            headers,
             body: JSON.stringify({
                 params: {
                     code: code
