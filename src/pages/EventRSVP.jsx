@@ -137,6 +137,14 @@ export default function EventRSVPPage() {
     loadInviteLinkData();
   }, [inviteCode, eventIdFromUrl, inviteLink]);
 
+  // Clamp guest count once invite limit is known
+  useEffect(() => {
+    if (inviteLink && inviteLink.maxGuests !== undefined && inviteLink.maxGuests !== null) {
+      const limit = Math.max(1, Number(inviteLink.maxGuests));
+      setRsvpData(prev => ({ ...prev, guestCount: Math.min(prev.guestCount, limit) }));
+    }
+  }, [inviteLink]);
+
   // Clamp guest count once we know the limit (from link or URL)
   useEffect(() => {
     const limit = (inviteLink && inviteLink.maxGuests !== undefined && inviteLink.maxGuests !== null)
