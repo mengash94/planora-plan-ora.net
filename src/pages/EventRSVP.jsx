@@ -569,7 +569,7 @@ export default function EventRSVPPage() {
                     +
                   </Button>
                 </div>
-                {maxGuestsFromLink !== null && rsvpData.guestCount >= maxGuestsFromLink && (
+                {maxGuestsFromLink !== null && maxGuestsFromLink > 0 && rsvpData.guestCount >= maxGuestsFromLink && (
                   <div className="text-center mt-3 p-2 bg-amber-100 rounded-lg border border-amber-300">
                     <p className="text-sm text-amber-800 font-medium">
                       🔒 הגעת למקסימום האורחים המותר ({maxGuestsFromLink})
