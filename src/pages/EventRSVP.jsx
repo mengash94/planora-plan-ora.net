@@ -555,8 +555,9 @@ export default function EventRSVPPage() {
                     variant="outline"
                     size="icon"
                     onClick={() => {
-                      // Check max guests limit from invite link
-                      if (maxGuestsFromLink !== null && rsvpData.guestCount >= maxGuestsFromLink) {
+                      console.log('[RSVP] Plus clicked - maxGuestsFromLink:', maxGuestsFromLink, 'guestCount:', rsvpData.guestCount);
+                      // Check max guests limit from invite link or URL
+                      if (maxGuestsFromLink !== null && maxGuestsFromLink > 0 && rsvpData.guestCount >= maxGuestsFromLink) {
                         toast.error(`הגבלת קישור: עד ${maxGuestsFromLink} אורחים בלבד`);
                         return;
                       }
