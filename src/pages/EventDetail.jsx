@@ -866,7 +866,7 @@ export default function EventDetailPage() {
     
     // RSVP tab - only for specific event categories (managers always see it)
     if (tabId === 'rsvp') {
-      if (canManage) return rsvpCategories.includes(event?.category);
+      if (canManage) return true; // Managers always see RSVP tab
       return rsvpCategories.includes(event?.category);
     }
     
