@@ -576,7 +576,7 @@ export default function EventRSVPPage() {
                     </p>
                   </div>
                 )}
-                {rsvpData.guestCount > 1 && (maxGuestsFromLink === null || rsvpData.guestCount < maxGuestsFromLink) && (
+                {rsvpData.guestCount > 1 && (maxGuestsFromLink === null || maxGuestsFromLink <= 0 || rsvpData.guestCount < maxGuestsFromLink) && (
                   <p className="text-center text-sm text-green-600 mt-2">
                     מעולה! {rsvpData.guestCount} אנשים מגיעים 🎉
                   </p>
