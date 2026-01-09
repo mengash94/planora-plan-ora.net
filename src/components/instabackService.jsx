@@ -4437,9 +4437,49 @@ export const createInviteLink = async (data) => {
 export const getInviteLinkByCode = async (code) => {
     if (!code) throw new Error('code is required');
     
-    const links = await _fetchWithAuth(`/InviteLink?code=${encodeURIComponent(code)}`, { method: 'GET' });
-    const linkList = Array.isArray(links) ? links : (links?.items || []);
-    return linkList.length > 0 ? linkList[0] : null;
+    const currentToken = getToken();
+    
+    try {
+        console.log('[getInviteLinkByCode] Fetching invite link for code:', code);
+        
+        const response = await fetch(`${API_BASE_URL}/edge-function/invitelink_data`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': currentToken ? `Bearer ${currentToken}` : '',
+                'accept': 'application/json'
+            },
+            body: JSON.stringify({
+                params: {
+                    code: code
+                }
+            })
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('[getInviteLinkByCode] Error response:', errorText);
+            return null;
+        }
+        
+        const result = await response.json();
+        console.log('[getInviteLinkByCode] Response:', result);
+        
+        // Extract data from response - handle { success: true, data: {...} } format
+        if (result.success && result.data) {
+            return result.data;
+        }
+        
+        // Fallback for direct data response
+        if (result.eventId && result.code) {
+            return result;
+        }
+        
+        return null;
+    } catch (error) {
+        console.error('[getInviteLinkByCode] Error:', error);
+        return null;
+    }
 };
 
 export const getInviteLinksByEvent = async (eventId) => {
