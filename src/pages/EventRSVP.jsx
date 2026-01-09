@@ -563,7 +563,7 @@ export default function EventRSVPPage() {
                       }
                       setRsvpData({ ...rsvpData, guestCount: rsvpData.guestCount + 1 });
                     }}
-                    disabled={(inviteCode && !inviteLink) || (maxGuestsFromLink !== null && rsvpData.guestCount >= maxGuestsFromLink)}
+                    disabled={(inviteCode && !inviteLink) || (maxGuestsFromLink !== null && maxGuestsFromLink > 0 && rsvpData.guestCount >= maxGuestsFromLink)}
                     className="h-12 w-12 rounded-full border-green-300 text-xl font-bold"
                   >
                     +
