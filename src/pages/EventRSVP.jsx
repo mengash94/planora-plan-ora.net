@@ -132,6 +132,14 @@ export default function EventRSVPPage() {
     loadInviteLinkData();
   }, [inviteCode, eventIdFromUrl, inviteLink]);
 
+  // Clamp guest count once invite link (and its limit) is loaded
+  useEffect(() => {
+    if (inviteLink && inviteLink.maxGuests !== undefined && inviteLink.maxGuests !== null) {
+      const limit = Math.max(1, Number(inviteLink.maxGuests));
+      setRsvpData(prev => ({ ...prev, guestCount: Math.min(prev.guestCount, limit) }));
+    }
+  }, [inviteLink]);
+
   // Load event data only once
   useEffect(() => {
     if (hasLoadedRef.current || !eventId) {
@@ -211,10 +219,16 @@ export default function EventRSVPPage() {
         // Enforce invite link guest limit
         const limit = (inviteLink && inviteLink.maxGuests !== undefined && inviteLink.maxGuests !== null)
           ? Number(inviteLink.maxGuests) : null;
-        if (rsvpData.attendance === 'yes' && limit !== null && rsvpData.guestCount > limit) {
-          toast.error(`הגבלת קישור: עד ${limit} אורחים בלבד`);
-          setRsvpData(prev => ({ ...prev, guestCount: limit }));
-          return;
+        if (rsvpData.attendance === 'yes' && limit !== null) {
+          if (rsvpData.guestCount > limit) {
+            toast.error(`הגבלת קישור: עד ${limit} אורחים בלבד`);
+            setRsvpData(prev => ({ ...prev, guestCount: limit }));
+            return;
+          }
+          // Hard clamp just before submit (prevents console overrides)
+          if (rsvpData.guestCount !== Math.min(rsvpData.guestCount, limit)) {
+            setRsvpData(prev => ({ ...prev, guestCount: Math.min(prev.guestCount, limit) }));
+          }
         }
 
         setIsSubmitting(true);
@@ -514,7 +528,7 @@ export default function EventRSVPPage() {
                 <Label className="text-sm font-medium text-green-800 mb-3 block">
                   <Users className="w-4 h-4 inline ml-1" />
                   כמה אנשים מגיעים? (כולל אותך)
-                  {maxGuestsFromLink && (
+                  {maxGuestsFromLink !== null && (
                     <span className="text-xs text-amber-600 mr-2 font-bold">(מקסימום {maxGuestsFromLink})</span>
                   )}
                 </Label>
@@ -536,26 +550,26 @@ export default function EventRSVPPage() {
                     size="icon"
                     onClick={() => {
                       // Check max guests limit from invite link
-                      if (maxGuestsFromLink && rsvpData.guestCount >= maxGuestsFromLink) {
+                      if (maxGuestsFromLink !== null && rsvpData.guestCount >= maxGuestsFromLink) {
                         toast.error(`הגבלת קישור: עד ${maxGuestsFromLink} אורחים בלבד`);
                         return;
                       }
                       setRsvpData({ ...rsvpData, guestCount: rsvpData.guestCount + 1 });
                     }}
-                    disabled={maxGuestsFromLink !== null && rsvpData.guestCount >= maxGuestsFromLink}
+                    disabled={(inviteCode && !inviteLink) || (maxGuestsFromLink !== null && rsvpData.guestCount >= maxGuestsFromLink)}
                     className="h-12 w-12 rounded-full border-green-300 text-xl font-bold"
                   >
                     +
                   </Button>
                 </div>
-                {maxGuestsFromLink && rsvpData.guestCount >= maxGuestsFromLink && (
+                {maxGuestsFromLink !== null && rsvpData.guestCount >= maxGuestsFromLink && (
                   <div className="text-center mt-3 p-2 bg-amber-100 rounded-lg border border-amber-300">
                     <p className="text-sm text-amber-800 font-medium">
                       🔒 הגעת למקסימום האורחים המותר ({maxGuestsFromLink})
                     </p>
                   </div>
                 )}
-                {rsvpData.guestCount > 1 && (!maxGuestsFromLink || rsvpData.guestCount < maxGuestsFromLink) && (
+                {rsvpData.guestCount > 1 && (maxGuestsFromLink === null || rsvpData.guestCount < maxGuestsFromLink) && (
                   <p className="text-center text-sm text-green-600 mt-2">
                     מעולה! {rsvpData.guestCount} אנשים מגיעים 🎉
                   </p>
