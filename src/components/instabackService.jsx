@@ -4436,61 +4436,52 @@ export const createInviteLink = async (data) => {
 
 export const getInviteLinkByCode = async (code) => {
     if (!code) throw new Error('code is required');
-    
+
     const currentToken = getToken();
-    
+    const headers = { 'Content-Type': 'application/json', 'accept': 'application/json' };
+    if (currentToken) headers['Authorization'] = `Bearer ${currentToken}`;
+
+    const tryParse = async (res) => {
+        const json = await res.json().catch(() => null);
+        const data = json?.data ?? json;
+        if (data && data.eventId && data.code) return data;
+        return null;
+    };
+
+    console.log('[getInviteLinkByCode] Resolving code:', code);
+
+    // 1) POST with { params: { code } }
     try {
-        console.log('[getInviteLinkByCode] Fetching invite link for code:', code);
-        
-        const headers = {
-            'Content-Type': 'application/json',
-            'accept': 'application/json'
-        };
-        if (currentToken) {
-            headers['Authorization'] = `Bearer ${currentToken}`;
-        }
-        
-        const response = await fetch(`${API_BASE_URL}/edge-function/invitelink_data`, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({
-                params: {
-                    code: code
-                }
-            })
+        const r1 = await fetch(`${API_BASE_URL}/edge-function/invitelink_data`, {
+            method: 'POST', headers, body: JSON.stringify({ params: { code } })
         });
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('[getInviteLinkByCode] Error response:', errorText);
-            return null;
-        }
-        
-        const result = await response.json();
-        console.log('[getInviteLinkByCode] Response:', result);
-        
-        // Extract data from response - handle { success: true, data: {...} } format
-        if (result && typeof result === 'object') {
-            const data = result.data || result;
-            if (data.eventId && data.code) {
-                return data;
-            }
-        }
-        
-        // As a fallback, try the direct entity query
-        try {
-            const links = await _fetchWithAuth(`/InviteLink?code=${encodeURIComponent(code)}`, { method: 'GET' });
-            const list = Array.isArray(links) ? links : (links?.items || []);
-            if (list.length > 0) return list[0];
-        } catch (e) {
-            console.warn('[getInviteLinkByCode] Fallback query failed:', e?.message);
-        }
-        
-        return null;
-    } catch (error) {
-        console.error('[getInviteLinkByCode] Error:', error);
-        return null;
-    }
+        if (r1.ok) { const out = await tryParse(r1); if (out) return out; }
+    } catch (e) { console.warn('[getInviteLinkByCode] POST params failed:', e?.message); }
+
+    // 2) POST with { code }
+    try {
+        const r2 = await fetch(`${API_BASE_URL}/edge-function/invitelink_data`, {
+            method: 'POST', headers, body: JSON.stringify({ code })
+        });
+        if (r2.ok) { const out = await tryParse(r2); if (out) return out; }
+    } catch (e) { console.warn('[getInviteLinkByCode] POST body failed:', e?.message); }
+
+    // 3) GET with query param
+    try {
+        const r3 = await fetch(`${API_BASE_URL}/edge-function/invitelink_data?code=${encodeURIComponent(code)}`, {
+            method: 'GET', headers
+        });
+        if (r3.ok) { const out = await tryParse(r3); if (out) return out; }
+    } catch (e) { console.warn('[getInviteLinkByCode] GET failed:', e?.message); }
+
+    // 4) Fallback: direct entity query
+    try {
+        const links = await _fetchWithAuth(`/InviteLink?code=${encodeURIComponent(code)}`, { method: 'GET' });
+        const list = Array.isArray(links) ? links : (links?.items || []);
+        if (list.length > 0) return list[0];
+    } catch (e) { console.warn('[getInviteLinkByCode] Entity query failed:', e?.message); }
+
+    return null;
 };
 
 export const getInviteLinksByEvent = async (eventId) => {
