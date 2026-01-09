@@ -73,13 +73,14 @@ export default function InviteLinksManager({ eventId, eventTitle }) {
     }
   };
 
-  const generateFullUrl = (code) => {
-    // Include eventId to avoid extra lookup on open
-    return `https://register.plan-ora.net/EventRSVP?id=${eventId}&code=${code}`;
+  const generateFullUrl = (link) => {
+    const code = typeof link === 'string' ? link : link?.code;
+    const max = typeof link === 'object' && link?.maxGuests ? `&max=${link.maxGuests}` : '';
+    return `https://register.plan-ora.net/EventRSVP?id=${eventId}&code=${code}${max}`;
   };
 
   const handleCopyLink = async (link) => {
-    const url = generateFullUrl(link.code);
+    const url = generateFullUrl(link);
     try {
       await navigator.clipboard.writeText(url);
       setCopiedId(link.id);
@@ -99,7 +100,7 @@ export default function InviteLinksManager({ eventId, eventTitle }) {
   };
 
   const handleShareWhatsApp = (link) => {
-    const url = generateFullUrl(link.code);
+    const url = generateFullUrl(link);
     const guestText = link.maxGuests ? `(עד ${link.maxGuests} אורחים)` : '';
     const message = `היי! 🎉\n\nאת/ה מוזמן/ת לאירוע "${eventTitle || 'שלנו'}" ${guestText}\n\nלפרטים נוספים ואישור הגעה:\n${url}`;
     openWhatsApp(message);
