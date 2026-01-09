@@ -109,7 +109,12 @@ export default function EventRSVPPage() {
           
           if (link && link.eventId) {
             // Redirect to the same page but with id parameter (keeps the code for maxGuests)
-            const newUrl = `${window.location.pathname}?id=${link.eventId}&code=${inviteCode}`;
+            // FIX: Preserve all existing params (like max/limit) when redirecting
+            const currentParams = new URLSearchParams(window.location.search);
+            currentParams.set('id', link.eventId);
+            currentParams.set('code', inviteCode);
+            
+            const newUrl = `${window.location.pathname}?${currentParams.toString()}`;
             console.log('[RSVP] Redirecting to:', newUrl);
             window.location.replace(newUrl);
             return;
