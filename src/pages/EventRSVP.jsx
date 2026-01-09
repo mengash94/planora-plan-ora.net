@@ -149,41 +149,41 @@ export default function EventRSVPPage() {
   useEffect(() => {
     const limit = (inviteLink && inviteLink.maxGuests !== undefined && inviteLink.maxGuests !== null)
       ? Number(inviteLink.maxGuests)
-      : urlMax;
+      : maxParam;
     if (rsvpData.attendance === 'yes' && limit !== null) {
       setRsvpData(prev => ({ ...prev, guestCount: Math.min(prev.guestCount, Math.max(1, limit)) }));
     }
-  }, [inviteLink, urlMax, rsvpData.attendance]);
+  }, [inviteLink, maxParam, rsvpData.attendance]);
 
   // Clamp guest count once limit is known (from link or URL)
   useEffect(() => {
     const limit = (inviteLink && inviteLink.maxGuests !== undefined && inviteLink.maxGuests !== null)
       ? Number(inviteLink.maxGuests)
-      : urlMax;
+      : maxParam;
     if (rsvpData.attendance === 'yes' && limit !== null) {
       setRsvpData(prev => ({ ...prev, guestCount: Math.min(prev.guestCount, Math.max(1, limit)) }));
     }
-  }, [inviteLink, urlMax, rsvpData.attendance]);
+  }, [inviteLink, maxParam, rsvpData.attendance]);
 
   // Clamp guest count once limit is known (from link or URL)
   useEffect(() => {
     const limit = (inviteLink && inviteLink.maxGuests !== undefined && inviteLink.maxGuests !== null)
       ? Number(inviteLink.maxGuests)
-      : urlMax;
+      : maxParam;
     if (rsvpData.attendance === 'yes' && limit !== null) {
       setRsvpData(prev => ({ ...prev, guestCount: Math.min(prev.guestCount, Math.max(1, limit)) }));
     }
-  }, [inviteLink, urlMax, rsvpData.attendance]);
+  }, [inviteLink, maxParam, rsvpData.attendance]);
 
   // Clamp guest count once limit is known (from link or URL)
   useEffect(() => {
     const limit = (inviteLink && inviteLink.maxGuests !== undefined && inviteLink.maxGuests !== null)
       ? Number(inviteLink.maxGuests)
-      : urlMax;
+      : maxParam;
     if (rsvpData.attendance === 'yes' && limit !== null) {
       setRsvpData(prev => ({ ...prev, guestCount: Math.min(prev.guestCount, Math.max(1, limit)) }));
     }
-  }, [inviteLink, urlMax, rsvpData.attendance]);
+  }, [inviteLink, maxParam, rsvpData.attendance]);
 
   // Clamp guestCount when limit becomes known or attendance toggles
   useEffect(() => {
@@ -300,7 +300,7 @@ export default function EventRSVPPage() {
         // Enforce invite link/URL guest limit
         const limit = (inviteLink && inviteLink.maxGuests !== undefined && inviteLink.maxGuests !== null)
           ? Number(inviteLink.maxGuests)
-          : urlMax;
+          : maxParam;
         if (rsvpData.attendance === 'yes' && limit !== null) {
           if (rsvpData.guestCount > limit) {
             toast.error(`הגבלת קישור: עד ${limit} אורחים בלבד`);
