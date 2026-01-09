@@ -87,7 +87,7 @@ export default function EventRSVPPage() {
     ? Number(inviteLink.maxGuests)
     : maxFromUrl;
   
-  console.log('[RSVP] maxFromUrl:', maxFromUrl, 'inviteLink.maxGuests:', inviteLink?.maxGuests, 'maxGuestsFromLink:', maxGuestsFromLink);
+  console.log('[RSVP] Render - maxFromUrl:', maxFromUrl, 'inviteLink:', inviteLink, 'maxGuestsFromLink:', maxGuestsFromLink, 'guestCount:', rsvpData.guestCount);
   
   // RSVP Form State
   const [rsvpData, setRsvpData] = useState({
