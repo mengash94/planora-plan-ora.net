@@ -222,18 +222,12 @@ export default function EventRSVPPage() {
         }
 
         // Enforce invite link/URL guest limit
-        const limit = (inviteLink && inviteLink.maxGuests !== undefined && inviteLink.maxGuests !== null)
-          ? Number(inviteLink.maxGuests)
-          : urlMax;
-        if (rsvpData.attendance === 'yes' && limit !== null) {
+        const limit = maxGuestsFromLink;
+        if (rsvpData.attendance === 'yes' && limit !== null && limit > 0) {
           if (rsvpData.guestCount > limit) {
             toast.error(`הגבלת קישור: עד ${limit} אורחים בלבד`);
-            setRsvpData(prev => ({ ...prev, guestCount: limit }));
+            setRsvpData(prev => ({ ...prev, guestCount: Math.max(1, limit) }));
             return;
-          }
-          // Hard clamp just before submit (prevents console overrides)
-          if (rsvpData.guestCount !== Math.min(rsvpData.guestCount, limit)) {
-            setRsvpData(prev => ({ ...prev, guestCount: Math.min(prev.guestCount, limit) }));
           }
         }
 
