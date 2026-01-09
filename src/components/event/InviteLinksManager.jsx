@@ -97,6 +97,13 @@ export default function InviteLinksManager({ eventId, eventTitle }) {
     }
   };
 
+  const handleShareWhatsApp = (link) => {
+    const url = generateFullUrl(link.code);
+    const guestText = link.maxGuests ? `(עד ${link.maxGuests} אורחים)` : '';
+    const message = `היי! 🎉\n\nאת/ה מוזמן/ת לאירוע "${eventTitle || 'שלנו'}" ${guestText}\n\nלפרטים נוספים ואישור הגעה:\n${url}`;
+    openWhatsApp(message);
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
