@@ -98,6 +98,30 @@ export default function EventRSVPPage() {
     return null;
   }, [inviteLink, searchParams, location.search]);
   
+  // Robust calculation of guest limit
+  const maxGuestsLimit = React.useMemo(() => {
+    // 1. Invite Link has highest priority
+    if (inviteLink && inviteLink.maxGuests !== undefined && inviteLink.maxGuests !== null) {
+      return Number(inviteLink.maxGuests);
+    }
+
+    // 2. URL Parameters
+    // Try searchParams hook first
+    let val = searchParams.get('max') || searchParams.get('limit');
+    
+    // Fallback to location.search (handles cases where hook might be stale or different router mode)
+    if (!val) {
+      const sp = new URLSearchParams(location.search);
+      val = sp.get('max') || sp.get('limit');
+    }
+
+    if (val && !isNaN(Number(val)) && Number(val) > 0) {
+      return Number(val);
+    }
+
+    return null;
+  }, [inviteLink, searchParams, location.search]);
+  
   console.log('[RSVP] Render - maxGuestsLimit:', maxGuestsLimit, 'guestCount:', rsvpData?.guestCount);
   
   // RSVP Form State
@@ -573,27 +597,28 @@ export default function EventRSVPPage() {
                     variant="outline"
                     size="icon"
                     onClick={() => {
-                      // Explicit check inside handler
-                      if (maxGuestsLimit !== null && maxGuestsLimit > 0 && rsvpData.guestCount >= maxGuestsLimit) {
-                         toast.error(`הגבלת קישור: עד ${maxGuestsLimit} אורחים בלבד`);
-                         return;
+                      console.log('[RSVP] Plus clicked - maxGuestsFromLink:', maxGuestsFromLink, 'guestCount:', rsvpData.guestCount);
+                      // Check max guests limit from invite link or URL
+                      if (maxGuestsFromLink !== null && maxGuestsFromLink > 0 && rsvpData.guestCount >= maxGuestsFromLink) {
+                        toast.error(`הגבלת קישור: עד ${maxGuestsFromLink} אורחים בלבד`);
+                        return;
                       }
-                      setRsvpData(prev => ({ ...prev, guestCount: prev.guestCount + 1 }));
+                      setRsvpData({ ...rsvpData, guestCount: rsvpData.guestCount + 1 });
                     }}
-                    disabled={(inviteCode && !inviteLink) || (maxGuestsLimit !== null && maxGuestsLimit > 0 && rsvpData.guestCount >= maxGuestsLimit)}
+                    disabled={(inviteCode && !inviteLink) || (maxGuestsFromLink !== null && maxGuestsFromLink > 0 && rsvpData.guestCount >= maxGuestsFromLink)}
                     className="h-12 w-12 rounded-full border-green-300 text-xl font-bold"
                   >
                     +
                   </Button>
                 </div>
-                {maxGuestsLimit !== null && maxGuestsLimit > 0 && rsvpData.guestCount >= maxGuestsLimit && (
+                {maxGuestsFromLink !== null && maxGuestsFromLink > 0 && rsvpData.guestCount >= maxGuestsFromLink && (
                   <div className="text-center mt-3 p-2 bg-amber-100 rounded-lg border border-amber-300">
                     <p className="text-sm text-amber-800 font-medium">
-                      🔒 הגעת למקסימום האורחים המותר ({maxGuestsLimit})
+                      🔒 הגעת למקסימום האורחים המותר ({maxGuestsFromLink})
                     </p>
                   </div>
                 )}
-                {rsvpData.guestCount > 1 && (maxGuestsLimit === null || maxGuestsLimit <= 0 || rsvpData.guestCount < maxGuestsLimit) && (
+                {rsvpData.guestCount > 1 && (maxGuestsFromLink === null || maxGuestsFromLink <= 0 || rsvpData.guestCount < maxGuestsFromLink) && (
                   <p className="text-center text-sm text-green-600 mt-2">
                     מעולה! {rsvpData.guestCount} אנשים מגיעים 🎉
                   </p>
