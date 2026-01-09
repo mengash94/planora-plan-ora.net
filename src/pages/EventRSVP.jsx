@@ -482,7 +482,7 @@ export default function EventRSVPPage() {
                   <Users className="w-4 h-4 inline ml-1" />
                   כמה אנשים מגיעים? (כולל אותך)
                   {maxGuestsFromLink && (
-                    <span className="text-xs text-amber-600 mr-2">(מקסימום {maxGuestsFromLink})</span>
+                    <span className="text-xs text-amber-600 mr-2 font-bold">(מקסימום {maxGuestsFromLink})</span>
                   )}
                 </Label>
                 <div className="flex items-center justify-center gap-4">
@@ -504,7 +504,8 @@ export default function EventRSVPPage() {
                     onClick={() => {
                       // Check max guests limit from invite link
                       if (maxGuestsFromLink && rsvpData.guestCount >= maxGuestsFromLink) {
-                        return; // Don't allow exceeding the limit
+                        toast.error(`הגבלת קישור: עד ${maxGuestsFromLink} אורחים בלבד`);
+                        return;
                       }
                       setRsvpData({ ...rsvpData, guestCount: rsvpData.guestCount + 1 });
                     }}
@@ -515,9 +516,11 @@ export default function EventRSVPPage() {
                   </Button>
                 </div>
                 {maxGuestsFromLink && rsvpData.guestCount >= maxGuestsFromLink && (
-                  <p className="text-center text-sm text-amber-600 mt-2">
-                    הגעת למקסימום האורחים המותר בקישור זה
-                  </p>
+                  <div className="text-center mt-3 p-2 bg-amber-100 rounded-lg border border-amber-300">
+                    <p className="text-sm text-amber-800 font-medium">
+                      🔒 הגעת למקסימום האורחים המותר ({maxGuestsFromLink})
+                    </p>
+                  </div>
                 )}
                 {rsvpData.guestCount > 1 && (!maxGuestsFromLink || rsvpData.guestCount < maxGuestsFromLink) && (
                   <p className="text-center text-sm text-green-600 mt-2">
