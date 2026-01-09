@@ -85,15 +85,21 @@ export default function EventRSVPPage() {
     notes: ''
   });
 
-  // Handle invite code - fetch the link details and get eventId
+  // Handle invite code - fetch the link details and redirect to proper URL with eventId
   useEffect(() => {
     const loadInviteLink = async () => {
       if (inviteCode && !eventIdFromUrl) {
         try {
+          console.log('[RSVP] Loading invite link for code:', inviteCode);
           const link = await getInviteLinkByCode(inviteCode);
-          if (link) {
-            setInviteLink(link);
-            setEventId(link.eventId);
+          console.log('[RSVP] Got invite link:', link);
+          
+          if (link && link.eventId) {
+            // Redirect to the same page but with id parameter (keeps the code for maxGuests)
+            const newUrl = `${window.location.pathname}?id=${link.eventId}&code=${inviteCode}`;
+            console.log('[RSVP] Redirecting to:', newUrl);
+            window.location.replace(newUrl);
+            return;
           } else {
             setError('קישור ההזמנה לא נמצא או שאינו תקף');
             setIsLoading(false);
@@ -107,6 +113,23 @@ export default function EventRSVPPage() {
     };
     loadInviteLink();
   }, [inviteCode, eventIdFromUrl]);
+
+  // Load invite link data when we have both eventId and code
+  useEffect(() => {
+    const loadInviteLinkData = async () => {
+      if (inviteCode && eventIdFromUrl && !inviteLink) {
+        try {
+          const link = await getInviteLinkByCode(inviteCode);
+          if (link) {
+            setInviteLink(link);
+          }
+        } catch (err) {
+          console.warn('[RSVP] Could not load invite link data:', err);
+        }
+      }
+    };
+    loadInviteLinkData();
+  }, [inviteCode, eventIdFromUrl, inviteLink]);
 
   // Load event data only once
   useEffect(() => {
