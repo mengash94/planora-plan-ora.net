@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
   Copy, Check, Trash2, Plus, Link as LinkIcon, Users, 
-  Loader2, Infinity, Settings
+  Loader2, Infinity, Settings, MessageCircle
 } from 'lucide-react';
 import {
   createInviteLink,
@@ -13,6 +13,7 @@ import {
   deleteInviteLink
 } from '@/components/instabackService';
 import { toast } from 'sonner';
+import { openWhatsApp } from '@/components/utils/shareHelper';
 
 export default function InviteLinksManager({ eventId, eventTitle }) {
   const [links, setLinks] = useState([]);
@@ -73,7 +74,15 @@ export default function InviteLinksManager({ eventId, eventTitle }) {
   };
 
   const generateFullUrl = (code) => {
-    return `https://register.plan-ora.net/JoinEvent?code=${code}`;
+    return `https://plan-ora.net/JoinEvent?code=${code}`;
+  };
+
+  const handleShareWhatsApp = async (link) => {
+    const url = generateFullUrl(link.code);
+    const guestLimit = link.maxGuests ? `(עד ${link.maxGuests} אורחים)` : '';
+    const message = `היי! 🎉\n\nהוזמנת לאירוע "${eventTitle || 'אירוע'}"! ${guestLimit}\n\nלחץ/י על הקישור להצטרפות:\n${url}`;
+    
+    await openWhatsApp(message);
   };
 
   const handleCopyLink = async (link) => {
@@ -183,8 +192,18 @@ export default function InviteLinksManager({ eventId, eventTitle }) {
                     <Button
                       variant="outline"
                       size="sm"
+                      onClick={() => handleShareWhatsApp(link)}
+                      className="text-green-600 border-green-200 hover:bg-green-50"
+                      title="שלח בוואטסאפ"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => handleCopyLink(link)}
                       className={copiedId === link.id ? 'bg-green-50 border-green-200' : ''}
+                      title="העתק קישור"
                     >
                       {copiedId === link.id ? (
                         <Check className="w-4 h-4 text-green-600" />
@@ -197,6 +216,7 @@ export default function InviteLinksManager({ eventId, eventTitle }) {
                       size="sm"
                       onClick={() => handleDeleteLink(link.id)}
                       className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      title="מחק קישור"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
