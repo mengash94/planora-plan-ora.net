@@ -4416,3 +4416,45 @@ export const deleteAppVersion = async (id) => {
     if (!id) throw new Error('id is required');
     return _fetchWithAuth(`/AppVersion/${id}`, { method: 'DELETE' });
 };
+
+// --- Invite Links ---
+export const createInviteLink = async (data) => {
+    if (!data.eventId) throw new Error('eventId is required');
+    
+    // Generate unique code
+    const code = `IL${Date.now().toString(36).toUpperCase()}${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+    
+    const payload = {
+        eventId: data.eventId,
+        maxGuests: data.maxGuests || null, // null = unlimited
+        code: code
+    };
+    
+    console.log('[createInviteLink] Creating invite link:', payload);
+    return _fetchWithAuth('/InviteLink', { method: 'POST', body: JSON.stringify(payload) });
+};
+
+export const getInviteLinkByCode = async (code) => {
+    if (!code) throw new Error('code is required');
+    
+    const links = await _fetchWithAuth(`/InviteLink?code=${encodeURIComponent(code)}`, { method: 'GET' });
+    const linkList = Array.isArray(links) ? links : (links?.items || []);
+    return linkList.length > 0 ? linkList[0] : null;
+};
+
+export const getInviteLinksByEvent = async (eventId) => {
+    if (!eventId) throw new Error('eventId is required');
+    
+    const links = await _fetchWithAuth(`/InviteLink?eventId=${encodeURIComponent(eventId)}`, { method: 'GET' });
+    return Array.isArray(links) ? links : (links?.items || []);
+};
+
+export const updateInviteLink = async (linkId, updates) => {
+    if (!linkId) throw new Error('linkId is required');
+    return _fetchWithAuth(`/InviteLink/${linkId}`, { method: 'PUT', body: JSON.stringify(updates) });
+};
+
+export const deleteInviteLink = async (linkId) => {
+    if (!linkId) throw new Error('linkId is required');
+    return _fetchWithAuth(`/InviteLink/${linkId}`, { method: 'DELETE' });
+};
