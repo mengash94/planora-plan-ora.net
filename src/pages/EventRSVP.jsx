@@ -75,8 +75,11 @@ export default function EventRSVPPage() {
   
   // Max guests from URL param
   const maxFromUrl = (() => {
-    const v = searchParams.get('max') || searchParams.get('limit');
-    return v !== null && v !== '' && !isNaN(Number(v)) ? Number(v) : null;
+    // Try both searchParams and direct window location (for robustness)
+    const sp = new URLSearchParams(window.location.search);
+    const v = searchParams.get('max') || searchParams.get('limit') || sp.get('max') || sp.get('limit');
+    const val = v !== null && v !== '' && !isNaN(Number(v)) ? Number(v) : null;
+    return val;
   })();
   
   // Max guests from invite link (takes priority) OR URL param (null = unlimited)
