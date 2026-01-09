@@ -337,6 +337,24 @@ export default function RSVPTab({ eventId, event, isManager }) {
         </CardContent>
       </Card>
 
+      {/* Invite Links with Guest Limits */}
+      {isManager && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <LinkIcon className="w-5 h-5 text-purple-600" />
+              קישורי הזמנה עם הגבלות
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-gray-600 mb-4">
+              צור קישורי הזמנה עם הגבלת מספר אורחים לכל קישור
+            </p>
+            <InviteLinksManager eventId={eventId} eventTitle={event?.title} />
+          </CardContent>
+        </Card>
+      )}
+
       {/* Notification Settings - Only for managers */}
       {isManager && (
         <Card className="bg-gradient-to-r from-orange-50 to-rose-50 border-orange-200">
