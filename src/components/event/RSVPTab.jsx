@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Users, Check, X, HelpCircle, Trash2, Loader2, 
   Copy, Share2, UserPlus, BarChart3, RefreshCw,
-  Phone, MessageSquare, Download, FileSpreadsheet, FileText, Bell, BellOff
+  Phone, MessageSquare, Download, FileSpreadsheet, FileText, Bell, BellOff, Link as LinkIcon
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from 'sonner';
 import { createPageUrl } from '@/utils';
+import InviteLinksManager from './InviteLinksManager';
 
 export default function RSVPTab({ eventId, event, isManager }) {
   const [rsvps, setRsvps] = useState([]);
