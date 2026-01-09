@@ -193,6 +193,7 @@ export default function InviteLinksManager({ eventId, eventTitle }) {
                       size="sm"
                       onClick={() => handleCopyLink(link)}
                       className={copiedId === link.id ? 'bg-green-50 border-green-200' : ''}
+                      title="העתק קישור"
                     >
                       {copiedId === link.id ? (
                         <Check className="w-4 h-4 text-green-600" />
@@ -201,10 +202,20 @@ export default function InviteLinksManager({ eventId, eventTitle }) {
                       )}
                     </Button>
                     <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleShareWhatsApp(link)}
+                      className="bg-green-50 border-green-200 hover:bg-green-100"
+                      title="שלח בוואטסאפ"
+                    >
+                      <MessageSquare className="w-4 h-4 text-green-600" />
+                    </Button>
+                    <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDeleteLink(link.id)}
                       className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      title="מחק קישור"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
