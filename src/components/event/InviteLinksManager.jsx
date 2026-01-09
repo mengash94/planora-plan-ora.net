@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
   Copy, Check, Trash2, Plus, Link as LinkIcon, Users, 
-  Loader2, Infinity, Settings
+  Loader2, Infinity, Settings, MessageSquare
 } from 'lucide-react';
 import {
   createInviteLink,
@@ -13,6 +13,7 @@ import {
   deleteInviteLink
 } from '@/components/instabackService';
 import { toast } from 'sonner';
+import { openWhatsApp } from '@/components/utils/shareHelper';
 
 export default function InviteLinksManager({ eventId, eventTitle }) {
   const [links, setLinks] = useState([]);
