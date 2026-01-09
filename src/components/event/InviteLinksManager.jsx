@@ -11,7 +11,7 @@ import {
   createInviteLink,
   getInviteLinksByEvent,
   deleteInviteLink
-} from '@/components/instabackService';
+} from '@/components/instabackService.js';
 import { toast } from 'sonner';
 
 export default function InviteLinksManager({ eventId, eventTitle }) {
