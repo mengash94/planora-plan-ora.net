@@ -7,6 +7,7 @@ import { Copy, MessageCircle, Mail, Users, Link as LinkIcon, Check, MessageSquar
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/components/AuthProvider';
 import { openWhatsApp, openSMS, openEmail } from '@/components/utils/shareHelper';
+import InviteLinksManager from './InviteLinksManager';
 
 export default function InviteDialog({ isOpen, onOpenChange, event, onCopyLink, onShareWhatsApp }) {
   const { user: currentUser } = useAuth();
@@ -174,10 +175,11 @@ export default function InviteDialog({ isOpen, onOpenChange, event, onCopyLink, 
 
           {/* Share Options */}
           <Tabs defaultValue="quick" className="w-full">
-            <TabsList className="grid grid-cols-3 w-full">
-              <TabsTrigger value="quick">שיתוף מהיר</TabsTrigger>
-              <TabsTrigger value="link">העתק קישור</TabsTrigger>
+            <TabsList className="grid grid-cols-4 w-full text-xs">
+              <TabsTrigger value="quick">מהיר</TabsTrigger>
+              <TabsTrigger value="link">קישור</TabsTrigger>
               <TabsTrigger value="contacts">אנשי קשר</TabsTrigger>
+              <TabsTrigger value="limits">הגבלות</TabsTrigger>
             </TabsList>
 
             <TabsContent value="quick" className="space-y-3 mt-4">
@@ -268,6 +270,10 @@ export default function InviteDialog({ isOpen, onOpenChange, event, onCopyLink, 
                   הוסף אנשי קשר כדי לשלוח הזמנות ישירות בוואטסאפ/SMS.
                 </p>
               )}
+            </TabsContent>
+
+            <TabsContent value="limits" className="mt-4">
+              <InviteLinksManager eventId={event?.id} eventTitle={event?.title} />
             </TabsContent>
           </Tabs>
         </div>
