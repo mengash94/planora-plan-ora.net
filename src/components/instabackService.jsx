@@ -4443,8 +4443,15 @@ export const getInviteLinkByCode = async (code) => {
 
     const tryParse = async (res) => {
         const json = await res.json().catch(() => null);
-        const data = json?.data ?? json;
-        if (data && data.eventId && data.code) return data;
+        const raw = json?.data ?? json;
+        if (raw && (raw.eventId || raw.event_id || raw.EventId) && raw.code) {
+            return {
+                id: raw.id || raw.Id || null,
+                eventId: raw.eventId || raw.event_id || raw.EventId,
+                code: raw.code,
+                maxGuests: (raw.maxGuests ?? raw.max_guests ?? raw.MaxGuests ?? null)
+            };
+        }
         return null;
     };
 
@@ -4478,7 +4485,15 @@ export const getInviteLinkByCode = async (code) => {
     try {
         const links = await _fetchWithAuth(`/InviteLink?code=${encodeURIComponent(code)}`, { method: 'GET' });
         const list = Array.isArray(links) ? links : (links?.items || []);
-        if (list.length > 0) return list[0];
+        if (list.length > 0) {
+            const raw = list[0];
+            return {
+                id: raw.id || raw.Id || null,
+                eventId: raw.eventId || raw.event_id || raw.EventId,
+                code: raw.code,
+                maxGuests: (raw.maxGuests ?? raw.max_guests ?? raw.MaxGuests ?? null)
+            };
+        }
     } catch (e) { console.warn('[getInviteLinkByCode] Entity query failed:', e?.message); }
 
     return null;

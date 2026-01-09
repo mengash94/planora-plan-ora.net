@@ -74,7 +74,8 @@ export default function EventRSVPPage() {
   const hasLoadedRef = useRef(false);
   
   // Max guests from invite link (null = unlimited)
-  const maxGuestsFromLink = inviteLink?.maxGuests || null;
+  const maxGuestsFromLink = (inviteLink && inviteLink.maxGuests !== undefined && inviteLink.maxGuests !== null)
+    ? Number(inviteLink.maxGuests) : null;
   
   // RSVP Form State
   const [rsvpData, setRsvpData] = useState({
@@ -203,11 +204,20 @@ export default function EventRSVPPage() {
       return;
     }
     if (!rsvpData.attendance) {
-      toast.error('נא לבחור האם מגיעים');
-      return;
-    }
+          toast.error('נא לבחור האם מגיעים');
+          return;
+        }
 
-    setIsSubmitting(true);
+        // Enforce invite link guest limit
+        const limit = (inviteLink && inviteLink.maxGuests !== undefined && inviteLink.maxGuests !== null)
+          ? Number(inviteLink.maxGuests) : null;
+        if (rsvpData.attendance === 'yes' && limit !== null && rsvpData.guestCount > limit) {
+          toast.error(`הגבלת קישור: עד ${limit} אורחים בלבד`);
+          setRsvpData(prev => ({ ...prev, guestCount: limit }));
+          return;
+        }
+
+        setIsSubmitting(true);
     try {
       await createEventRSVP({
         eventId: eventId,
@@ -532,7 +542,7 @@ export default function EventRSVPPage() {
                       }
                       setRsvpData({ ...rsvpData, guestCount: rsvpData.guestCount + 1 });
                     }}
-                    disabled={maxGuestsFromLink && rsvpData.guestCount >= maxGuestsFromLink}
+                    disabled={maxGuestsFromLink !== null && rsvpData.guestCount >= maxGuestsFromLink}
                     className="h-12 w-12 rounded-full border-green-300 text-xl font-bold"
                   >
                     +
