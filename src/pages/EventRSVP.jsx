@@ -573,28 +573,28 @@ export default function EventRSVPPage() {
                     variant="outline"
                     size="icon"
                     onClick={() => {
-                      console.log('[RSVP] Plus clicked - maxGuestsFromLink:', maxGuestsFromLink, 'guestCount:', rsvpData.guestCount);
+                      console.log('[RSVP] Plus clicked - maxGuestsLimit:', maxGuestsLimit, 'guestCount:', rsvpData.guestCount);
                       // Check max guests limit from invite link or URL
-                      if (maxGuestsFromLink !== null && maxGuestsFromLink > 0 && rsvpData.guestCount >= maxGuestsFromLink) {
-                        toast.error(`הגבלת קישור: עד ${maxGuestsFromLink} אורחים בלבד`);
+                      if (maxGuestsLimit !== null && maxGuestsLimit > 0 && rsvpData.guestCount >= maxGuestsLimit) {
+                        toast.error(`הגבלת קישור: עד ${maxGuestsLimit} אורחים בלבד`);
                         return;
                       }
                       setRsvpData({ ...rsvpData, guestCount: rsvpData.guestCount + 1 });
                     }}
-                    disabled={(inviteCode && !inviteLink) || (maxGuestsFromLink !== null && maxGuestsFromLink > 0 && rsvpData.guestCount >= maxGuestsFromLink)}
+                    disabled={(inviteCode && !inviteLink) || (maxGuestsLimit !== null && maxGuestsLimit > 0 && rsvpData.guestCount >= maxGuestsLimit)}
                     className="h-12 w-12 rounded-full border-green-300 text-xl font-bold"
                   >
                     +
                   </Button>
                 </div>
-                {maxGuestsFromLink !== null && maxGuestsFromLink > 0 && rsvpData.guestCount >= maxGuestsFromLink && (
+                {maxGuestsLimit !== null && maxGuestsLimit > 0 && rsvpData.guestCount >= maxGuestsLimit && (
                   <div className="text-center mt-3 p-2 bg-amber-100 rounded-lg border border-amber-300">
                     <p className="text-sm text-amber-800 font-medium">
-                      🔒 הגעת למקסימום האורחים המותר ({maxGuestsFromLink})
+                      🔒 הגעת למקסימום האורחים המותר ({maxGuestsLimit})
                     </p>
                   </div>
                 )}
-                {rsvpData.guestCount > 1 && (maxGuestsFromLink === null || maxGuestsFromLink <= 0 || rsvpData.guestCount < maxGuestsFromLink) && (
+                {rsvpData.guestCount > 1 && (maxGuestsLimit === null || maxGuestsLimit <= 0 || rsvpData.guestCount < maxGuestsLimit) && (
                   <p className="text-center text-sm text-green-600 mt-2">
                     מעולה! {rsvpData.guestCount} אנשים מגיעים 🎉
                   </p>
