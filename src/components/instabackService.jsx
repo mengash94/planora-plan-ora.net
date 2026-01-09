@@ -4470,13 +4470,20 @@ export const getInviteLinkByCode = async (code) => {
         console.log('[getInviteLinkByCode] Response:', result);
         
         // Extract data from response - handle { success: true, data: {...} } format
-        if (result.success && result.data) {
-            return result.data;
+        if (result && typeof result === 'object') {
+            const data = result.data || result;
+            if (data.eventId && data.code) {
+                return data;
+            }
         }
         
-        // Fallback for direct data response
-        if (result.eventId && result.code) {
-            return result;
+        // As a fallback, try the direct entity query
+        try {
+            const links = await _fetchWithAuth(`/InviteLink?code=${encodeURIComponent(code)}`, { method: 'GET' });
+            const list = Array.isArray(links) ? links : (links?.items || []);
+            if (list.length > 0) return list[0];
+        } catch (e) {
+            console.warn('[getInviteLinkByCode] Fallback query failed:', e?.message);
         }
         
         return null;
