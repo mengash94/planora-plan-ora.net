@@ -137,6 +137,16 @@ export default function EventRSVPPage() {
     loadInviteLinkData();
   }, [inviteCode, eventIdFromUrl, inviteLink]);
 
+  // Clamp guestCount when limit becomes known or attendance toggles
+  useEffect(() => {
+    const limit = (inviteLink && inviteLink.maxGuests !== undefined && inviteLink.maxGuests !== null)
+      ? Number(inviteLink.maxGuests)
+      : null;
+    if (rsvpData.attendance === 'yes' && limit !== null) {
+      setRsvpData(prev => ({ ...prev, guestCount: Math.min(prev.guestCount, Math.max(1, limit)) }));
+    }
+  }, [inviteLink, rsvpData.attendance]);
+
   // Clamp guest count once invite limit is known
   useEffect(() => {
     if (inviteLink && inviteLink.maxGuests !== undefined && inviteLink.maxGuests !== null) {
