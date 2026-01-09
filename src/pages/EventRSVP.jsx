@@ -160,15 +160,14 @@ export default function EventRSVPPage() {
     loadInviteLinkData();
   }, [inviteCode, eventIdFromUrl, inviteLink]);
 
-  // Clamp guest count once we know the limit (from link or URL)
+  // Clamp guest count once we know the limit
   useEffect(() => {
-    const limit = maxGuestsFromLink;
-    console.log('[RSVP] Clamp effect - limit:', limit, 'current guestCount:', rsvpData.guestCount);
+    const limit = maxGuestsLimit;
     if (limit !== null && limit > 0 && rsvpData.guestCount > limit) {
       console.log('[RSVP] Clamping guestCount from', rsvpData.guestCount, 'to', limit);
       setRsvpData(prev => ({ ...prev, guestCount: Math.max(1, limit) }));
     }
-  }, [maxGuestsFromLink, rsvpData.guestCount]);
+  }, [maxGuestsLimit, rsvpData.guestCount]);
 
   // Load event data only once
   useEffect(() => {
