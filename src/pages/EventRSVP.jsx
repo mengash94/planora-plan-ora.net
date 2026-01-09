@@ -56,6 +56,7 @@ import { toast } from 'sonner';
 
 export default function EventRSVPPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const eventIdFromUrl = searchParams.get('id')?.trim();
   const inviteCode = searchParams.get('code')?.trim();
@@ -73,21 +74,31 @@ export default function EventRSVPPage() {
   // Prevent infinite loop - load only once
   const hasLoadedRef = useRef(false);
   
-  // Max guests from URL param
-  const maxFromUrl = (() => {
-    // Try both searchParams and direct window location (for robustness)
-    const sp = new URLSearchParams(window.location.search);
-    const v = searchParams.get('max') || searchParams.get('limit') || sp.get('max') || sp.get('limit');
-    const val = v !== null && v !== '' && !isNaN(Number(v)) ? Number(v) : null;
-    return val;
-  })();
+  // Robust calculation of guest limit
+  const maxGuestsLimit = React.useMemo(() => {
+    // 1. Invite Link has highest priority
+    if (inviteLink && inviteLink.maxGuests !== undefined && inviteLink.maxGuests !== null) {
+      return Number(inviteLink.maxGuests);
+    }
+
+    // 2. URL Parameters
+    // Try searchParams hook first
+    let val = searchParams.get('max') || searchParams.get('limit');
+    
+    // Fallback to location.search (handles cases where hook might be stale or different router mode)
+    if (!val) {
+      const sp = new URLSearchParams(location.search);
+      val = sp.get('max') || sp.get('limit');
+    }
+
+    if (val && !isNaN(Number(val)) && Number(val) > 0) {
+      return Number(val);
+    }
+
+    return null;
+  }, [inviteLink, searchParams, location.search]);
   
-  // Max guests from invite link (takes priority) OR URL param (null = unlimited)
-  const maxGuestsFromLink = (inviteLink && inviteLink.maxGuests !== undefined && inviteLink.maxGuests !== null)
-    ? Number(inviteLink.maxGuests)
-    : maxFromUrl;
-  
-  console.log('[RSVP] Render - maxFromUrl:', maxFromUrl, 'inviteLink:', inviteLink, 'maxGuestsFromLink:', maxGuestsFromLink, 'guestCount:', rsvpData.guestCount);
+  console.log('[RSVP] Render - maxGuestsLimit:', maxGuestsLimit, 'guestCount:', rsvpData?.guestCount);
   
   // RSVP Form State
   const [rsvpData, setRsvpData] = useState({
