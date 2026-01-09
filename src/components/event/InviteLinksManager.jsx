@@ -74,7 +74,7 @@ export default function InviteLinksManager({ eventId, eventTitle }) {
   };
 
   const generateFullUrl = (code) => {
-    return `https://register.plan-ora.net/JoinEvent?code=${code}`;
+    return `https://register.plan-ora.net/EventRSVP?code=${code}`;
   };
 
   const handleCopyLink = async (link) => {
