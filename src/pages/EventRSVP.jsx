@@ -73,14 +73,18 @@ export default function EventRSVPPage() {
   // Prevent infinite loop - load only once
   const hasLoadedRef = useRef(false);
   
-  // Max guests from invite link OR URL param (null = unlimited)
-  const maxParam = (() => {
+  // Max guests from URL param
+  const maxFromUrl = (() => {
     const v = searchParams.get('max') || searchParams.get('limit');
     return v !== null && v !== '' && !isNaN(Number(v)) ? Number(v) : null;
   })();
+  
+  // Max guests from invite link (takes priority) OR URL param (null = unlimited)
   const maxGuestsFromLink = (inviteLink && inviteLink.maxGuests !== undefined && inviteLink.maxGuests !== null)
     ? Number(inviteLink.maxGuests)
-    : maxParam;
+    : maxFromUrl;
+  
+  console.log('[RSVP] maxFromUrl:', maxFromUrl, 'inviteLink.maxGuests:', inviteLink?.maxGuests, 'maxGuestsFromLink:', maxGuestsFromLink);
   
   // RSVP Form State
   const [rsvpData, setRsvpData] = useState({
