@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useAuth } from '@/components/AuthProvider';
-import { getEventDetails, getUserById, createNotificationAndSendPush } from '@/components/instabackService';
+import { getEventDetails, getUserById, createNotificationAndSendPush, getInviteLinkByCode } from '@/components/instabackService';
 
 // Local createEventRSVP function
 const createEventRSVP = async (rsvpData) => {
@@ -57,7 +57,8 @@ import { toast } from 'sonner';
 export default function EventRSVPPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const eventId = searchParams.get('id')?.trim();
+  const eventIdFromUrl = searchParams.get('id')?.trim();
+  const inviteCode = searchParams.get('code')?.trim();
   
   const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const [event, setEvent] = useState(null);
@@ -66,9 +67,14 @@ export default function EventRSVPPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [submitted, setSubmitted] = useState(false);
+  const [inviteLink, setInviteLink] = useState(null);
+  const [eventId, setEventId] = useState(eventIdFromUrl);
   
   // Prevent infinite loop - load only once
   const hasLoadedRef = useRef(false);
+  
+  // Max guests from invite link (null = unlimited)
+  const maxGuestsFromLink = inviteLink?.maxGuests || null;
   
   // RSVP Form State
   const [rsvpData, setRsvpData] = useState({
@@ -79,10 +85,33 @@ export default function EventRSVPPage() {
     notes: ''
   });
 
+  // Handle invite code - fetch the link details and get eventId
+  useEffect(() => {
+    const loadInviteLink = async () => {
+      if (inviteCode && !eventIdFromUrl) {
+        try {
+          const link = await getInviteLinkByCode(inviteCode);
+          if (link) {
+            setInviteLink(link);
+            setEventId(link.eventId);
+          } else {
+            setError('קישור ההזמנה לא נמצא או שאינו תקף');
+            setIsLoading(false);
+          }
+        } catch (err) {
+          console.error('[RSVP] Error loading invite link:', err);
+          setError('שגיאה בטעינת קישור ההזמנה');
+          setIsLoading(false);
+        }
+      }
+    };
+    loadInviteLink();
+  }, [inviteCode, eventIdFromUrl]);
+
   // Load event data only once
   useEffect(() => {
     if (hasLoadedRef.current || !eventId) {
-      if (!eventId) {
+      if (!eventId && !inviteCode) {
         setError('לא נמצא מזהה אירוע בקישור');
         setIsLoading(false);
       }
@@ -452,6 +481,9 @@ export default function EventRSVPPage() {
                 <Label className="text-sm font-medium text-green-800 mb-3 block">
                   <Users className="w-4 h-4 inline ml-1" />
                   כמה אנשים מגיעים? (כולל אותך)
+                  {maxGuestsFromLink && (
+                    <span className="text-xs text-amber-600 mr-2">(מקסימום {maxGuestsFromLink})</span>
+                  )}
                 </Label>
                 <div className="flex items-center justify-center gap-4">
                   <Button
@@ -469,13 +501,25 @@ export default function EventRSVPPage() {
                     type="button"
                     variant="outline"
                     size="icon"
-                    onClick={() => setRsvpData({ ...rsvpData, guestCount: rsvpData.guestCount + 1 })}
+                    onClick={() => {
+                      // Check max guests limit from invite link
+                      if (maxGuestsFromLink && rsvpData.guestCount >= maxGuestsFromLink) {
+                        return; // Don't allow exceeding the limit
+                      }
+                      setRsvpData({ ...rsvpData, guestCount: rsvpData.guestCount + 1 });
+                    }}
+                    disabled={maxGuestsFromLink && rsvpData.guestCount >= maxGuestsFromLink}
                     className="h-12 w-12 rounded-full border-green-300 text-xl font-bold"
                   >
                     +
                   </Button>
                 </div>
-                {rsvpData.guestCount > 1 && (
+                {maxGuestsFromLink && rsvpData.guestCount >= maxGuestsFromLink && (
+                  <p className="text-center text-sm text-amber-600 mt-2">
+                    הגעת למקסימום האורחים המותר בקישור זה
+                  </p>
+                )}
+                {rsvpData.guestCount > 1 && (!maxGuestsFromLink || rsvpData.guestCount < maxGuestsFromLink) && (
                   <p className="text-center text-sm text-green-600 mt-2">
                     מעולה! {rsvpData.guestCount} אנשים מגיעים 🎉
                   </p>
