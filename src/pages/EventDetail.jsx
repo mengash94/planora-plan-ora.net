@@ -855,7 +855,7 @@ export default function EventDetailPage() {
     }
     return [
       'חתונה', 'אירוסין', 'ברית מילה', 'בת מצווה', 'בר מצווה', 'חינה', 'שבת חתן', 'בריתה', 
-      'יום הולדת', 'אירוע משפחתי', 'birthday', 'party'
+      'יום הולדת', 'אירוע משפחתי', 'birthday', 'party', 'wedding'
     ];
   };
   const rsvpCategories = getRsvpCategories();
