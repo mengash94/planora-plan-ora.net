@@ -246,11 +246,11 @@ export default function EventRSVPPage() {
         }
 
         // Enforce invite link/URL guest limit
-        const limit = maxGuestsFromLink;
+        const limit = maxGuestsLimit;
         if (rsvpData.attendance === 'yes' && limit !== null && limit > 0) {
           if (rsvpData.guestCount > limit) {
             toast.error(`הגבלת קישור: עד ${limit} אורחים בלבד`);
-            setRsvpData(prev => ({ ...prev, guestCount: Math.max(1, limit) }));
+            setRsvpData(prev => ({ ...prev, guestCount: limit }));
             return;
           }
         }
