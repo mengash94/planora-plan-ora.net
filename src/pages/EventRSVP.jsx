@@ -552,8 +552,8 @@ export default function EventRSVPPage() {
                 <Label className="text-sm font-medium text-green-800 mb-3 block">
                   <Users className="w-4 h-4 inline ml-1" />
                   כמה אנשים מגיעים? (כולל אותך)
-                  {maxGuestsFromLink !== null && (
-                    <span className="text-xs text-amber-600 mr-2 font-bold">(מקסימום {maxGuestsFromLink})</span>
+                  {maxGuestsLimit !== null && (
+                    <span className="text-xs text-amber-600 mr-2 font-bold">(מקסימום {maxGuestsLimit})</span>
                   )}
                 </Label>
                 <div className="flex items-center justify-center gap-4">
