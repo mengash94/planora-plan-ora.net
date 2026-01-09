@@ -73,9 +73,14 @@ export default function EventRSVPPage() {
   // Prevent infinite loop - load only once
   const hasLoadedRef = useRef(false);
   
-  // Max guests from invite link (null = unlimited)
+  // Max guests from invite link OR URL param (null = unlimited)
+  const maxParam = (() => {
+    const v = searchParams.get('max') || searchParams.get('limit');
+    return v !== null && v !== '' && !isNaN(Number(v)) ? Number(v) : null;
+  })();
   const maxGuestsFromLink = (inviteLink && inviteLink.maxGuests !== undefined && inviteLink.maxGuests !== null)
-    ? Number(inviteLink.maxGuests) : null;
+    ? Number(inviteLink.maxGuests)
+    : maxParam;
   
   // RSVP Form State
   const [rsvpData, setRsvpData] = useState({
@@ -131,6 +136,16 @@ export default function EventRSVPPage() {
     };
     loadInviteLinkData();
   }, [inviteCode, eventIdFromUrl, inviteLink]);
+
+  // Clamp guest count once we know the limit (from link or URL)
+  useEffect(() => {
+    const limit = (inviteLink && inviteLink.maxGuests !== undefined && inviteLink.maxGuests !== null)
+      ? Number(inviteLink.maxGuests)
+      : maxParam;
+    if (limit !== null) {
+      setRsvpData(prev => ({ ...prev, guestCount: Math.min(prev.guestCount, Math.max(1, limit)) }));
+    }
+  }, [inviteLink, maxParam]);
 
   // Clamp guest count once invite link (and its limit) is loaded
   useEffect(() => {
