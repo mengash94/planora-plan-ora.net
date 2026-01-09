@@ -74,7 +74,29 @@ export default function EventRSVPPage() {
   // Prevent infinite loop - load only once
   const hasLoadedRef = useRef(false);
   
+  // Robust calculation of guest limit
+  const maxGuestsLimit = React.useMemo(() => {
+    // 1. Invite Link has highest priority
+    if (inviteLink && inviteLink.maxGuests !== undefined && inviteLink.maxGuests !== null) {
+      return Number(inviteLink.maxGuests);
+    }
 
+    // 2. URL Parameters
+    // Try searchParams hook first
+    let val = searchParams.get('max') || searchParams.get('limit');
+    
+    // Fallback to location.search (handles cases where hook might be stale or different router mode)
+    if (!val) {
+      const sp = new URLSearchParams(location.search);
+      val = sp.get('max') || sp.get('limit');
+    }
+
+    if (val && !isNaN(Number(val)) && Number(val) > 0) {
+      return Number(val);
+    }
+
+    return null;
+  }, [inviteLink, searchParams, location.search]);
   
   console.log('[RSVP] Render - maxGuestsLimit:', maxGuestsLimit, 'guestCount:', rsvpData?.guestCount);
   
