@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useAuth } from '@/components/AuthProvider';
-import { getEventDetails, getUserById, joinEvent as joinEventService, getEventMembers, createNotificationAndSendPush } from '@/components/instabackService';
+import { getEventDetails, getUserById, joinEvent as joinEventService, getEventMembers, createNotificationAndSendPush, getInviteLinkByCode } from '@/components/instabackService';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Loader2, Calendar, MapPin, PartyPopper, AlertCircle, Users, UserCheck, Sparkles, DollarSign } from 'lucide-react';
@@ -13,7 +13,8 @@ import { base44 } from '@/api/base44Client';
 export default function JoinEventPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const eventId = searchParams.get('id')?.trim();
+  const eventIdFromUrl = searchParams.get('id')?.trim();
+  const inviteCode = searchParams.get('code')?.trim();
   
   const { user, isAuthenticated, login, isLoading: isAuthLoading } = useAuth();
   const [event, setEvent] = useState(null);
@@ -21,19 +22,47 @@ export default function JoinEventPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isJoining, setIsJoining] = useState(false);
   const [error, setError] = useState(null);
+  const [inviteLink, setInviteLink] = useState(null);
+  const [eventId, setEventId] = useState(eventIdFromUrl);
+
+  // Handle invite code - fetch the link details and get eventId
+  useEffect(() => {
+    const loadInviteLink = async () => {
+      if (inviteCode && !eventIdFromUrl) {
+        setIsLoading(true);
+        try {
+          const link = await getInviteLinkByCode(inviteCode);
+          if (link) {
+            setInviteLink(link);
+            setEventId(link.eventId);
+          } else {
+            setError('קישור ההזמנה לא נמצא או שאינו תקף');
+            setIsLoading(false);
+          }
+        } catch (err) {
+          console.error('[JoinEvent] Error loading invite link:', err);
+          setError('שגיאה בטעינת קישור ההזמנה');
+          setIsLoading(false);
+        }
+      }
+    };
+    loadInviteLink();
+  }, [inviteCode, eventIdFromUrl]);
 
   useEffect(() => {
-    if (isAuthenticated && user && !eventId) {
+    if (isAuthenticated && user && !eventId && !inviteCode) {
       const pendingEventId = localStorage.getItem('pendingEventJoin');
       if (pendingEventId) {
         localStorage.removeItem('pendingEventJoin');
         navigate(createPageUrl(`JoinEvent?id=${pendingEventId}`));
       }
     }
-  }, [isAuthenticated, user, navigate, eventId]);
+  }, [isAuthenticated, user, navigate, eventId, inviteCode]);
 
   const loadEventData = useCallback(async () => {
     if (!eventId) {
+      // If we're still waiting for invite code to resolve, don't show error
+      if (inviteCode) return;
       setError('לא נמצא מזהה אירוע בקישור');
       setIsLoading(false);
       return;
@@ -143,7 +172,7 @@ export default function JoinEventPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [eventId, navigate]);
+  }, [eventId, navigate, inviteCode]);
 
   useEffect(() => {
     loadEventData();
@@ -362,6 +391,18 @@ export default function JoinEventPage() {
                   <div>
                     <p className="text-sm text-gray-500">מקום</p>
                     <p className="font-semibold text-gray-900">{event.location}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Guest Limit from Invite Link */}
+              {inviteLink && inviteLink.maxGuests && (
+                <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
+                  <div className="flex items-center gap-2">
+                    <Users className="w-5 h-5 text-amber-600" />
+                    <p className="text-sm text-amber-800">
+                      <span className="font-medium">הגבלת אורחים:</span> עד {inviteLink.maxGuests} אנשים
+                    </p>
                   </div>
                 </div>
               )}
