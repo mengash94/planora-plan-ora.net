@@ -919,33 +919,96 @@ export const getEventJoinData = async (eventId, userId = null) => {
 export const updateEvent = async (eventId, updates) => {
     if (!eventId) throw new Error("eventId is required");
 
-    const payload = {
-        title: updates.title,
-        description: updates.description || '',
-        location: updates.location || '',
-        privacy: updates.privacy,
-        event_date: updates.event_date || updates.eventDate || null,
-        end_date: updates.end_date || updates.endDate || null,
-        cover_image_url: updates.cover_image_url || updates.coverImageUrl || '',
-        status: updates.status,
-        budget: updates.budget,
-        category: updates.category || null,
-        // Public event payment fields
-        participationCost: updates.participationCost || updates.participation_cost || null,
-        participation_cost: updates.participationCost || updates.participation_cost || null,
-        hidePaymentsFromMembers: updates.hidePaymentsFromMembers ?? updates.hide_payments_from_members ?? false,
-        hide_payments_from_members: updates.hidePaymentsFromMembers ?? updates.hide_payments_from_members ?? false,
-        // Tab visibility settings
-        visibleTabs: updates.visibleTabs || updates.visible_tabs || null,
-        visible_tabs: updates.visibleTabs || updates.visible_tabs || null,
-        // Payment method settings
-        paymentMethod: updates.paymentMethod || updates.payment_method || null,
-        payment_method: updates.paymentMethod || updates.payment_method || null,
-        paymentPhone: updates.paymentPhone || updates.payment_phone || null,
-        payment_phone: updates.paymentPhone || updates.payment_phone || null,
-        bankDetails: updates.bankDetails || updates.bank_details || null,
-        bank_details: updates.bankDetails || updates.bank_details || null
-    };
+    const payload = {};
+    
+    // Only add fields that are explicitly provided in updates
+    if (updates.title !== undefined) payload.title = updates.title;
+    if (updates.description !== undefined) payload.description = updates.description;
+    if (updates.location !== undefined) payload.location = updates.location;
+    if (updates.privacy !== undefined) payload.privacy = updates.privacy;
+    if (updates.status !== undefined) payload.status = updates.status;
+    if (updates.category !== undefined) payload.category = updates.category;
+    if (updates.budget !== undefined) payload.budget = updates.budget;
+    
+    // Date fields
+    if (updates.event_date !== undefined || updates.eventDate !== undefined) {
+        payload.event_date = updates.event_date || updates.eventDate || null;
+        payload.eventDate = updates.event_date || updates.eventDate || null;
+    }
+    if (updates.end_date !== undefined || updates.endDate !== undefined) {
+        payload.end_date = updates.end_date || updates.endDate || null;
+        payload.endDate = updates.end_date || updates.endDate || null;
+    }
+    
+    // Cover image
+    if (updates.cover_image_url !== undefined || updates.coverImageUrl !== undefined) {
+        payload.cover_image_url = updates.cover_image_url || updates.coverImageUrl || '';
+        payload.coverImageUrl = updates.cover_image_url || updates.coverImageUrl || '';
+    }
+    
+    // Payment fields
+    if (updates.participationCost !== undefined || updates.participation_cost !== undefined) {
+        payload.participationCost = updates.participationCost || updates.participation_cost || null;
+        payload.participation_cost = updates.participationCost || updates.participation_cost || null;
+    }
+    if (updates.hidePaymentsFromMembers !== undefined || updates.hide_payments_from_members !== undefined) {
+        payload.hidePaymentsFromMembers = updates.hidePaymentsFromMembers ?? updates.hide_payments_from_members ?? false;
+        payload.hide_payments_from_members = updates.hidePaymentsFromMembers ?? updates.hide_payments_from_members ?? false;
+    }
+    
+    // Tab visibility
+    if (updates.visibleTabs !== undefined || updates.visible_tabs !== undefined) {
+        payload.visibleTabs = updates.visibleTabs || updates.visible_tabs || null;
+        payload.visible_tabs = updates.visibleTabs || updates.visible_tabs || null;
+    }
+    
+    // Payment methods
+    if (updates.paymentMethod !== undefined || updates.payment_method !== undefined) {
+        payload.paymentMethod = updates.paymentMethod || updates.payment_method || null;
+        payload.payment_method = updates.paymentMethod || updates.payment_method || null;
+    }
+    if (updates.paymentMethods !== undefined || updates.payment_methods !== undefined) {
+        payload.paymentMethods = updates.paymentMethods || updates.payment_methods || null;
+        payload.payment_methods = updates.paymentMethods || updates.payment_methods || null;
+    }
+    if (updates.paymentPhone !== undefined || updates.payment_phone !== undefined) {
+        payload.paymentPhone = updates.paymentPhone || updates.payment_phone || null;
+        payload.payment_phone = updates.paymentPhone || updates.payment_phone || null;
+    }
+    if (updates.bankDetails !== undefined || updates.bank_details !== undefined) {
+        payload.bankDetails = updates.bankDetails || updates.bank_details || null;
+        payload.bank_details = updates.bankDetails || updates.bank_details || null;
+    }
+    
+    // RSVP notification setting
+    if (updates.notifyOnRsvp !== undefined || updates.notify_on_rsvp !== undefined) {
+        payload.notifyOnRsvp = updates.notifyOnRsvp ?? updates.notify_on_rsvp ?? true;
+        payload.notify_on_rsvp = updates.notifyOnRsvp ?? updates.notify_on_rsvp ?? true;
+    }
+    
+    // Invitation template
+    if (updates.invitationTemplateId !== undefined || updates.invitation_template_id !== undefined) {
+        payload.invitationTemplateId = updates.invitationTemplateId || updates.invitation_template_id || null;
+        payload.invitation_template_id = updates.invitationTemplateId || updates.invitation_template_id || null;
+    }
+    
+    // Recurring event
+    if (updates.is_recurring !== undefined || updates.isRecurring !== undefined) {
+        payload.is_recurring = updates.is_recurring ?? updates.isRecurring ?? false;
+        payload.isRecurring = updates.is_recurring ?? updates.isRecurring ?? false;
+    }
+    
+    // Poll flags
+    if (updates.datePollEnabled !== undefined) payload.datePollEnabled = updates.datePollEnabled;
+    if (updates.locationPollEnabled !== undefined) payload.locationPollEnabled = updates.locationPollEnabled;
+    if (updates.hasActiveDatePoll !== undefined || updates.has_active_date_poll !== undefined) {
+        payload.hasActiveDatePoll = updates.hasActiveDatePoll ?? updates.has_active_date_poll;
+        payload.has_active_date_poll = updates.hasActiveDatePoll ?? updates.has_active_date_poll;
+    }
+    if (updates.hasActiveLocationPoll !== undefined || updates.has_active_location_poll !== undefined) {
+        payload.hasActiveLocationPoll = updates.hasActiveLocationPoll ?? updates.has_active_location_poll;
+        payload.has_active_location_poll = updates.hasActiveLocationPoll ?? updates.has_active_location_poll;
+    }
 
     console.log('[updateEvent] Sending payload to server:', payload);
 
