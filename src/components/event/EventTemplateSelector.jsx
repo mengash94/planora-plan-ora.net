@@ -278,7 +278,13 @@ export default function EventTemplateSelector({ eventId, currentTemplateId, onUp
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold text-gray-900">בחר עיצוב להזמנה</h2>
-        {isSaving && <Loader2 className="w-5 h-5 animate-spin text-orange-500" />}
+        <div className="flex items-center gap-2">
+          {isSaving && <Loader2 className="w-5 h-5 animate-spin text-orange-500" />}
+          <Button onClick={seedTemplates} variant="outline" size="sm">
+            <Sparkles className="w-4 h-4 ml-2" />
+            הוסף עיצובים נוספים
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
