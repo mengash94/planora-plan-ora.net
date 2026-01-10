@@ -274,57 +274,83 @@ export default function EventRSVPPage() {
         }
 
         setIsSubmitting(true);
-    try {
-      await createEventRSVP({
-        eventId: eventId,
-        name: rsvpData.name,
-        phone: rsvpData.phone || null,
-        attendance: rsvpData.attendance,
-        guestCount: rsvpData.attendance === 'yes' ? rsvpData.guestCount : 0,
-        notes: rsvpData.notes || null,
-        userId: isAuthenticated && user?.id ? user.id : null
-      });
-      
-      // Send notification to event owner if notifyOnRsvp is enabled (default true)
-      const notifyOnRsvp = event?.notifyOnRsvp !== false;
-      const ownerId = event?.owner_id || event?.ownerId;
 
-      console.log('[RSVP] 🔔 Notification check:', { notifyOnRsvp, ownerId, eventTitle: event?.title });
+        console.log('[RSVP] ========== STARTING RSVP SUBMISSION ==========');
+        console.log('[RSVP] Event data:', event);
+        console.log('[RSVP] RSVP data:', rsvpData);
 
-      if (notifyOnRsvp && ownerId) {
-        try {
-          const attendanceText = rsvpData.attendance === 'yes' ? 'מגיע/ה' : rsvpData.attendance === 'no' ? 'לא מגיע/ה' : 'אולי';
-          const guestText = rsvpData.attendance === 'yes' && rsvpData.guestCount > 1 ? ` (${rsvpData.guestCount} אנשים)` : '';
+        try {
+          console.log('[RSVP] Step 1: Creating RSVP record...');
+          await createEventRSVP({
+            eventId: eventId,
+            name: rsvpData.name,
+            phone: rsvpData.phone || null,
+            attendance: rsvpData.attendance,
+            guestCount: rsvpData.attendance === 'yes' ? rsvpData.guestCount : 0,
+            notes: rsvpData.notes || null,
+            userId: isAuthenticated && user?.id ? user.id : null
+          });
+          console.log('[RSVP] ✅ RSVP record created successfully');
 
-          console.log('[RSVP] 🔔 Sending notification to owner:', ownerId);
+          // Send notification to event owner if notifyOnRsvp is enabled (default true)
+          const notifyOnRsvp = event?.notifyOnRsvp !== false;
+          const ownerId = event?.owner_id || event?.ownerId;
 
-          const notifResult = await createNotificationAndSendPush({
-            userId: ownerId,
-            type: 'rsvp_received',
-            title: `אישור הגעה חדש! 📋`,
-            message: `${rsvpData.name} הגיב/ה לאירוע "${event.title}": ${attendanceText}${guestText}`,
-            eventId: eventId,
-            actionUrl: `https://register.plan-ora.net${createPageUrl(`EventDetail?id=${eventId}&tab=rsvp`)}`,
-            priority: 'high',
-            sendPush: true
-          });
+          console.log('[RSVP] Step 2: Checking notification settings...');
+          console.log('[RSVP] 🔔 notifyOnRsvp:', notifyOnRsvp);
+          console.log('[RSVP] 🔔 ownerId:', ownerId);
+          console.log('[RSVP] 🔔 event.title:', event?.title);
 
-          console.log('[RSVP] ✅ Notification sent successfully:', notifResult);
-        } catch (notifyErr) {
-          console.error('[RSVP] ❌ Failed to notify event owner:', notifyErr);
-        }
-      } else {
-        console.log('[RSVP] ⚠️ Notification skipped:', { notifyOnRsvp, ownerId });
-      }
-      
-      setSubmitted(true);
-      toast.success('התשובה נשמרה בהצלחה! 🎉');
-    } catch (err) {
-      console.error('Error submitting RSVP:', err);
-      toast.error(err.message || 'שגיאה בשמירת התשובה');
-    } finally {
-      setIsSubmitting(false);
-    }
+          if (notifyOnRsvp && ownerId) {
+            try {
+              const attendanceText = rsvpData.attendance === 'yes' ? 'מגיע/ה' : rsvpData.attendance === 'no' ? 'לא מגיע/ה' : 'אולי';
+              const guestText = rsvpData.attendance === 'yes' && rsvpData.guestCount > 1 ? ` (${rsvpData.guestCount} אנשים)` : '';
+
+              const notificationPayload = {
+                userId: ownerId,
+                type: 'rsvp_received',
+                title: `אישור הגעה חדש! 📋`,
+                message: `${rsvpData.name} הגיב/ה לאירוע "${event.title}": ${attendanceText}${guestText}`,
+                eventId: eventId,
+                actionUrl: `https://register.plan-ora.net${createPageUrl(`EventDetail?id=${eventId}&tab=rsvp`)}`,
+                priority: 'high',
+                sendPush: true
+              };
+
+              console.log('[RSVP] Step 3: Sending notification with payload:', notificationPayload);
+
+              const notifResult = await createNotificationAndSendPush(notificationPayload);
+
+              console.log('[RSVP] ✅✅✅ Notification sent successfully! Result:', notifResult);
+            } catch (notifyErr) {
+              console.error('[RSVP] ❌❌❌ NOTIFICATION FAILED:', notifyErr);
+              console.error('[RSVP] Error details:', {
+                message: notifyErr.message,
+                stack: notifyErr.stack,
+                name: notifyErr.name
+              });
+            }
+          } else {
+            console.log('[RSVP] ⚠️ Notification SKIPPED - Reason:', {
+              notifyOnRsvp,
+              hasOwnerId: !!ownerId,
+              ownerId
+            });
+          }
+
+          console.log('[RSVP] ========== RSVP SUBMISSION COMPLETED ==========');
+          setSubmitted(true);
+          toast.success('התשובה נשמרה בהצלחה! 🎉');
+        } catch (err) {
+          console.error('[RSVP] ❌❌❌ RSVP SUBMISSION ERROR:', err);
+          console.error('[RSVP] Error details:', {
+            message: err.message,
+            stack: err.stack
+          });
+          toast.error(err.message || 'שגיאה בשמירת התשובה');
+        } finally {
+          setIsSubmitting(false);
+        }
   };
 
   const handleJoinApp = () => {
