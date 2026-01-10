@@ -50,8 +50,9 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { 
   Loader2, Calendar, MapPin, PartyPopper, AlertCircle, Users, 
   Check, X, HelpCircle, Sparkles, UserPlus, Gift, MessageCircle,
-  Star, Bell, CheckCircle2, Heart, Zap, Camera
-} from 'lucide-react';
+  Star, Bell, CheckCircle2, Heart, Zap, Camera,
+  Navigation, CalendarPlus, Map
+  } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function EventRSVPPage() {
@@ -308,13 +309,54 @@ export default function EventRSVPPage() {
   };
 
   const benefits = [
-    { icon: Bell, text: 'קבלו התראות ועדכונים בזמן אמת', color: 'text-blue-500' },
-    { icon: Users, text: 'ראו מי עוד מגיע ותיאמו איתם', color: 'text-green-500' },
-    { icon: CheckCircle2, text: 'קבלו משימות וראו את לו"ז האירוע', color: 'text-purple-500' },
-    { icon: Camera, text: 'שתפו תמונות בגלריה משותפת', color: 'text-pink-500' },
-    { icon: MessageCircle, text: 'צ\'אט קבוצתי עם כל המשתתפים', color: 'text-indigo-500' },
-    { icon: Star, text: 'צרו אירועים משלכם בחינם!', color: 'text-orange-500' },
+    { icon: Bell, text: 'קבלו התראות ועדכונים בזמן אמת', color: 'text-blue-500' },
+    { icon: Users, text: 'ראו מי עוד מגיע ותיאמו איתם', color: 'text-green-500' },
+    { icon: CheckCircle2, text: 'קבלו משימות וראו את לו"ז האירוע', color: 'text-purple-500' },
+    { icon: Camera, text: 'שתפו תמונות בגלריה משותפת', color: 'text-pink-500' },
+    { icon: MessageCircle, text: 'צ\'אט קבוצתי עם כל המשתתפים', color: 'text-indigo-500' },
+    { icon: Star, text: 'צרו אירועים משלכם בחינם!', color: 'text-orange-500' },
   ];
+
+  const addToCalendar = () => {
+    if (!event) return;
+    const startDate = event.date || event.eventDate || event.event_date;
+    if (!startDate) return;
+
+    const start = new Date(startDate).toISOString().replace(/-|:|\.\d+/g, '');
+    // Default to 2 hours if no end date
+    const endDate = event.end_date || event.endDate;
+    const end = endDate 
+      ? new Date(endDate).toISOString().replace(/-|:|\.\d+/g, '') 
+      : new Date(new Date(startDate).getTime() + 2 * 60 * 60 * 1000).toISOString().replace(/-|:|\.\d+/g, '');
+
+    const title = encodeURIComponent(event.title);
+    const details = encodeURIComponent(event.description || `הוזמנת לאירוע של ${ownerName}`);
+    const location = encodeURIComponent(event.location || '');
+
+    const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&location=${location}`;
+    window.open(url, '_blank');
+  };
+
+  const openWaze = () => {
+    if (!event?.location) return;
+    // Try to open Waze app, fallback to web
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const query = encodeURIComponent(event.location);
+    const url = isMobile 
+      ? `waze://?q=${query}&navigate=yes`
+      : `https://waze.com/ul?q=${query}&navigate=yes`;
+
+    // Fallback logic for mobile web to app store if not installed is complex, 
+    // so we stick to the universal link for web or specific scheme if we assume app.
+    // Ideally use window.open with the universal link:
+    window.open(`https://waze.com/ul?q=${query}&navigate=yes`, '_blank');
+  };
+
+  const openGoogleMaps = () => {
+    if (!event?.location) return;
+    const query = encodeURIComponent(event.location);
+    window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
+  };
 
   // Loading state
   if (isLoading || isAuthLoading) {
@@ -436,41 +478,96 @@ export default function EventRSVPPage() {
             )}
           </div>
 
-          {/* Event Details */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-              <Users className="w-5 h-5 text-orange-500 flex-shrink-0" />
-              <div>
-                <p className="text-xs text-gray-500">מארגן</p>
-                <p className="font-medium text-gray-900">{ownerName}</p>
-              </div>
-            </div>
+          {/* Event Details - Styled for "Hagiga" */}
+          <div className="bg-white/50 rounded-xl border border-orange-100 p-1">
+            {event?.cover_image_url && (
+              <div className="w-full h-32 rounded-lg mb-3 overflow-hidden">
+                <img 
+                  src={event.cover_image_url} 
+                  alt="Cover" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
 
-            {(event?.date || event?.eventDate || event?.event_date) && (
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <Calendar className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                <div>
-                  <p className="text-xs text-gray-500">תאריך</p>
-                  <p className="font-medium text-gray-900">
-                    {new Date(event.date || event.eventDate || event.event_date).toLocaleDateString('he-IL', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </p>
-                </div>
-              </div>
-            )}
+            <div className="space-y-3 p-2">
+              {/* Date & Calendar */}
+              {(event?.date || event?.eventDate || event?.event_date) && (
+                <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-100">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-orange-100 p-2 rounded-full">
+                        <Calendar className="w-5 h-5 text-orange-600" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">מתי חוגגים?</p>
+                        <p className="font-bold text-gray-900 text-lg">
+                          {new Date(event.date || event.eventDate || event.event_date).toLocaleDateString('he-IL', {
+                            weekday: 'long',
+                            day: 'numeric',
+                            month: 'long'
+                          })}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          בשעה {new Date(event.date || event.eventDate || event.event_date).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="text-orange-500 hover:text-orange-600 hover:bg-orange-50"
+                      onClick={addToCalendar}
+                      title="הוסף ליומן"
+                    >
+                      <CalendarPlus className="w-5 h-5" />
+                    </Button>
+                  </div>
+                </div>
+              )}
 
-            {event?.location && (
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <MapPin className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                <div>
-                  <p className="text-xs text-gray-500">מיקום</p>
-                  <p className="font-medium text-gray-900">{event.location}</p>
-                </div>
-              </div>
-            )}
+              {/* Location & Navigation */}
+              {event?.location && (
+                <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-100">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="bg-rose-100 p-2 rounded-full">
+                      <MapPin className="w-5 h-5 text-rose-600" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">איפה?</p>
+                      <p className="font-medium text-gray-900">{event.location}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    <Button 
+                      variant="outline" 
+                      className="w-full text-xs h-9 border-blue-200 text-blue-700 hover:bg-blue-50"
+                      onClick={openWaze}
+                    >
+                      <Navigation className="w-3 h-3 ml-1.5" />
+                      Waze
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="w-full text-xs h-9 border-green-200 text-green-700 hover:bg-green-50"
+                      onClick={openGoogleMaps}
+                    >
+                      <Map className="w-3 h-3 ml-1.5" />
+                      Google Maps
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Organizer */}
+              <div className="flex items-center gap-2 justify-center pt-2 pb-1 opacity-80">
+                <Users className="w-4 h-4 text-gray-400" />
+                <span className="text-xs text-gray-500">
+                  מארגן/ת: <span className="font-medium">{ownerName}</span>
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* RSVP Form */}
