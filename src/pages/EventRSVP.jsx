@@ -492,30 +492,26 @@ export default function EventRSVPPage() {
             )}
           </div>
 
-          {/* Invitation Card or Standard Cover */}
-          {inviteTemplate ? (
+          {/* Invitation Card */}
+          {inviteTemplate && (
             <InvitationCard template={inviteTemplate} event={event} />
-          ) : (
-            <>
-              {/* Event Details - Styled for "Hagiga" */}
-              <div className="bg-white/50 rounded-xl border border-orange-100 p-1">
-                {event?.cover_image_url && (
-                  <div className="w-full h-32 rounded-lg mb-3 overflow-hidden">
-                    <img 
-                      src={event.cover_image_url} 
-                      alt="Cover" 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
-                <div className="space-y-3 p-2">
-            </>
           )}
 
-          {inviteTemplate ? (
-             <div className="bg-white/50 rounded-xl border border-orange-100 p-3 mb-4">
-               <div className="space-y-3">
-          ) : null}
+          {/* Event Details - Styled for "Hagiga" */}
+          <div className="bg-white/50 rounded-xl border border-orange-100 p-1">
+
+            {/* Standard Cover - only if no invitation template */}
+            {!inviteTemplate && event?.cover_image_url && (
+              <div className="w-full h-32 rounded-lg mb-3 overflow-hidden">
+                <img 
+                  src={event.cover_image_url} 
+                  alt="Cover" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+
+            <div className="space-y-3 p-2">
               {/* Date & Calendar */}
               {(event?.date || event?.eventDate || event?.event_date) && (
                 <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-100">
@@ -592,13 +588,8 @@ export default function EventRSVPPage() {
                   מארגן/ת: <span className="font-medium">{ownerName}</span>
                 </span>
               </div>
-              {inviteTemplate ? (
-               </div>
               </div>
-              ) : (
-               </div>
               </div>
-              )}
 
           {/* RSVP Form */}
           <div className="space-y-4 pt-4 border-t">
