@@ -288,24 +288,33 @@ export default function EventRSVPPage() {
       // Send notification to event owner if notifyOnRsvp is enabled (default true)
       const notifyOnRsvp = event?.notifyOnRsvp !== false;
       const ownerId = event?.owner_id || event?.ownerId;
-      
+
+      console.log('[RSVP] 🔔 Notification check:', { notifyOnRsvp, ownerId, eventTitle: event?.title });
+
       if (notifyOnRsvp && ownerId) {
-        try {
-          const attendanceText = rsvpData.attendance === 'yes' ? 'מגיע/ה' : rsvpData.attendance === 'no' ? 'לא מגיע/ה' : 'אולי';
-          const guestText = rsvpData.attendance === 'yes' && rsvpData.guestCount > 1 ? ` (${rsvpData.guestCount} אנשים)` : '';
-          
-          await createNotificationAndSendPush({
-            userId: ownerId,
-            type: 'rsvp_received',
-            title: `אישור הגעה חדש! 📋`,
-            message: `${rsvpData.name} הגיב/ה לאירוע "${event.title}": ${attendanceText}${guestText}`,
-            eventId: eventId,
-            actionUrl: `https://register.plan-ora.net${createPageUrl(`EventDetail?id=${eventId}&tab=rsvp`)}`,
-            priority: 'normal'
-          });
-        } catch (notifyErr) {
-          console.warn('[RSVP] Failed to notify event owner:', notifyErr);
-        }
+        try {
+          const attendanceText = rsvpData.attendance === 'yes' ? 'מגיע/ה' : rsvpData.attendance === 'no' ? 'לא מגיע/ה' : 'אולי';
+          const guestText = rsvpData.attendance === 'yes' && rsvpData.guestCount > 1 ? ` (${rsvpData.guestCount} אנשים)` : '';
+
+          console.log('[RSVP] 🔔 Sending notification to owner:', ownerId);
+
+          const notifResult = await createNotificationAndSendPush({
+            userId: ownerId,
+            type: 'rsvp_received',
+            title: `אישור הגעה חדש! 📋`,
+            message: `${rsvpData.name} הגיב/ה לאירוע "${event.title}": ${attendanceText}${guestText}`,
+            eventId: eventId,
+            actionUrl: `https://register.plan-ora.net${createPageUrl(`EventDetail?id=${eventId}&tab=rsvp`)}`,
+            priority: 'high',
+            sendPush: true
+          });
+
+          console.log('[RSVP] ✅ Notification sent successfully:', notifResult);
+        } catch (notifyErr) {
+          console.error('[RSVP] ❌ Failed to notify event owner:', notifyErr);
+        }
+      } else {
+        console.log('[RSVP] ⚠️ Notification skipped:', { notifyOnRsvp, ownerId });
       }
       
       setSubmitted(true);

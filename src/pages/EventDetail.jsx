@@ -692,18 +692,6 @@ export default function EventDetailPage() {
           canManage={canManage}
           isReadOnly={isReadOnly} />;
 
-      case 'design':
-        return (
-          <div className="p-4 bg-white rounded-lg shadow-sm">
-            <EventTemplateSelector 
-              eventId={eventId}
-              currentTemplateId={event.invitationTemplateId}
-              onUpdate={loadEventData}
-              isReadOnly={!canManage || isReadOnly}
-            />
-          </div>
-        );
-
       case 'rsvp':
         // Get owner name for RSVP invitations
         const ownerId = event.ownerId || event.owner_id;
@@ -910,7 +898,6 @@ export default function EventDetailPage() {
     if (eventType === 'production') {
       const productionLabels = {
         'updates': 'עדכונים ',
-        'design': 'עיצוב',
         'tasks': 'משימות',
         'chat': 'צ\'אט',
         'polls': 'סקרים',
@@ -928,7 +915,6 @@ export default function EventDetailPage() {
     } else {
       const socialLabels = {
         'updates': 'עדכונים',
-        'design': 'עיצוב',
         'tasks': 'מה צריך לעשות?',
         'chat': 'צ\'אט',
         'polls': 'סקרים',
@@ -948,7 +934,6 @@ export default function EventDetailPage() {
 
   const allTabs = [
     { id: 'updates', label: getTabLabel('updates'), icon: Megaphone },
-    { id: 'design', label: getTabLabel('design'), icon: Palette },
     { id: 'rsvp', label: getTabLabel('rsvp'), icon: ClipboardCheck },
     { id: 'tasks', label: getTabLabel('tasks'), icon: CheckSquare },
     { id: 'chat', label: getTabLabel('chat'), icon: MessageSquare },
