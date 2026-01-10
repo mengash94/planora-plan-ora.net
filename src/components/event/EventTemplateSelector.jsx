@@ -1,226 +1,222 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/components/AuthProvider';
-import { getEventTemplates } from '@/components/instabackService';
-import { Card, CardContent, CardTitle } from '@/components/ui/card';
-import { Loader2, Calendar, Clock, Search, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { getInvitationTemplates, createInvitationTemplate, updateEvent } from '@/components/instabackService';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Loader2, Check, Palette, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+import { formatIsraelDate, formatIsraelTime } from '@/components/utils/dateHelpers';
 
-import { getEventTypeByCategory } from '@/components/admin/EventTypeClassification';
+export default function EventTemplateSelector({ eventId, currentTemplateId, onUpdate, isReadOnly }) {
+  const [templates, setTemplates] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [selectedId, setSelectedId] = useState(currentTemplateId);
 
-export default function EventTemplateSelector({ onTemplateSelected, onClose, eventType }) {
-    const [templates, setTemplates] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('all');
-    const { user } = useAuth();
-    const navigate = useNavigate();
+  useEffect(() => {
+    loadTemplates();
+  }, []);
 
-    useEffect(() => {
-        const fetchTemplates = async () => {
-            try {
-                const fetchedTemplates = await getEventTemplates();
-                setTemplates(fetchedTemplates || []);
-            } catch (error) {
-                console.error("Failed to fetch event templates:", error);
-                toast.error("שגיאה בטעינת התבניות");
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchTemplates();
-    }, []);
+  useEffect(() => {
+    setSelectedId(currentTemplateId);
+  }, [currentTemplateId]);
 
-    // Extract unique categories from templates
-    const categories = useMemo(() => {
-        const cats = new Set();
-        templates.forEach(t => {
-            if (t.category) cats.add(t.category);
-        });
-        return Array.from(cats);
-    }, [templates]);
+  const loadTemplates = async () => {
+    setIsLoading(true);
+    try {
+      const data = await getInvitationTemplates();
+      setTemplates(data);
+    } catch (error) {
+      console.error('Failed to load templates:', error);
+      toast.error('שגיאה בטעינת התבניות');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    // Filter templates by search, category, AND event type
-    const filteredTemplates = useMemo(() => {
-        return templates.filter(t => {
-            const matchesSearch = !searchQuery || 
-                (t.title || t.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-                (t.description || '').toLowerCase().includes(searchQuery.toLowerCase());
-            const matchesCategory = selectedCategory === 'all' || t.category === selectedCategory;
-            
-            // Filter by event type if provided
-            if (eventType) {
-                const templateEventType = getEventTypeByCategory(t.category);
-                if (templateEventType !== eventType) return false;
-            }
-            
-            return matchesSearch && matchesCategory;
-        });
-    }, [templates, searchQuery, selectedCategory, eventType]);
+  const handleSelect = async (templateId) => {
+    if (isReadOnly) return;
+    
+    setSelectedId(templateId);
+    setIsSaving(true);
+    try {
+      await updateEvent(eventId, { invitationTemplateId: templateId });
+      toast.success('עיצוב ההזמנה עודכן בהצלחה! 🎨');
+      if (onUpdate) onUpdate();
+    } catch (error) {
+      console.error('Failed to update event template:', error);
+      toast.error('שגיאה בעדכון העיצוב');
+      // Revert selection on error
+      setSelectedId(currentTemplateId);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
-    const pickColor = (i) => {
-        const palette = [
-            "from-orange-400 to-rose-400",
-            "from-emerald-400 to-green-500",
-            "from-blue-400 to-indigo-500",
-            "from-purple-400 to-pink-500",
-            "from-amber-400 to-yellow-500",
-            "from-teal-400 to-cyan-500",
-        ];
-        return palette[i % palette.length];
-    };
-
-    const handleTemplateSelect = async (template) => {
-        if (!template) return;
-
-        try {
-            console.log('[EventTemplateSelector] Template selected:', template);
-
-            if (onTemplateSelected) {
-                onTemplateSelected({
-                    templateId: template.id || template.templateId || template.template_id,
-                    title: template.title || template.name,
-                    name: template.name || template.title,
-                    description: template.description,
-                    category: template.category,
-                    coverImageUrl: template.cover_image_url || template.coverImageUrl,
-                    defaultTasks: template.default_tasks || template.defaultTasks || [],
-                    defaultItinerary: template.defaultItinerary || template.default_itinerary || [],
-                    canBePublic: template.canBePublic ?? template.can_be_public ?? true,
-                    location: template.location || '',
-                    budget: template.budget || '',
-                    privacy: template.privacy || 'private',
-                    participationCost: template.participationCost || template.participation_cost || '',
-                    hidePaymentsFromMembers: template.hidePaymentsFromMembers || template.hide_payments_from_members || false,
-                    paymentMethod: template.paymentMethod || template.payment_method || '',
-                    paymentMethods: template.paymentMethods || template.payment_methods || [],
-                    paymentPhone: template.paymentPhone || template.payment_phone || '',
-                    bankDetails: template.bankDetails || template.bank_details || null,
-                    type: 'template'
-                });
-            }
-
-            if (onClose) {
-                onClose();
-            }
-
-        } catch (error) {
-            console.error('[EventTemplateSelector] Error handling template selection:', error);
-            toast.error('שגיאה בבחירת התבנית');
+  const seedTemplates = async () => {
+    setIsLoading(true);
+    try {
+      const seeds = [
+        {
+          name: 'חתונה קלאסית',
+          description: 'עיצוב יוקרתי ונקי בצבעי קרם וזהב',
+          previewImageUrl: 'https://images.unsplash.com/photo-1519225421980-715cb0202128?q=80&w=600&auto=format&fit=crop',
+          category: 'wedding',
+          isActive: true,
+          templateData: {
+            greeting: 'נשמח לראותכם ביום המאושר בחיינו',
+            closing: 'באהבה גדולה',
+            textColor: '#5D4037', // Dark brown/gold
+            accentColor: '#D4AF37', // Gold
+            fontFamily: 'serif',
+            overlayColor: 'rgba(255, 253, 240, 0.85)' // Cream overlay
+          }
+        },
+        {
+          name: 'ברית / בריתה',
+          description: 'עיצוב רך ונעים לרך הנולד',
+          previewImageUrl: 'https://images.unsplash.com/photo-1519689680058-324335c77eba?q=80&w=600&auto=format&fit=crop',
+          category: 'brit',
+          isActive: true,
+          templateData: {
+            greeting: 'בשעה טובה ומוצלחת',
+            closing: 'מצפים לראותכם',
+            textColor: '#1E3A8A', // Dark blue
+            accentColor: '#60A5FA', // Light blue
+            fontFamily: 'sans-serif',
+            overlayColor: 'rgba(239, 246, 255, 0.85)' // Light blue overlay
+          }
+        },
+        {
+          name: 'אירוסין / חינה',
+          description: 'עיצוב רומנטי ושמח',
+          previewImageUrl: 'https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?q=80&w=600&auto=format&fit=crop',
+          category: 'wedding',
+          isActive: true,
+          templateData: {
+            greeting: 'אנו נרגשים להזמין אתכם',
+            closing: 'לחגוג איתנו',
+            textColor: '#831843', // Dark pink
+            accentColor: '#DB2777', // Pink
+            fontFamily: 'serif',
+            overlayColor: 'rgba(255, 241, 242, 0.85)' // Light pink overlay
+          }
+        },
+        {
+          name: 'מסיבה כללית',
+          description: 'עיצוב מודרני וחגיגי',
+          previewImageUrl: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=600&auto=format&fit=crop',
+          category: 'general',
+          isActive: true,
+          templateData: {
+            greeting: 'בואו לחגוג איתנו!',
+            closing: 'יהיה שמח',
+            textColor: '#111827', // Black
+            accentColor: '#F59E0B', // Orange
+            fontFamily: 'sans-serif',
+            overlayColor: 'rgba(255, 255, 255, 0.9)' // White overlay
+          }
         }
-    };
+      ];
 
-    if (isLoading) {
-        return (
-            <div className="flex justify-center items-center p-8">
-                <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
-            </div>
-        );
+      for (const template of seeds) {
+        await createInvitationTemplate(template);
+      }
+      
+      await loadTemplates();
+      toast.success('תבניות עיצוב נוצרו בהצלחה!');
+    } catch (error) {
+      console.error('Failed to seed templates:', error);
+      toast.error('שגיאה ביצירת תבניות');
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    if (templates.length === 0) {
-        return <p className="text-center p-8 text-gray-500">לא נמצאו תבניות זמינות.</p>;
-    }
-
+  if (isLoading) {
     return (
-        <div className="px-1" dir="rtl">
-            {/* Compact Search and Filter */}
-            <div className="mb-2 flex flex-wrap gap-2 items-center">
-                <div className="relative flex-1 min-w-[150px]">
-                    <Search className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-                    <Input
-                        placeholder="חפש..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pr-8 h-8 text-sm"
-                    />
-                    {searchQuery && (
-                        <button 
-                            onClick={() => setSearchQuery('')}
-                            className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                        >
-                            <X className="w-3.5 h-3.5" />
-                        </button>
-                    )}
-                </div>
-                
-                {/* Category filters - inline */}
-                <div className="flex flex-wrap gap-1">
-                    <button
-                        onClick={() => setSelectedCategory('all')}
-                        className={`px-2 py-1 text-xs rounded-full transition-colors ${
-                            selectedCategory === 'all' 
-                                ? 'bg-orange-500 text-white' 
-                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                        }`}
-                    >
-                        הכל
-                    </button>
-                    {categories.map(cat => (
-                        <button
-                            key={cat}
-                            onClick={() => setSelectedCategory(cat)}
-                            className={`px-2 py-1 text-xs rounded-full transition-colors ${
-                                selectedCategory === cat 
-                                    ? 'bg-orange-500 text-white' 
-                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                            }`}
-                        >
-                            {cat}
-                        </button>
-                    ))}
-                </div>
-            </div>
-
-            {filteredTemplates.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                    לא נמצאו תבניות מתאימות
-                </div>
-            ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {filteredTemplates.map((template, idx) => {
-                    const tid = template.id || template.templateId || template.template_id || '';
-                    const count = (template.default_tasks || template.defaultTasks || []).length || 0;
-
-                    return (
-                        <Card
-                            key={tid || template.title || idx}
-                            className="cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border-0 overflow-hidden group"
-                            onClick={() => handleTemplateSelect(template)}
-                        >
-                            <div className={`h-14 bg-gradient-to-br ${pickColor(idx)} relative overflow-hidden`}>
-                                <div className="absolute inset-0 bg-black/10"></div>
-                                <div className="absolute bottom-2 left-2">
-                                    <Badge className="bg-white/20 backdrop-blur-sm text-white border-white/30 text-[10px] px-2 py-0.5">
-                                        {template.category || 'אירוע'}
-                                    </Badge>
-                                </div>
-                            </div>
-                            <CardContent className="p-3" dir="rtl">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <Calendar className="w-4 h-4 text-orange-600" />
-                                    <CardTitle className="text-sm group-hover:text-orange-600 transition-colors leading-tight text-right w-full">
-                                        {template.title || template.name}
-                                    </CardTitle>
-                                </div>
-                                <p className="text-gray-600 text-xs mb-3 line-clamp-2 leading-relaxed text-right" dir="rtl">
-                                    {template.description}
-                                </p>
-                                <div className="flex items-center justify-between text-xs text-gray-500">
-                                    <span className="text-right">{count} משימות</span>
-                                    <div className="flex items-center">
-                                        <Clock className="w-3 h-3 mr-1" />
-                                        <span>מוכן</span>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    );
-                })}
-            </div>
-            )}
-        </div>
+      <div className="flex justify-center p-8">
+        <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+      </div>
     );
+  }
+
+  if (templates.length === 0) {
+    return (
+      <div className="text-center p-8 bg-gray-50 rounded-xl">
+        <Palette className="w-12 h-12 mx-auto text-gray-400 mb-3" />
+        <h3 className="text-lg font-medium text-gray-900 mb-2">אין תבניות עיצוב זמינות</h3>
+        <p className="text-gray-500 mb-4">לחץ על הכפתור למטה כדי ליצור תבניות ברירת מחדל</p>
+        <Button onClick={seedTemplates} disabled={isReadOnly} className="bg-orange-500 hover:bg-orange-600">
+          <Sparkles className="w-4 h-4 ml-2" />
+          צור תבניות עיצוב
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold text-gray-900">בחר עיצוב להזמנה</h2>
+        {isSaving && <Loader2 className="w-5 h-5 animate-spin text-orange-500" />}
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {templates.map((template) => {
+          const isSelected = selectedId === template.id;
+          return (
+            <div 
+              key={template.id}
+              onClick={() => handleSelect(template.id)}
+              className={`group cursor-pointer relative rounded-xl overflow-hidden border-2 transition-all duration-300 ${
+                isSelected 
+                  ? 'border-orange-500 ring-2 ring-orange-200 ring-offset-2' 
+                  : 'border-transparent hover:border-gray-300'
+              }`}
+            >
+              {/* Preview Image */}
+              <div className="aspect-[4/5] relative bg-gray-100">
+                <img 
+                  src={template.previewImageUrl || template.preview_image_url} 
+                  alt={template.name}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                
+                {/* Overlay Preview */}
+                <div 
+                  className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center transition-opacity duration-300"
+                  style={{ 
+                    backgroundColor: template.templateData?.overlayColor || 'rgba(255,255,255,0.85)',
+                    color: template.templateData?.textColor || '#000'
+                  }}
+                >
+                  <p className="text-xs font-medium mb-2 opacity-80" style={{ fontFamily: template.templateData?.fontFamily }}>
+                    {template.templateData?.greeting || 'הזמנה לאירוע'}
+                  </p>
+                  <h3 className="text-lg font-bold mb-2 leading-tight">כותרת האירוע</h3>
+                  <div className="text-[10px] opacity-75 font-medium space-y-1">
+                    <p>{formatIsraelDate(new Date())}</p>
+                    <p>מיקום האירוע</p>
+                  </div>
+                </div>
+
+                {/* Selected Indicator */}
+                {isSelected && (
+                  <div className="absolute top-2 right-2 bg-orange-500 text-white p-1.5 rounded-full shadow-lg z-10">
+                    <Check className="w-4 h-4" />
+                  </div>
+                )}
+              </div>
+
+              {/* Info Footer */}
+              <div className="p-3 bg-white border-t border-gray-100">
+                <h3 className="font-semibold text-gray-900 text-sm">{template.name}</h3>
+                <p className="text-xs text-gray-500 line-clamp-1">{template.description}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }

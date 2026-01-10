@@ -16,19 +16,42 @@ export default function InvitationCard({ template, event }) {
         />
         
         {/* Overlay Content */}
-        <div className="absolute inset-0 bg-black/30 flex flex-col items-center justify-center text-center p-6 text-white">
-          <div className="bg-black/40 backdrop-blur-md p-6 rounded-xl border border-white/20 w-full max-w-xs shadow-2xl">
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
+          <div 
+            className="backdrop-blur-sm p-6 rounded-xl border w-full max-w-xs shadow-2xl transition-colors duration-300"
+            style={{
+              backgroundColor: template.template_data?.overlayColor || 'rgba(0, 0, 0, 0.4)',
+              borderColor: template.template_data?.accentColor ? `${template.template_data.accentColor}40` : 'rgba(255, 255, 255, 0.2)',
+              color: template.template_data?.textColor || '#ffffff'
+            }}
+          >
             {template.template_data?.greeting && (
-              <p className="text-xl font-serif italic mb-3 text-orange-200">{template.template_data.greeting}</p>
+              <p 
+                className="text-xl italic mb-3"
+                style={{ 
+                  color: template.template_data?.accentColor || '#fed7aa',
+                  fontFamily: template.template_data?.fontFamily || 'serif'
+                }}
+              >
+                {template.template_data.greeting}
+              </p>
             )}
             
-            <h2 className="text-3xl font-bold mb-4 leading-tight drop-shadow-lg">{event.title}</h2>
+            <h2 
+              className="text-3xl font-bold mb-4 leading-tight drop-shadow-md"
+              style={{ fontFamily: template.template_data?.fontFamily || 'sans-serif' }}
+            >
+              {event.title}
+            </h2>
             
             <div className="space-y-3 text-sm font-medium">
               {(event.eventDate || event.event_date) && (
                 <div className="flex items-center justify-center gap-2">
-                  <Calendar className="w-4 h-4 text-orange-300" />
-                  <span className="drop-shadow-md">
+                  <Calendar 
+                    className="w-4 h-4" 
+                    style={{ color: template.template_data?.accentColor || '#fed7aa' }}
+                  />
+                  <span>
                     {formatIsraelDate(event.eventDate || event.event_date)}
                     {` • ${formatIsraelTime(event.eventDate || event.event_date)}`}
                   </span>
@@ -37,14 +60,22 @@ export default function InvitationCard({ template, event }) {
               
               {event.location && (
                 <div className="flex items-center justify-center gap-2">
-                  <MapPin className="w-4 h-4 text-orange-300" />
-                  <span className="drop-shadow-md">{event.location}</span>
+                  <MapPin 
+                    className="w-4 h-4" 
+                    style={{ color: template.template_data?.accentColor || '#fed7aa' }}
+                  />
+                  <span>{event.location}</span>
                 </div>
               )}
             </div>
 
             {template.template_data?.closing && (
-              <p className="mt-6 text-sm opacity-90 font-serif italic">{template.template_data.closing}</p>
+              <p 
+                className="mt-6 text-sm opacity-90 italic"
+                style={{ fontFamily: template.template_data?.fontFamily || 'serif' }}
+              >
+                {template.template_data.closing}
+              </p>
             )}
           </div>
         </div>

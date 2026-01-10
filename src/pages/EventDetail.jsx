@@ -63,7 +63,8 @@ import {
   ChevronDown,
   Megaphone,
   ClipboardCheck,
-  Repeat
+  Repeat,
+  Palette
 } from
 'lucide-react';
 import {
@@ -92,6 +93,7 @@ import PaymentsManagementTab from '../components/event/PaymentsManagementTab';
 import BudgetTab from '../components/event/BudgetTab';
 import UpdatesTab from '../components/event/UpdatesTab';
 import RSVPTab from '../components/event/RSVPTab';
+import EventTemplateSelector from '../components/event/EventTemplateSelector';
 
 // Dialogs
 import TaskAssignmentDialog from '../components/event/TaskAssignmentDialog';
@@ -690,6 +692,18 @@ export default function EventDetailPage() {
           canManage={canManage}
           isReadOnly={isReadOnly} />;
 
+      case 'design':
+        return (
+          <div className="p-4 bg-white rounded-lg shadow-sm">
+            <EventTemplateSelector 
+              eventId={eventId}
+              currentTemplateId={event.invitationTemplateId}
+              onUpdate={loadEventData}
+              isReadOnly={!canManage || isReadOnly}
+            />
+          </div>
+        );
+
       case 'rsvp':
         // Get owner name for RSVP invitations
         const ownerId = event.ownerId || event.owner_id;
@@ -840,7 +854,7 @@ export default function EventDetailPage() {
 
   // Get visible tabs for public events (managers always see all)
   const eventVisibleTabs = event?.visibleTabs || event?.visible_tabs || null;
-  const allTabIds = ['updates', 'tasks', 'chat', 'polls', 'itinerary', 'professionals', 'links', 'gallery', 'documents', 'participants', 'payments'];
+  const allTabIds = ['updates', 'design', 'tasks', 'chat', 'polls', 'itinerary', 'professionals', 'links', 'gallery', 'documents', 'participants', 'payments'];
   
   // Specific categories for RSVP tab visibility (family/celebration events)
   // Load from localStorage if available, otherwise use defaults
@@ -887,7 +901,7 @@ export default function EventDetailPage() {
     if (!isPublicEvent || !eventVisibleTabs || !Array.isArray(eventVisibleTabs)) return true;
     // Check if tab is in visible list
     return eventVisibleTabs.includes(tabId);
-  };
+    };
 
   // Dynamic tab labels based on event type
   const getTabLabel = (tabId) => {
@@ -896,6 +910,7 @@ export default function EventDetailPage() {
     if (eventType === 'production') {
       const productionLabels = {
         'updates': 'עדכונים ',
+        'design': 'עיצוב',
         'tasks': 'משימות',
         'chat': 'צ\'אט',
         'polls': 'סקרים',
@@ -913,6 +928,7 @@ export default function EventDetailPage() {
     } else {
       const socialLabels = {
         'updates': 'עדכונים',
+        'design': 'עיצוב',
         'tasks': 'מה צריך לעשות?',
         'chat': 'צ\'אט',
         'polls': 'סקרים',
@@ -932,6 +948,7 @@ export default function EventDetailPage() {
 
   const allTabs = [
     { id: 'updates', label: getTabLabel('updates'), icon: Megaphone },
+    { id: 'design', label: getTabLabel('design'), icon: Palette },
     { id: 'rsvp', label: getTabLabel('rsvp'), icon: ClipboardCheck },
     { id: 'tasks', label: getTabLabel('tasks'), icon: CheckSquare },
     { id: 'chat', label: getTabLabel('chat'), icon: MessageSquare },

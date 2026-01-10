@@ -2169,6 +2169,16 @@ export const getEventTemplates = async () => {
 };
 
 // --- Invitation Templates ---
+export const getInvitationTemplates = async () => {
+    try {
+        const res = await _fetchWithAuth('/InvitationTemplate', { method: 'GET' });
+        return Array.isArray(res) ? res : (res?.items || []);
+    } catch (error) {
+        console.error('Failed to fetch invitation templates:', error);
+        return [];
+    }
+};
+
 export const getInvitationTemplate = async (templateId) => {
     if (!templateId) return null;
     try {
@@ -2176,6 +2186,15 @@ export const getInvitationTemplate = async (templateId) => {
     } catch (error) {
         console.warn('Failed to fetch invitation template:', error);
         return null;
+    }
+};
+
+export const createInvitationTemplate = async (data) => {
+    try {
+        return await _fetchWithAuth('/InvitationTemplate', { method: 'POST', body: JSON.stringify(data) });
+    } catch (error) {
+        console.error('Failed to create invitation template:', error);
+        throw error;
     }
 };
 
