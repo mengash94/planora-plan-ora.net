@@ -269,14 +269,13 @@ export default function RSVPTab({ eventId, event, isManager }) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-4 gap-4 text-center">
-              <div className="bg-white rounded-lg p-3 shadow-sm">
-                <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
-                <div className="text-xs text-gray-600">סה"כ תשובות</div>
-              </div>
+            <div className="grid grid-cols-3 gap-4 text-center">
               <div className="bg-green-50 rounded-lg p-3">
-                <div className="text-2xl font-bold text-green-600">{stats.attending}</div>
+                <div className="text-2xl font-bold text-green-600">{stats.totalGuests || stats.attending}</div>
                 <div className="text-xs text-green-700">מגיעים</div>
+                {stats.attending > 0 && stats.totalGuests !== stats.attending && (
+                  <div className="text-[10px] text-green-600 mt-1">({stats.attending} תשובות)</div>
+                )}
               </div>
               <div className="bg-red-50 rounded-lg p-3">
                 <div className="text-2xl font-bold text-red-600">{stats.notAttending}</div>
@@ -287,13 +286,6 @@ export default function RSVPTab({ eventId, event, isManager }) {
                 <div className="text-xs text-yellow-700">אולי</div>
               </div>
             </div>
-            {stats.totalGuests > 0 && (
-              <div className="mt-3 text-center">
-                <span className="text-sm text-gray-600">
-                  סה"כ אורחים מגיעים: <strong className="text-green-600">{stats.totalGuests}</strong>
-                </span>
-              </div>
-            )}
           </CardContent>
         </Card>
       )}
