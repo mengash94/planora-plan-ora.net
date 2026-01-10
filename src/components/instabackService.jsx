@@ -2168,6 +2168,17 @@ export const getEventTemplates = async () => {
     }
 };
 
+// --- Invitation Templates ---
+export const getInvitationTemplate = async (templateId) => {
+    if (!templateId) return null;
+    try {
+        return await _fetchWithAuth(`/InvitationTemplate/${templateId}`, { method: 'GET' });
+    } catch (error) {
+        console.warn('Failed to fetch invitation template:', error);
+        return null;
+    }
+};
+
 export const createEventTemplate = async (templateData) => {
     try {
         const tasks = templateData.default_tasks || templateData.defaultTasks || [];

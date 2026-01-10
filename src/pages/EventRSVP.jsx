@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useAuth } from '@/components/AuthProvider';
-import { getEventDetails, getUserById, createNotificationAndSendPush, getInviteLinkByCode } from '@/components/instabackService';
+import { getEventDetails, getUserById, createNotificationAndSendPush, getInviteLinkByCode, getInvitationTemplate } from '@/components/instabackService';
+import InvitationCard from '@/components/event/InvitationCard';
 
 // Local createEventRSVP function
 const createEventRSVP = async (rsvpData) => {
@@ -71,6 +72,7 @@ export default function EventRSVPPage() {
   const [submitted, setSubmitted] = useState(false);
   const [inviteLink, setInviteLink] = useState(null);
   const [eventId, setEventId] = useState(eventIdFromUrl);
+  const [inviteTemplate, setInviteTemplate] = useState(null);
   
   // Prevent infinite loop - load only once
   const hasLoadedRef = useRef(false);
@@ -196,6 +198,18 @@ export default function EventRSVPPage() {
         }
 
         setEvent(eventDetails);
+
+        // Fetch invitation template if exists
+        if (eventDetails.invitationTemplateId) {
+            try {
+                const template = await getInvitationTemplate(eventDetails.invitationTemplateId);
+                if (template) {
+                    setInviteTemplate(template);
+                }
+            } catch (e) {
+                console.warn('Failed to load invitation template', e);
+            }
+        }
 
         const ownerId = eventDetails.ownerId || eventDetails.owner_id || eventDetails._uid;
         
@@ -478,19 +492,30 @@ export default function EventRSVPPage() {
             )}
           </div>
 
-          {/* Event Details - Styled for "Hagiga" */}
-          <div className="bg-white/50 rounded-xl border border-orange-100 p-1">
-            {event?.cover_image_url && (
-              <div className="w-full h-32 rounded-lg mb-3 overflow-hidden">
-                <img 
-                  src={event.cover_image_url} 
-                  alt="Cover" 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
+          {/* Invitation Card or Standard Cover */}
+          {inviteTemplate ? (
+            <InvitationCard template={inviteTemplate} event={event} />
+          ) : (
+            <>
+              {/* Event Details - Styled for "Hagiga" */}
+              <div className="bg-white/50 rounded-xl border border-orange-100 p-1">
+                {event?.cover_image_url && (
+                  <div className="w-full h-32 rounded-lg mb-3 overflow-hidden">
+                    <img 
+                      src={event.cover_image_url} 
+                      alt="Cover" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                <div className="space-y-3 p-2">
+            </>
+          )}
 
-            <div className="space-y-3 p-2">
+          {inviteTemplate ? (
+             <div className="bg-white/50 rounded-xl border border-orange-100 p-3 mb-4">
+               <div className="space-y-3">
+          ) : null}
               {/* Date & Calendar */}
               {(event?.date || event?.eventDate || event?.event_date) && (
                 <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-100">
@@ -567,8 +592,13 @@ export default function EventRSVPPage() {
                   מארגן/ת: <span className="font-medium">{ownerName}</span>
                 </span>
               </div>
-            </div>
-          </div>
+              {inviteTemplate ? (
+               </div>
+              </div>
+              ) : (
+               </div>
+              </div>
+              )}
 
           {/* RSVP Form */}
           <div className="space-y-4 pt-4 border-t">
