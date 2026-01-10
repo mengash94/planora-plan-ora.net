@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { getEventRSVPs, deleteEventRSVP, updateEvent } from '@/components/instabackService';
+import { getEventRSVPs, deleteEventRSVP, updateEvent, getInvitationTemplates, getInvitationTemplate } from '@/components/instabackService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { 
   Users, Check, X, HelpCircle, Trash2, Loader2, 
   Copy, Share2, UserPlus, BarChart3, RefreshCw,
-  Phone, MessageSquare, Download, FileSpreadsheet, FileText, Bell, BellOff, Link as LinkIcon
+  Phone, MessageSquare, Download, FileSpreadsheet, FileText, Bell, BellOff, Link as LinkIcon,
+  ChevronDown, ChevronUp, Search, Filter, Palette, Eye
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -15,9 +17,22 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { toast } from 'sonner';
 import { createPageUrl } from '@/utils';
 import InviteLinksManager from './InviteLinksManager';
+import InvitationCard from './InvitationCard';
+import EventTemplateSelector from './EventTemplateSelector';
 
 export default function RSVPTab({ eventId, event, isManager }) {
   const [rsvps, setRsvps] = useState([]);
@@ -26,6 +41,19 @@ export default function RSVPTab({ eventId, event, isManager }) {
   const [copiedLink, setCopiedLink] = useState(false);
   const [notifyOnRsvp, setNotifyOnRsvp] = useState(event?.notifyOnRsvp !== false);
   const [isUpdatingNotify, setIsUpdatingNotify] = useState(false);
+  
+  // Collapsible states
+  const [isLinksOpen, setIsLinksOpen] = useState(false);
+  const [isRsvpListOpen, setIsRsvpListOpen] = useState(false);
+  
+  // Filters
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
+  
+  // Design dialog
+  const [isDesignDialogOpen, setIsDesignDialogOpen] = useState(false);
+  const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false);
+  const [currentTemplate, setCurrentTemplate] = useState(null);
 
   const loadRSVPs = async () => {
     if (!eventId) return;
@@ -73,8 +101,24 @@ export default function RSVPTab({ eventId, event, isManager }) {
     }
   };
 
+  // Load invitation template
+  const loadTemplate = async () => {
+    const templateId = event?.invitationTemplateId || event?.invitation_template_id;
+    if (templateId) {
+      try {
+        const template = await getInvitationTemplate(templateId);
+        if (template) {
+          setCurrentTemplate(template);
+        }
+      } catch (e) {
+        console.warn('Failed to load invitation template', e);
+      }
+    }
+  };
+
   useEffect(() => {
     loadRSVPs();
+    loadTemplate();
   }, [eventId]);
 
   const handleDeleteRSVP = async (rsvpId) => {
@@ -137,9 +181,9 @@ export default function RSVPTab({ eventId, event, isManager }) {
 
   const getAttendanceBadge = (attendance) => {
     switch (attendance) {
-      case 'yes': return <Badge className="bg-green-100 text-green-700">מגיע/ה</Badge>;
-      case 'no': return <Badge className="bg-red-100 text-red-700">לא מגיע/ה</Badge>;
-      case 'maybe': return <Badge className="bg-yellow-100 text-yellow-700">אולי</Badge>;
+      case 'yes': return <Badge className="bg-green-100 text-green-700 text-[10px]">מגיע/ה</Badge>;
+      case 'no': return <Badge className="bg-red-100 text-red-700 text-[10px]">לא מגיע/ה</Badge>;
+      case 'maybe': return <Badge className="bg-yellow-100 text-yellow-700 text-[10px]">אולי</Badge>;
       default: return null;
     }
   };
@@ -188,34 +232,6 @@ export default function RSVPTab({ eventId, event, isManager }) {
     toast.success('הקובץ הורד בהצלחה');
   };
 
-  const exportToJSON = () => {
-    if (rsvps.length === 0) {
-      toast.error('אין נתונים לייצוא');
-      return;
-    }
-
-    const exportData = rsvps.map(rsvp => ({
-      שם: rsvp.name || '',
-      סטטוס: getAttendanceText(rsvp.attendance),
-      כמות_אורחים: rsvp.attendance === 'yes' ? (rsvp.guestCount || 1) : 0,
-      טלפון: rsvp.phone || '',
-      הערות: rsvp.notes || '',
-      תאריך: rsvp.submittedAt || ''
-    }));
-
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `אישורי_הגעה_${event?.title || 'אירוע'}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    
-    toast.success('הקובץ הורד בהצלחה');
-  };
-
   const copyAsText = async () => {
     if (rsvps.length === 0) {
       toast.error('אין נתונים להעתקה');
@@ -224,7 +240,7 @@ export default function RSVPTab({ eventId, event, isManager }) {
 
     let text = `📋 אישורי הגעה - ${event?.title || 'אירוע'}\n`;
     text += `סה"כ תשובות: ${stats?.total || 0}\n`;
-    text += `מגיעים: ${stats?.attending || 0} (${stats?.totalGuests || 0} אורחים)\n`;
+    text += `מגיעים: ${stats?.totalGuests || 0} (${stats?.attending || 0} תשובות)\n`;
     text += `לא מגיעים: ${stats?.notAttending || 0}\n`;
     text += `אולי: ${stats?.maybe || 0}\n\n`;
     
@@ -249,6 +265,17 @@ export default function RSVPTab({ eventId, event, isManager }) {
     }
   };
 
+  // Filter RSVPs
+  const filteredRsvps = rsvps.filter(rsvp => {
+    const matchesSearch = !searchQuery || 
+      rsvp.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      rsvp.phone?.includes(searchQuery);
+    
+    const matchesFilter = filterStatus === 'all' || rsvp.attendance === filterStatus;
+    
+    return matchesSearch && matchesFilter;
+  });
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -258,32 +285,30 @@ export default function RSVPTab({ eventId, event, isManager }) {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Stats Card */}
+    <div className="space-y-4">
+      {/* Stats Card - Always visible */}
       {stats && (
         <Card className="bg-gradient-to-r from-orange-50 to-rose-50 border-orange-200">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-lg">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-3">
               <BarChart3 className="w-5 h-5 text-orange-600" />
-              סיכום תשובות
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div className="bg-green-50 rounded-lg p-3">
-                <div className="text-2xl font-bold text-green-600">{stats.totalGuests || stats.attending}</div>
-                <div className="text-xs text-green-700">מגיעים</div>
+              <span className="font-semibold text-gray-900">סיכום תשובות</span>
+            </div>
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div className="bg-green-50 rounded-lg p-2.5">
+                <div className="text-xl font-bold text-green-600">{stats.totalGuests || stats.attending}</div>
+                <div className="text-[10px] text-green-700">מגיעים</div>
                 {stats.attending > 0 && stats.totalGuests !== stats.attending && (
-                  <div className="text-[10px] text-green-600 mt-1">({stats.attending} תשובות)</div>
+                  <div className="text-[9px] text-green-600 mt-0.5">({stats.attending} תשובות)</div>
                 )}
               </div>
-              <div className="bg-red-50 rounded-lg p-3">
-                <div className="text-2xl font-bold text-red-600">{stats.notAttending}</div>
-                <div className="text-xs text-red-700">לא מגיעים</div>
+              <div className="bg-red-50 rounded-lg p-2.5">
+                <div className="text-xl font-bold text-red-600">{stats.notAttending}</div>
+                <div className="text-[10px] text-red-700">לא מגיעים</div>
               </div>
-              <div className="bg-yellow-50 rounded-lg p-3">
-                <div className="text-2xl font-bold text-yellow-600">{stats.maybe}</div>
-                <div className="text-xs text-yellow-700">אולי</div>
+              <div className="bg-yellow-50 rounded-lg p-2.5">
+                <div className="text-xl font-bold text-yellow-600">{stats.maybe}</div>
+                <div className="text-[10px] text-yellow-700">אולי</div>
               </div>
             </div>
           </CardContent>
@@ -292,189 +317,357 @@ export default function RSVPTab({ eventId, event, isManager }) {
 
       {/* Share Card */}
       <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-lg">
+        <CardContent className="p-4">
+          <div className="flex items-center gap-2 mb-3">
             <Share2 className="w-5 h-5 text-blue-600" />
-            שתף שאלון הגעה
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-gray-600 mb-4">
+            <span className="font-semibold text-gray-900">שתף שאלון הגעה</span>
+          </div>
+          <p className="text-xs text-gray-600 mb-3">
             שלח את הקישור לאנשים שרוצים לאשר הגעה בלי להירשם לאפליקציה
           </p>
           <div className="flex gap-2">
             <Button
               onClick={handleCopyLink}
               variant="outline"
+              size="sm"
               className="flex-1"
             >
               {copiedLink ? (
                 <>
-                  <Check className="w-4 h-4 ml-2 text-green-600" />
+                  <Check className="w-3.5 h-3.5 ml-1.5 text-green-600" />
                   הועתק!
                 </>
               ) : (
                 <>
-                  <Copy className="w-4 h-4 ml-2" />
+                  <Copy className="w-3.5 h-3.5 ml-1.5" />
                   העתק קישור
                 </>
               )}
             </Button>
             <Button
               onClick={handleShareWhatsApp}
+              size="sm"
               className="flex-1 bg-green-500 hover:bg-green-600"
             >
-              <MessageSquare className="w-4 h-4 ml-2" />
+              <MessageSquare className="w-3.5 h-3.5 ml-1.5" />
               שתף בוואטסאפ
             </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Invite Links with Guest Limits */}
+      {/* Design Button - Only for managers */}
       {isManager && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <LinkIcon className="w-5 h-5 text-purple-600" />
-              קישורי הזמנה עם הגבלות
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-gray-600 mb-4">
-              צור קישורי הזמנה עם הגבלת מספר אורחים לכל קישור
-            </p>
-            <InviteLinksManager eventId={eventId} eventTitle={event?.title} />
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setIsDesignDialogOpen(true)}
+            className="w-full"
+          >
+            <Palette className="w-4 h-4 ml-2" />
+            עיצוב ההזמנה
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setIsPreviewDialogOpen(true)}
+            className="w-full"
+            disabled={!currentTemplate}
+          >
+            <Eye className="w-4 h-4 ml-2" />
+            תצוגה מקדימה
+          </Button>
+        </div>
+      )}
+
+      {/* Invite Links - Collapsible - Only for managers */}
+      {isManager && (
+        <Collapsible open={isLinksOpen} onOpenChange={setIsLinksOpen}>
+          <Card>
+            <CollapsibleTrigger asChild>
+              <CardHeader className="pb-2 cursor-pointer hover:bg-gray-50 transition-colors">
+                <CardTitle className="flex items-center justify-between text-base">
+                  <div className="flex items-center gap-2">
+                    <LinkIcon className="w-4 h-4 text-purple-600" />
+                    קישורי הזמנה עם הגבלות
+                  </div>
+                  {isLinksOpen ? (
+                    <ChevronUp className="w-4 h-4 text-gray-500" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-gray-500" />
+                  )}
+                </CardTitle>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent className="pt-0">
+                <p className="text-xs text-gray-600 mb-3">
+                  צור קישורי הזמנה עם הגבלת מספר אורחים לכל קישור
+                </p>
+                <InviteLinksManager eventId={eventId} eventTitle={event?.title} />
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
       )}
 
       {/* Notification Settings - Only for managers */}
       {isManager && (
         <Card className="bg-gradient-to-r from-orange-50 to-rose-50 border-orange-200">
-          <CardContent className="p-4">
+          <CardContent className="p-3">
             <div className="flex items-center gap-3">
               {notifyOnRsvp ? (
-                <Bell className="w-5 h-5 text-orange-500 flex-shrink-0" />
+                <Bell className="w-4 h-4 text-orange-500 flex-shrink-0" />
               ) : (
-                <BellOff className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                <BellOff className="w-4 h-4 text-gray-400 flex-shrink-0" />
               )}
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-gray-900">התראות אישור הגעה</p>
-                <p className="text-sm text-gray-500">קבל התראה כשמישהו מגיב לשאלון</p>
+                <p className="text-sm font-medium text-gray-900">התראות אישור הגעה</p>
+                <p className="text-xs text-gray-500">קבל התראה כשמישהו מגיב לשאלון</p>
               </div>
               <Switch
                 checked={notifyOnRsvp}
                 onCheckedChange={handleToggleNotify}
                 disabled={isUpdatingNotify}
-                className="w-11 h-6 flex-shrink-0 overflow-hidden data-[state=checked]:bg-orange-500 data-[state=checked]:[&>span]:!translate-x-4 [&>span]:h-5 [&>span]:w-5"
+                className="w-10 h-5 flex-shrink-0 overflow-hidden data-[state=checked]:bg-orange-500 data-[state=checked]:[&>span]:!translate-x-4 [&>span]:h-4 [&>span]:w-4"
               />
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* RSVP List */}
-      <Card>
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Users className="w-5 h-5 text-purple-600" />
-              רשימת תשובות ({rsvps.length})
-            </CardTitle>
-            <div className="flex items-center gap-1">
-              {isManager && rsvps.length > 0 && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <Download className="w-4 h-4 ml-1" />
-                      ייצוא
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={exportToCSV}>
-                      <FileSpreadsheet className="w-4 h-4 ml-2" />
-                      הורד כ-Excel (CSV)
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={exportToJSON}>
-                      <FileText className="w-4 h-4 ml-2" />
-                      הורד כ-JSON
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={copyAsText}>
-                      <Copy className="w-4 h-4 ml-2" />
-                      העתק כטקסט
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-              <Button variant="ghost" size="sm" onClick={loadRSVPs}>
-                <RefreshCw className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {rsvps.length === 0 ? (
-            <div className="text-center py-8">
-              <UserPlus className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500">עדיין לא התקבלו תשובות</p>
-              <p className="text-sm text-gray-400 mt-1">שתף את הקישור כדי לקבל אישורי הגעה</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {rsvps.map((rsvp) => (
-                <div 
-                  key={rsvp.id} 
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      rsvp.attendance === 'yes' ? 'bg-green-100' :
-                      rsvp.attendance === 'no' ? 'bg-red-100' : 'bg-yellow-100'
-                    }`}>
-                      {getAttendanceIcon(rsvp.attendance)}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-gray-900">{rsvp.name}</span>
-                        {getAttendanceBadge(rsvp.attendance)}
-                      </div>
-                      <div className="flex items-center gap-3 text-sm text-gray-500">
-                        {rsvp.attendance === 'yes' && rsvp.guestCount > 1 && (
-                          <span>{rsvp.guestCount} אנשים</span>
-                        )}
-                        {rsvp.phone && (
-                          <a 
-                            href={`tel:${rsvp.phone}`}
-                            className="flex items-center gap-1 text-blue-600 hover:underline"
-                          >
-                            <Phone className="w-3 h-3" />
-                            {rsvp.phone}
-                          </a>
-                        )}
-                      </div>
-                      {rsvp.notes && (
-                        <p className="text-xs text-gray-500 mt-1">"{rsvp.notes}"</p>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {isManager && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteRSVP(rsvp.id)}
-                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+      {/* RSVP List - Collapsible */}
+      <Collapsible open={isRsvpListOpen} onOpenChange={setIsRsvpListOpen}>
+        <Card>
+          <CollapsibleTrigger asChild>
+            <CardHeader className="pb-2 cursor-pointer hover:bg-gray-50 transition-colors">
+              <CardTitle className="flex items-center justify-between text-base">
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4 text-purple-600" />
+                  רשימת תשובות ({rsvps.length})
+                </div>
+                <div className="flex items-center gap-2">
+                  {isManager && rsvps.length > 0 && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                        <Button variant="outline" size="sm" className="h-7 px-2">
+                          <Download className="w-3.5 h-3.5" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={exportToCSV}>
+                          <FileSpreadsheet className="w-4 h-4 ml-2" />
+                          הורד כ-Excel (CSV)
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={copyAsText}>
+                          <Copy className="w-4 h-4 ml-2" />
+                          העתק כטקסט
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={(e) => { e.stopPropagation(); loadRSVPs(); }}
+                    className="h-7 w-7 p-0"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                  </Button>
+                  {isRsvpListOpen ? (
+                    <ChevronUp className="w-4 h-4 text-gray-500" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-gray-500" />
                   )}
                 </div>
-              ))}
+              </CardTitle>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="pt-0">
+              {rsvps.length === 0 ? (
+                <div className="text-center py-6">
+                  <UserPlus className="w-10 h-10 text-gray-300 mx-auto mb-2" />
+                  <p className="text-gray-500 text-sm">עדיין לא התקבלו תשובות</p>
+                  <p className="text-xs text-gray-400 mt-1">שתף את הקישור כדי לקבל אישורי הגעה</p>
+                </div>
+              ) : (
+                <>
+                  {/* Filters */}
+                  <div className="flex gap-2 mb-3">
+                    <div className="relative flex-1">
+                      <Search className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                      <Input
+                        placeholder="חיפוש לפי שם או טלפון..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="h-8 pr-8 text-sm"
+                      />
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" className="h-8 px-2">
+                          <Filter className="w-3.5 h-3.5" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => setFilterStatus('all')}>
+                          הכל ({rsvps.length})
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setFilterStatus('yes')}>
+                          <Check className="w-3.5 h-3.5 ml-2 text-green-600" />
+                          מגיעים ({rsvps.filter(r => r.attendance === 'yes').length})
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setFilterStatus('no')}>
+                          <X className="w-3.5 h-3.5 ml-2 text-red-600" />
+                          לא מגיעים ({rsvps.filter(r => r.attendance === 'no').length})
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setFilterStatus('maybe')}>
+                          <HelpCircle className="w-3.5 h-3.5 ml-2 text-yellow-600" />
+                          אולי ({rsvps.filter(r => r.attendance === 'maybe').length})
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+
+                  {/* Filter indicator */}
+                  {filterStatus !== 'all' && (
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge variant="secondary" className="text-xs">
+                        {filterStatus === 'yes' && 'מציג רק מגיעים'}
+                        {filterStatus === 'no' && 'מציג רק לא מגיעים'}
+                        {filterStatus === 'maybe' && 'מציג רק אולי'}
+                      </Badge>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => setFilterStatus('all')}
+                        className="h-5 px-1 text-xs"
+                      >
+                        נקה
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* RSVP List */}
+                  <div className="space-y-2 max-h-80 overflow-y-auto">
+                    {filteredRsvps.length === 0 ? (
+                      <p className="text-center text-gray-500 text-sm py-4">
+                        לא נמצאו תוצאות
+                      </p>
+                    ) : (
+                      filteredRsvps.map((rsvp) => (
+                        <div 
+                          key={rsvp.id} 
+                          className="flex items-center justify-between p-2.5 bg-gray-50 rounded-lg"
+                        >
+                          <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                              rsvp.attendance === 'yes' ? 'bg-green-100' :
+                              rsvp.attendance === 'no' ? 'bg-red-100' : 'bg-yellow-100'
+                            }`}>
+                              {getAttendanceIcon(rsvp.attendance)}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="font-medium text-gray-900 text-sm truncate">{rsvp.name}</span>
+                                {getAttendanceBadge(rsvp.attendance)}
+                              </div>
+                              <div className="flex items-center gap-2 text-xs text-gray-500">
+                                {rsvp.attendance === 'yes' && rsvp.guestCount > 1 && (
+                                  <span className="text-green-600 font-medium">{rsvp.guestCount} אנשים</span>
+                                )}
+                                {rsvp.phone && (
+                                  <a 
+                                    href={`tel:${rsvp.phone}`}
+                                    className="flex items-center gap-0.5 text-blue-600 hover:underline"
+                                  >
+                                    <Phone className="w-3 h-3" />
+                                    {rsvp.phone}
+                                  </a>
+                                )}
+                              </div>
+                              {rsvp.notes && (
+                                <p className="text-[10px] text-gray-500 mt-0.5 truncate">"{rsvp.notes}"</p>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {isManager && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteRSVP(rsvp.id)}
+                              className="text-red-500 hover:text-red-700 hover:bg-red-50 h-7 w-7 p-0 flex-shrink-0"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
+                          )}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                  
+                  {/* Results count */}
+                  <p className="text-xs text-gray-400 text-center mt-2">
+                    מציג {filteredRsvps.length} מתוך {rsvps.length} תשובות
+                  </p>
+                </>
+              )}
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
+
+      {/* Design Dialog */}
+      <Dialog open={isDesignDialogOpen} onOpenChange={setIsDesignDialogOpen}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Palette className="w-5 h-5 text-orange-500" />
+              עיצוב ההזמנה
+            </DialogTitle>
+          </DialogHeader>
+          <EventTemplateSelector 
+            eventId={eventId}
+            currentTemplateId={event?.invitationTemplateId || event?.invitation_template_id}
+            onUpdate={() => {
+              setIsDesignDialogOpen(false);
+              loadTemplate();
+            }}
+            isReadOnly={!isManager}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Preview Dialog */}
+      <Dialog open={isPreviewDialogOpen} onOpenChange={setIsPreviewDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Eye className="w-5 h-5 text-blue-500" />
+              תצוגה מקדימה של ההזמנה
+            </DialogTitle>
+          </DialogHeader>
+          {currentTemplate ? (
+            <InvitationCard template={currentTemplate} event={event} />
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <Palette className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+              <p>לא נבחר עיצוב להזמנה</p>
+              <Button 
+                variant="outline" 
+                className="mt-3"
+                onClick={() => {
+                  setIsPreviewDialogOpen(false);
+                  setIsDesignDialogOpen(true);
+                }}
+              >
+                בחר עיצוב
+              </Button>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

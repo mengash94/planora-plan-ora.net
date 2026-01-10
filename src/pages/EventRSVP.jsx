@@ -200,9 +200,12 @@ export default function EventRSVPPage() {
         setEvent(eventDetails);
 
         // Fetch invitation template if exists
-        if (eventDetails.invitationTemplateId) {
+        const templateId = eventDetails.invitationTemplateId || eventDetails.invitation_template_id;
+        console.log('[RSVP] Event invitationTemplateId:', templateId);
+        if (templateId) {
             try {
-                const template = await getInvitationTemplate(eventDetails.invitationTemplateId);
+                const template = await getInvitationTemplate(templateId);
+                console.log('[RSVP] Loaded template:', template);
                 if (template) {
                     setInviteTemplate(template);
                 }
