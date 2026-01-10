@@ -48,7 +48,9 @@ export default function RSVPTab({ eventId, event, isManager }) {
       rsvpArray.forEach(rsvp => {
         if (rsvp.attendance === 'yes') {
           calculatedStats.attending++;
-          calculatedStats.totalGuests += (rsvp.guestCount || 1);
+          // Ensure guestCount is treated as a number
+          const count = parseInt(rsvp.guestCount, 10);
+          calculatedStats.totalGuests += (!isNaN(count) && count > 0 ? count : 1);
         } else if (rsvp.attendance === 'no') {
           calculatedStats.notAttending++;
         } else if (rsvp.attendance === 'maybe') {

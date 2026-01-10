@@ -408,10 +408,10 @@ export default function EventRSVPPage() {
           <CardContent className="p-6 space-y-6">
             <div className="text-center">
               <h2 className="text-xl font-bold text-gray-900 mb-2">{event?.title}</h2>
-              <p className="text-gray-600">
-                {rsvpData.attendance === 'yes' && `מעולה! נרשמת כמגיע/ה${rsvpData.guestCount > 1 ? ` עם ${rsvpData.guestCount - 1} אורחים נוספים` : ''}`}
-                {rsvpData.attendance === 'no' && 'תודה על העדכון. נתראה באירוע הבא!'}
-                {rsvpData.attendance === 'maybe' && 'תודה! נעדכן אותך קרוב לאירוע'}
+              <p className="text-gray-600 text-lg font-medium">
+                {rsvpData.attendance === 'yes' && `מעולה! אישרת הגעה עבור ${rsvpData.guestCount} משתתפים`}
+                {rsvpData.attendance === 'no' && 'תודה על העדכון. נתראה באירוע הבא!'}
+                {rsvpData.attendance === 'maybe' && 'תודה! נעדכן אותך קרוב לאירוע'}
               </p>
             </div>
 
