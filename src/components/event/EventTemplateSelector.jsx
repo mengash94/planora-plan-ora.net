@@ -57,63 +57,183 @@ export default function EventTemplateSelector({ eventId, currentTemplateId, onUp
     try {
       const seeds = [
         {
-          name: 'חתונה קלאסית',
-          description: 'עיצוב יוקרתי ונקי בצבעי קרם וזהב',
+          name: 'חתונה מלכותית',
+          description: 'עיצוב מפואר בזהב ושמנת',
           previewImageUrl: 'https://images.unsplash.com/photo-1519225421980-715cb0202128?q=80&w=600&auto=format&fit=crop',
           category: 'wedding',
           isActive: true,
           templateData: {
-            greeting: 'נשמח לראותכם ביום המאושר בחיינו',
-            closing: 'באהבה גדולה',
-            textColor: '#5D4037', // Dark brown/gold
-            accentColor: '#D4AF37', // Gold
+            greeting: '✨ נשמח לראותכם ביום המאושר בחיינו ✨',
+            closing: 'באהבה וברכה',
+            textColor: '#3E2723',
+            accentColor: '#D4AF37',
             fontFamily: 'serif',
-            overlayColor: 'rgba(255, 253, 240, 0.85)' // Cream overlay
+            overlayColor: 'rgba(255, 250, 240, 0.92)'
           }
         },
         {
-          name: 'ברית / בריתה',
-          description: 'עיצוב רך ונעים לרך הנולד',
+          name: 'חתונה רומנטית',
+          description: 'גווני פודרה עדינים ורומנטיים',
+          previewImageUrl: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?q=80&w=600&auto=format&fit=crop',
+          category: 'wedding',
+          isActive: true,
+          templateData: {
+            greeting: '💕 מוזמנים לחגוג איתנו את אהבתנו 💕',
+            closing: 'בשמחה ובאושר',
+            textColor: '#881337',
+            accentColor: '#FB7185',
+            fontFamily: 'serif',
+            overlayColor: 'rgba(255, 242, 245, 0.90)'
+          }
+        },
+        {
+          name: 'חתונה בוהו',
+          description: 'עיצוב טבעי וחופשי עם פרחים',
+          previewImageUrl: 'https://images.unsplash.com/photo-1523438097201-512ae7d59c44?q=80&w=600&auto=format&fit=crop',
+          category: 'wedding',
+          isActive: true,
+          templateData: {
+            greeting: '🌿 הצטרפו אלינו לחגיגה 🌿',
+            closing: 'בשמחה ובאהבה',
+            textColor: '#14532D',
+            accentColor: '#84CC16',
+            fontFamily: 'sans-serif',
+            overlayColor: 'rgba(247, 254, 231, 0.88)'
+          }
+        },
+        {
+          name: 'ברית מילה',
+          description: 'עיצוב עדין בכחול ולבן',
           previewImageUrl: 'https://images.unsplash.com/photo-1519689680058-324335c77eba?q=80&w=600&auto=format&fit=crop',
           category: 'brit',
           isActive: true,
           templateData: {
-            greeting: 'בשעה טובה ומוצלחת',
-            closing: 'מצפים לראותכם',
-            textColor: '#1E3A8A', // Dark blue
-            accentColor: '#60A5FA', // Light blue
+            greeting: '🍼 בשעה טובה ומוצלחת 🍼',
+            closing: 'נשמח לחגוג ביחד',
+            textColor: '#1E3A8A',
+            accentColor: '#60A5FA',
             fontFamily: 'sans-serif',
-            overlayColor: 'rgba(239, 246, 255, 0.85)' // Light blue overlay
+            overlayColor: 'rgba(239, 246, 255, 0.90)'
           }
         },
         {
-          name: 'אירוסין / חינה',
-          description: 'עיצוב רומנטי ושמח',
+          name: 'בריתה',
+          description: 'עיצוב מתוק בוורוד עדין',
+          previewImageUrl: 'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?q=80&w=600&auto=format&fit=crop',
+          category: 'brit',
+          isActive: true,
+          templateData: {
+            greeting: '🌸 ברוכים הבאים לברית 🌸',
+            closing: 'באהבה ושמחה',
+            textColor: '#831843',
+            accentColor: '#F9A8D4',
+            fontFamily: 'serif',
+            overlayColor: 'rgba(253, 242, 248, 0.90)'
+          }
+        },
+        {
+          name: 'אירוסין מודרניים',
+          description: 'עיצוב עכשווי ואלגנטי',
           previewImageUrl: 'https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?q=80&w=600&auto=format&fit=crop',
           category: 'wedding',
           isActive: true,
           templateData: {
-            greeting: 'אנו נרגשים להזמין אתכם',
-            closing: 'לחגוג איתנו',
-            textColor: '#831843', // Dark pink
-            accentColor: '#DB2777', // Pink
-            fontFamily: 'serif',
-            overlayColor: 'rgba(255, 241, 242, 0.85)' // Light pink overlay
+            greeting: '💍 אנחנו מתחתנים! 💍',
+            closing: 'נתראה בחגיגה',
+            textColor: '#1F2937',
+            accentColor: '#EC4899',
+            fontFamily: 'sans-serif',
+            overlayColor: 'rgba(255, 255, 255, 0.92)'
           }
         },
         {
-          name: 'מסיבה כללית',
-          description: 'עיצוב מודרני וחגיגי',
-          previewImageUrl: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=600&auto=format&fit=crop',
+          name: 'בר/בת מצווה',
+          description: 'עיצוב צעיר ומשמח',
+          previewImageUrl: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?q=80&w=600&auto=format&fit=crop',
+          category: 'bar_mitzvah',
+          isActive: true,
+          templateData: {
+            greeting: '🎉 מוזמנים לחגוג איתנו 🎉',
+            closing: 'יהיה מגניב!',
+            textColor: '#1E40AF',
+            accentColor: '#FBBF24',
+            fontFamily: 'sans-serif',
+            overlayColor: 'rgba(254, 249, 195, 0.88)'
+          }
+        },
+        {
+          name: 'יום הולדת אלגנטי',
+          description: 'עיצוב יוקרתי וצבעוני',
+          previewImageUrl: 'https://images.unsplash.com/photo-1464347744102-11db6282f854?q=80&w=600&auto=format&fit=crop',
+          category: 'birthday',
+          isActive: true,
+          templateData: {
+            greeting: '🎂 בואו לחגוג יום הולדת 🎂',
+            closing: 'בשמחה ובכיף',
+            textColor: '#7C2D12',
+            accentColor: '#FB923C',
+            fontFamily: 'sans-serif',
+            overlayColor: 'rgba(255, 247, 237, 0.90)'
+          }
+        },
+        {
+          name: 'חינה מזרחית',
+          description: 'עיצוב עשיר בצבעים חמים',
+          previewImageUrl: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=600&auto=format&fit=crop',
+          category: 'wedding',
+          isActive: true,
+          templateData: {
+            greeting: '✨ חינה מלכות ✨',
+            closing: 'בשמחה וברכה',
+            textColor: '#713F12',
+            accentColor: '#F59E0B',
+            fontFamily: 'serif',
+            overlayColor: 'rgba(254, 243, 199, 0.88)'
+          }
+        },
+        {
+          name: 'מסיבת גן',
+          description: 'עיצוב טבעי ופרחוני',
+          previewImageUrl: 'https://images.unsplash.com/photo-1478146896981-b80fe463b330?q=80&w=600&auto=format&fit=crop',
           category: 'general',
           isActive: true,
           templateData: {
-            greeting: 'בואו לחגוג איתנו!',
-            closing: 'יהיה שמח',
-            textColor: '#111827', // Black
-            accentColor: '#F59E0B', // Orange
+            greeting: '🌺 בואו לחגוג בגן 🌺',
+            closing: 'נתראה שם!',
+            textColor: '#064E3B',
+            accentColor: '#10B981',
             fontFamily: 'sans-serif',
-            overlayColor: 'rgba(255, 255, 255, 0.9)' // White overlay
+            overlayColor: 'rgba(236, 253, 245, 0.90)'
+          }
+        },
+        {
+          name: 'ערב חגיגי',
+          description: 'עיצוב אלגנטי לאירוע ערב',
+          previewImageUrl: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=600&auto=format&fit=crop',
+          category: 'general',
+          isActive: true,
+          templateData: {
+            greeting: '🌙 הצטרפו אלינו לערב מיוחד 🌙',
+            closing: 'בציפייה לראותכם',
+            textColor: '#1E1B4B',
+            accentColor: '#818CF8',
+            fontFamily: 'serif',
+            overlayColor: 'rgba(238, 242, 255, 0.90)'
+          }
+        },
+        {
+          name: 'חתונה בחוף',
+          description: 'עיצוב קליל בגווני ים ושמיים',
+          previewImageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600&auto=format&fit=crop',
+          category: 'wedding',
+          isActive: true,
+          templateData: {
+            greeting: '🌊 חתונה על חוף הים 🌊',
+            closing: 'בציפייה לקסם הרגע',
+            textColor: '#0C4A6E',
+            accentColor: '#38BDF8',
+            fontFamily: 'sans-serif',
+            overlayColor: 'rgba(240, 249, 255, 0.88)'
           }
         }
       ];
