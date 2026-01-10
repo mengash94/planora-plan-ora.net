@@ -3,6 +3,8 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 const INSTABACK_API_URL = 'https://instaback.ai/project/f78de3ce-0cab-4ccb-8442-0c574979fe8/api';
 
 async function fetchFromInstaback(endpoint, token) {
+    console.log(`[getAdminAnalyticsData] Fetching from: ${INSTABACK_API_URL}${endpoint}`);
+    
     const response = await fetch(`${INSTABACK_API_URL}${endpoint}`, {
         method: 'GET',
         headers: {
@@ -12,12 +14,21 @@ async function fetchFromInstaback(endpoint, token) {
         }
     });
     
+    console.log(`[getAdminAnalyticsData] Response status for ${endpoint}: ${response.status}`);
+    
     if (!response.ok) {
-        console.warn(`[getAdminAnalyticsData] Failed to fetch ${endpoint}: ${response.status}`);
+        const errorText = await response.text().catch(() => 'No error text');
+        console.error(`[getAdminAnalyticsData] Failed to fetch ${endpoint}: ${response.status} - ${errorText}`);
         return [];
     }
     
     const data = await response.json();
+    console.log(`[getAdminAnalyticsData] Data from ${endpoint}:`, {
+        isArray: Array.isArray(data),
+        hasItems: !!data?.items,
+        length: Array.isArray(data) ? data.length : (data?.items?.length || 0)
+    });
+    
     return Array.isArray(data) ? data : (data?.items || []);
 }
 
