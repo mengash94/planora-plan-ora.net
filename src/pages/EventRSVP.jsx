@@ -98,8 +98,6 @@ export default function EventRSVPPage() {
     return null;
   }, [inviteLink, searchParams, location.search]);
   
-  console.log('[RSVP] Render - maxGuestsLimit:', maxGuestsLimit, 'guestCount:', rsvpData?.guestCount);
-  
   // RSVP Form State
   const [rsvpData, setRsvpData] = useState({
     name: '',
@@ -107,9 +105,11 @@ export default function EventRSVPPage() {
     attendance: '',
     guestCount: 1,
     notes: ''
-  });
+    });
 
-  // Handle invite code - fetch the link details and redirect to proper URL with eventId
+    console.log('[RSVP] Render - maxGuestsLimit:', maxGuestsLimit, 'guestCount:', rsvpData?.guestCount);
+
+    // Handle invite code - fetch the link details and redirect to proper URL with eventId
   useEffect(() => {
     const loadInviteLink = async () => {
       if (inviteCode && !eventIdFromUrl) {
