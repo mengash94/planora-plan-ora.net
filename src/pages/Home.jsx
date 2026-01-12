@@ -265,7 +265,7 @@ export default function HomePage() {
 
   const handleWhatsAppShareApp = async () => {
     const userName = user?.name || user?.firstName || 'חבר/ה';
-    const appUrl = 'https://register.plan-ora.net';
+    const appUrl = 'https://plan-ora.net';
     const message = `היי! זה ${userName} :)\n\n` +
       `רציתי לשתף אותך באפליקציה שאני משתמש/ת בה לתכנון יציאות עם חברים - Planora\n\n` +
       `היא עוזרת לתאם תאריכים, לחלק משימות, לשתף תמונות ולדבר בצ'אט קבוצתי.\n` +
@@ -277,7 +277,7 @@ export default function HomePage() {
 
   const handleShareApp = async () => {
     const userName = user?.name || user?.firstName || 'חבר/ה';
-    const appUrl = 'https://register.plan-ora.net';
+    const appUrl = 'https://plan-ora.net';
     const message = `היי! זה ${userName} :)\n\n` +
       `רציתי לשתף אותך באפליקציה שאני משתמש/ת בה לתכנון יציאות עם חברים - Planora\n\n` +
       `היא עוזרת לתאם תאריכים, לחלק משימות, לשתף תמונות ולדבר בצ'אט קבוצתי.\n` +
