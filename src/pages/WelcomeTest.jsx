@@ -65,7 +65,7 @@ export default function WelcomeTest() {
         <div className="relative z-10 max-w-4xl mx-auto px-6">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-3xl mb-8 overflow-hidden">
             <img 
-              src="https://ik.imagekit.io/uxfgqmuvr/ic_launcher.png" 
+              src="/project/f78de3ce-0cab-4ccb-8442-0c5749792fe8/assets/logo/PlanoraLogo.png" 
               alt="Planora Logo" 
               className="w-16 h-16 object-contain"
             />
@@ -356,7 +356,7 @@ export default function WelcomeTest() {
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center overflow-hidden">
               <img 
-                src="https://ik.imagekit.io/uxfgqmuvr/ic_launcher.png" 
+                src="/project/f78de3ce-0cab-4ccb-8442-0c5749792fe8/assets/logo/PlanoraLogo.png" 
                 alt="Planora Logo" 
                 className="w-8 h-8 object-contain"
               />
