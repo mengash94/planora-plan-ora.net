@@ -63,11 +63,11 @@ export default function WelcomeTest() {
       {/* Hero Section */}
       <section className="relative overflow-hidden py-12 md:py-20 text-center bg-gradient-to-b from-orange-400 via-orange-500 to-orange-600 text-white">
         <div className="relative z-10 max-w-4xl mx-auto px-6">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-3xl mb-8 overflow-hidden">
+          <div className="inline-flex items-center justify-center w-28 h-28 bg-white/20 backdrop-blur-sm rounded-3xl mb-8 overflow-hidden">
             <img 
               src="https://instaback.ai/project/f78de3ce-0cab-4ccb-8442-0c5749792fe8/assets/logo/planora_logo.jpg" 
               alt="PlanOra Logo" 
-              className="w-16 h-16 object-contain"
+              className="w-24 h-24 object-contain"
             />
           </div>
           
