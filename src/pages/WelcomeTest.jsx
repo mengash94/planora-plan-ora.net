@@ -10,7 +10,7 @@ import {
   CheckCircle, Smartphone, Apple, Play, PartyPopper, Smile, Lightbulb
 } from 'lucide-react';
 
-export default function WelcomePage() {
+export default function WelcomeTest() {
   const navigate = useNavigate();
   const { isAuthenticated, isLoading } = useAuth();
   const [deviceType, setDeviceType] = useState('desktop');

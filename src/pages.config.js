@@ -36,6 +36,7 @@ import Terms from './pages/Terms';
 import VerifiedVenueFinder from './pages/VerifiedVenueFinder';
 import WelcomeTest from './pages/WelcomeTest';
 import WhatsNew from './pages/WhatsNew';
+import WelcomePage from './pages/WelcomePage';
 import __Layout from './Layout.jsx';
 
 
@@ -78,6 +79,7 @@ export const PAGES = {
     "VerifiedVenueFinder": VerifiedVenueFinder,
     "WelcomeTest": WelcomeTest,
     "WhatsNew": WhatsNew,
+    "WelcomePage": WelcomePage,
 }
 
 export const pagesConfig = {
