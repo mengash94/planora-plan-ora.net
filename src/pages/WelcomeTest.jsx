@@ -61,12 +61,12 @@ export default function WelcomeTest() {
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-pink-50" style={{ direction: 'rtl' }}>
       
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-20 md:py-28 text-center bg-gradient-to-b from-orange-400 via-orange-500 to-orange-600 text-white">
+      <section className="relative overflow-hidden py-12 md:py-20 text-center bg-gradient-to-b from-orange-400 via-orange-500 to-orange-600 text-white">
         <div className="relative z-10 max-w-4xl mx-auto px-6">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-3xl mb-8 overflow-hidden">
             <img 
-              src="/project/f78de3ce-0cab-4ccb-8442-0c5749792fe8/assets/logo/PlanoraLogo.png" 
-              alt="Planora Logo" 
+              src="https://instaback.ai/project/f78de3ce-0cab-4ccb-8442-0c5749792fe8/assets/logo/planora_logo.jpg" 
+              alt="PlanOra Logo" 
               className="w-16 h-16 object-contain"
             />
           </div>
@@ -78,7 +78,7 @@ export default function WelcomeTest() {
           </h1>
           
           <p className="text-base md:text-lg opacity-95 max-w-xl mx-auto mb-4 leading-relaxed">
-            <span className="font-semibold">Planora</span> מרכזת הכל במקום אחד - מיציאה לסרט עם חברים ועד חתונה משפחתית
+            <span className="font-semibold">PlanOra</span> מרכזת הכל במקום אחד - מיציאה לסרט עם חברים ועד חתונה משפחתית
           </p>
           
           <p className="text-sm opacity-80 max-w-md mx-auto mb-10">
@@ -153,7 +153,7 @@ export default function WelcomeTest() {
             <CheckCircle className="w-8 h-8 text-green-600" />
           </div>
           <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
-            עם Planora – הכל מסודר!
+            עם PlanOra – הכל מסודר!
           </h3>
           <p className="text-gray-600 text-base max-w-lg mx-auto mb-6 leading-relaxed">
             פלטפורמה אחת לכל התכנון: משימות, צ'אטים, הצבעות, גלריות ועוד.
@@ -356,15 +356,15 @@ export default function WelcomeTest() {
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center overflow-hidden">
               <img 
-                src="/project/f78de3ce-0cab-4ccb-8442-0c5749792fe8/assets/logo/PlanoraLogo.png" 
-                alt="Planora Logo" 
+                src="https://instaback.ai/project/f78de3ce-0cab-4ccb-8442-0c5749792fe8/assets/logo/planora_logo.jpg" 
+                alt="PlanOra Logo" 
                 className="w-8 h-8 object-contain"
               />
             </div>
-            <span className="text-xl font-bold">Planora</span>
+            <span className="text-xl font-bold">PlanOra</span>
           </div>
           <p className="text-gray-400 text-sm">
-            © 2025 Planora. All rights reserved.
+            © 2025 PlanOra. All rights reserved.
           </p>
         </div>
       </footer>
