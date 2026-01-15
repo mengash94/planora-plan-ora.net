@@ -6,8 +6,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Trash2, UserCog } from 'lucide-react';
 import { toast } from 'sonner';
 import { getUserById, removeEventMember, setEventMemberRole } from '@/components/instabackService';
+import { useAuth } from '@/components/AuthProvider';
 
 export default function ParticipantsTab({ members = [], memberships = [], eventId, canManage = false, isReadOnly = false }) {
+  const { user } = useAuth();
+  
   // local enrichment cache for users missing from members
   const [extraUsers, setExtraUsers] = useState({});
   const [loadingIds, setLoadingIds] = useState({});
@@ -17,12 +20,13 @@ export default function ParticipantsTab({ members = [], memberships = [], eventI
 
   const removedSet = useMemo(() => new Set(removedUserIds), [removedUserIds]);
 
-  // Build role map from memberships
+  // Build role map from memberships, treating 'owner' as 'organizer'
   const roleMap = useMemo(() => {
     const map = new Map();
     (memberships || []).forEach(m => {
       const uid = m?.userId || m?.UserId || m?.user_id;
-      const role = m?.role || m?.Role || 'member';
+      let role = m?.role || m?.Role || 'member';
+      if (role === 'owner') role = 'organizer'; // Normalize owner to organizer
       if (uid) map.set(String(uid), role);
     });
     return map;
@@ -111,7 +115,8 @@ export default function ParticipantsTab({ members = [], memberships = [], eventI
 
   const currentRoleForUser = (uid) => {
     if (roleOverrides[uid]) return roleOverrides[uid];
-    return roleMap.get(String(uid)) || 'member';
+    const mappedRole = roleMap.get(String(uid)) || 'member';
+    return mappedRole === 'owner' ? 'organizer' : mappedRole;
   };
 
   const handleRemove = async (uid) => {
@@ -137,23 +142,16 @@ export default function ParticipantsTab({ members = [], memberships = [], eventI
       toast.error('לא נמצאה חברות עבור המשתמש');
       return;
     }
-    const previousRole = currentRoleForUser(uid); // Store previous role for potential rollback
+    const previousRole = currentRoleForUser(uid);
     
-    // FIXED: Convert UI role names to server role names
-    let serverRole = newRole;
-    if (newRole === 'manager') {
-      serverRole = 'manger'; // Server expects 'manger' (typo in server)
-    } else if (newRole === 'owner') {
-      serverRole = 'organizer'; // Convert owner to organizer
-    }
+    // Send role as-is, backend now handles manager correctly
+    const serverRole = newRole === 'owner' ? 'organizer' : newRole;
     
-    // Optimistic update
     setRoleOverrides(prev => ({ ...prev, [uid]: newRole }));
     try {
       await setEventMemberRole(membership.id, serverRole);
       toast.success('תפקיד המשתמש עודכן');
     } catch (e) {
-      // Rollback on error
       setRoleOverrides(prev => ({ ...prev, [uid]: previousRole }));
       toast.error('עדכון התפקיד נכשל', { description: e?.message || '' });
     }
@@ -171,8 +169,18 @@ export default function ParticipantsTab({ members = [], memberships = [], eventI
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
       {displayMembers.map((u) => {
         const role = currentRoleForUser(String(u.id));
-        const isOrganizerLike = role === 'organizer' || role === 'owner';
-        const canShowActions = !!canManage && !isReadOnly;
+        const isTargetUserOrganizer = role === 'organizer';
+
+        // Get current logged-in user's role in this event
+        const currentUserMembership = membershipByUserId.get(String(user?.id));
+        const currentUserRole = currentUserMembership ? currentRoleForUser(String(user.id)) : null;
+        const currentUserIsOrganizer = currentUserRole === 'organizer';
+
+        // Only organizer can change roles/remove members
+        // Organizer cannot modify another organizer
+        const canChangeRole = canManage && !isReadOnly && currentUserIsOrganizer && !isTargetUserOrganizer;
+        const canRemove = canManage && !isReadOnly && currentUserIsOrganizer && !isTargetUserOrganizer;
+        const canShowActions = canChangeRole || canRemove;
 
         return (
           <Card key={u.id} className="border border-gray-200 dark:border-gray-700 dark:bg-gray-800">
@@ -185,19 +193,19 @@ export default function ParticipantsTab({ members = [], memberships = [], eventI
 
               <div className="flex items-center gap-2">
                 <Badge variant={
-                  role === 'organizer' || role === 'owner' ? 'default' :
-                  role === 'manager' ? 'secondary' : 'outline'
+                  role === 'organizer' ? 'default' :
+                  role === 'manager' ? 'default' : 'outline'
                 }>
-                  {role === 'organizer' || role === 'owner' ? 'מנהל אירוע' :
+                  {role === 'organizer' ? 'מארגן' :
                    role === 'manager' ? 'מנהל' : 'משתתף'}
                 </Badge>
 
                 {canShowActions && (
                   <>
-                    {/* Role changer (member/manager) - disabled for organizer/owner */}
+                    {/* Role changer - only organizer can change roles, and cannot change another organizer */}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm" className="gap-1 text-xs" title="שינוי תפקיד" disabled={isOrganizerLike}>
+                        <Button variant="outline" size="sm" className="gap-1 text-xs" title="שינוי תפקיד" disabled={!canChangeRole}>
                           <UserCog className="w-4 h-4" />
                           <span className="hidden sm:inline">תפקיד</span>
                         </Button>
@@ -212,12 +220,12 @@ export default function ParticipantsTab({ members = [], memberships = [], eventI
                       </DropdownMenuContent>
                     </DropdownMenu>
 
-                    {/* Remove member - not allowed for organizer/owner */}
+                    {/* Remove member - only organizer can remove, and cannot remove another organizer */}
                     <Button
                       variant="destructive"
                       size="icon"
-                      title={isOrganizerLike ? 'לא ניתן להסיר מארגן' : 'הסר מהאירוע'}
-                      disabled={isOrganizerLike}
+                      title={canRemove ? 'הסר מהאירוע' : 'אין הרשאה להסיר משתמש זה'}
+                      disabled={!canRemove}
                       onClick={() => handleRemove(u.id)}
                     >
                       <Trash2 className="w-4 h-4" />

@@ -1111,9 +1111,8 @@ export const createEventMember = async (membershipData) => {
 
     if (membershipData.role === 'owner') {
         serverRole = 'organizer';
-    } else if (membershipData.role === 'manager') {
-        serverRole = 'manger'; // Server has typo: "manger" instead of "manager"
     }
+    // manager is now correctly spelled on server
 
     const adjustedData = {
         eventId: membershipData.eventId,
@@ -1197,9 +1196,11 @@ export const markChatAsRead = async (eventId, userId) => {
 
 export const setEventMemberRole = async (membershipId, role) => {
     if (!membershipId) throw new Error("membershipId is required");
-    if (!['member', 'manger', 'manager', 'organizer'].includes(role)) throw new Error("invalid role");
-
-    const serverRole = role === 'manager' ? 'manger' : role;
+    
+    let serverRole = role;
+    if (role === 'owner') serverRole = 'organizer';
+    
+    if (!['member', 'manager', 'organizer'].includes(serverRole)) throw new Error("invalid role");
 
     return _fetchWithAuth(`/EventMember/${membershipId}`, {
         method: 'PUT',
@@ -1258,8 +1259,8 @@ export const leaveEvent = async (eventId, eventTitle = null) => {
 
         const membership = Array.isArray(memberships) ? memberships[0] : memberships;
 
-        if (membership.role === 'owner' || membership.role === 'organizer') {
-            throw new Error('מארגן האירוע לא יכול לעזוב את האירוע');
+        if (membership.role === 'owner' || membership.role === 'organizer' || membership.role === 'manager') {
+            throw new Error('מנהל האירוע לא יכול לעזוב את האירוע');
         }
 
         await _fetchWithAuth(`/EventMember/${membership.id}`, { method: 'DELETE' });
