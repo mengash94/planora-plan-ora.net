@@ -4,6 +4,7 @@ import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useAuth } from '@/components/AuthProvider';
+import { openExternalUrl, isNativeCapacitor } from '@/components/onesignalService';
 import {
   Calendar, Users, CheckSquare, MessageSquare, BarChart2, Camera,
   Sparkles, Star, Zap, Clock, X, Bot,
@@ -33,7 +34,7 @@ export default function WelcomeTest() {
     }
   }, []);
 
-  const handleDownloadClick = () => {
+  const handleDownloadClick = async () => {
     if (deviceType === 'android') {
       window.location.href = 'market://details?id=net.planora.app';
       setTimeout(() => { window.location.href = PLAY_STORE_URL; }, 300);
@@ -43,6 +44,12 @@ export default function WelcomeTest() {
     } else {
       navigate(createPageUrl('App'));
     }
+  };
+
+  // Handle external link click - use Capacitor Browser in native app
+  const handleExternalLink = async (e, url) => {
+    e.preventDefault();
+    await openExternalUrl(url);
   };
 
   const handleLogin = () => {
@@ -114,11 +121,19 @@ export default function WelcomeTest() {
 
           {/* App Store Badges */}
           <div className="flex justify-center gap-3 mt-6">
-            <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-black/30 hover:bg-black/50 px-4 py-2 rounded-lg transition-colors">
+            <a 
+              href={APP_STORE_URL} 
+              onClick={(e) => handleExternalLink(e, APP_STORE_URL)}
+              className="flex items-center gap-2 bg-black/30 hover:bg-black/50 px-4 py-2 rounded-lg transition-colors cursor-pointer"
+            >
               <Apple className="w-5 h-5" />
               <span className="text-sm">App Store</span>
             </a>
-            <a href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-black/30 hover:bg-black/50 px-4 py-2 rounded-lg transition-colors">
+            <a 
+              href={PLAY_STORE_URL} 
+              onClick={(e) => handleExternalLink(e, PLAY_STORE_URL)}
+              className="flex items-center gap-2 bg-black/30 hover:bg-black/50 px-4 py-2 rounded-lg transition-colors cursor-pointer"
+            >
               <Play className="w-5 h-5" />
               <span className="text-sm">Google Play</span>
             </a>
@@ -338,14 +353,22 @@ export default function WelcomeTest() {
 
         {/* Store badges */}
         <div className="flex justify-center gap-4">
-          <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-black text-white px-5 py-3 rounded-xl hover:bg-gray-900 transition-colors">
+          <a 
+            href={APP_STORE_URL} 
+            onClick={(e) => handleExternalLink(e, APP_STORE_URL)}
+            className="flex items-center gap-2 bg-black text-white px-5 py-3 rounded-xl hover:bg-gray-900 transition-colors cursor-pointer"
+          >
             <Apple className="w-6 h-6" />
             <div className="text-right">
               <div className="text-[10px] opacity-70">הורד מ-</div>
               <div className="font-semibold">App Store</div>
             </div>
           </a>
-          <a href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-black text-white px-5 py-3 rounded-xl hover:bg-gray-900 transition-colors">
+          <a 
+            href={PLAY_STORE_URL} 
+            onClick={(e) => handleExternalLink(e, PLAY_STORE_URL)}
+            className="flex items-center gap-2 bg-black text-white px-5 py-3 rounded-xl hover:bg-gray-900 transition-colors cursor-pointer"
+          >
             <Play className="w-6 h-6" />
             <div className="text-right">
               <div className="text-[10px] opacity-70">הורד מ-</div>
