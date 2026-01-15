@@ -63,14 +63,18 @@ export default function WelcomeTest() {
       {/* Hero Section */}
       <section className="relative overflow-hidden py-20 md:py-28 text-center bg-gradient-to-b from-orange-400 via-orange-500 to-orange-600 text-white">
         <div className="relative z-10 max-w-4xl mx-auto px-6">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-3xl mb-8">
-            <Calendar className="w-10 h-10 text-white" />
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-3xl mb-8 overflow-hidden">
+            <img 
+              src="https://ik.imagekit.io/uxfgqmuvr/ic_launcher.png" 
+              alt="Planora Logo" 
+              className="w-16 h-16 object-contain"
+            />
           </div>
           
           <h1 className="text-3xl md:text-5xl font-bold mb-6 leading-tight">
             נמאס לכם מהבלגן
             <br />
-            בתכנון אירועים?
+            בארגון אירועים ומפגשים?
           </h1>
           
           <p className="text-base md:text-lg opacity-95 max-w-xl mx-auto mb-4 leading-relaxed">
@@ -350,8 +354,12 @@ export default function WelcomeTest() {
       <footer className="bg-gray-900 text-white py-8 px-6">
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center">
-              <Calendar className="w-6 h-6" />
+            <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center overflow-hidden">
+              <img 
+                src="https://ik.imagekit.io/uxfgqmuvr/ic_launcher.png" 
+                alt="Planora Logo" 
+                className="w-8 h-8 object-contain"
+              />
             </div>
             <span className="text-xl font-bold">Planora</span>
           </div>
