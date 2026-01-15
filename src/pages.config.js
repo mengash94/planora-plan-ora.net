@@ -34,7 +34,6 @@ import ResetPassword from './pages/ResetPassword';
 import Tasks from './pages/Tasks';
 import Terms from './pages/Terms';
 import VerifiedVenueFinder from './pages/VerifiedVenueFinder';
-import WelcomePage from './pages/WelcomePage';
 import WelcomeTest from './pages/WelcomeTest';
 import WhatsNew from './pages/WhatsNew';
 import __Layout from './Layout.jsx';
@@ -77,7 +76,6 @@ export const PAGES = {
     "Tasks": Tasks,
     "Terms": Terms,
     "VerifiedVenueFinder": VerifiedVenueFinder,
-    "WelcomePage": WelcomePage,
     "WelcomeTest": WelcomeTest,
     "WhatsNew": WhatsNew,
 }
