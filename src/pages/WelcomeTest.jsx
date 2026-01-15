@@ -23,6 +23,10 @@ export default function WelcomeTest() {
     if (!isLoading && isAuthenticated) {
       navigate(createPageUrl('Home'));
     }
+    // If native app and not authenticated - go directly to Auth
+    if (!isLoading && !isAuthenticated && isNativeCapacitor()) {
+      navigate(createPageUrl('Auth'));
+    }
   }, [isAuthenticated, isLoading, navigate]);
 
   useEffect(() => {
