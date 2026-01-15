@@ -510,3 +510,38 @@ export function resetOneSignalState() {
   oneSignalSetupCompletedForUser = null;
   oneSignalSetupInProgress = false;
 }
+
+/**
+ * Open external URL using Capacitor Browser plugin
+ * Falls back to window.open for web
+ * @param {string} url - URL to open
+ * @returns {Promise<void>}
+ */
+export async function openExternalUrl(url) {
+  console.log('[Browser] 🌐 Opening URL:', url);
+  
+  const w = getWin();
+  if (!w) return;
+  
+  // Check if running in native Capacitor
+  if (isNativeCapacitor()) {
+    try {
+      // Try to use Capacitor Browser plugin
+      const Browser = w.Capacitor?.Plugins?.Browser;
+      
+      if (Browser?.open) {
+        console.log('[Browser] 📱 Using Capacitor Browser plugin');
+        await Browser.open({ url });
+        return;
+      } else {
+        console.log('[Browser] ⚠️ Capacitor Browser plugin not available');
+      }
+    } catch (error) {
+      console.error('[Browser] ❌ Capacitor Browser error:', error);
+    }
+  }
+  
+  // Fallback to window.open for web or if plugin not available
+  console.log('[Browser] 🌐 Using window.open fallback');
+  w.open(url, '_blank');
+}
