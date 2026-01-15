@@ -124,7 +124,7 @@ export default function AuthPage() {
 
         <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
           <CardHeader className="text-center pb-4">
-            <h1 className="text-2xl font-bold text-gray-900">ברוך הבא ל-Planora</h1>
+            <h1 className="text-2xl font-bold text-gray-900">ברוך הבא ל-PlanOra</h1>
             <p className="text-sm text-gray-500 mt-1">התחבר או הירשם כדי להתחיל</p>
           </CardHeader>
 
