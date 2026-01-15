@@ -10,7 +10,7 @@ import {
   CheckCircle, Smartphone, Apple, Play, PartyPopper, Smile, Lightbulb
 } from 'lucide-react';
 
-export default function WelcomeTest() {
+export default function WelcomePage() {
   const navigate = useNavigate();
   const { isAuthenticated, isLoading } = useAuth();
   const [deviceType, setDeviceType] = useState('desktop');
@@ -61,29 +61,34 @@ export default function WelcomeTest() {
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-pink-50" style={{ direction: 'rtl' }}>
       
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-12 md:py-20 text-center bg-gradient-to-b from-orange-400 via-orange-500 to-orange-600 text-white">
+      <section className="relative overflow-hidden py-10 md:py-16 bg-gradient-to-b from-orange-400 via-orange-500 to-orange-600 text-white">
         <div className="relative z-10 max-w-4xl mx-auto px-6">
-          <div className="inline-flex items-center justify-center w-40 h-40 bg-white/20 backdrop-blur-sm rounded-3xl mb-8 overflow-hidden">
-            <img 
-              src="https://instaback.ai/project/f78de3ce-0cab-4ccb-8442-0c5749792fe8/assets/logo/planora_logo.jpg" 
-              alt="PlanOra Logo" 
-              className="w-36 h-36 object-contain"
-            />
+          {/* Logo + Text Row */}
+          <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-10 mb-8">
+            <div className="flex-shrink-0 w-28 h-28 md:w-36 md:h-36 bg-white/20 backdrop-blur-sm rounded-3xl overflow-hidden flex items-center justify-center">
+              <img 
+                src="https://instaback.ai/project/f78de3ce-0cab-4ccb-8442-0c5749792fe8/assets/logo/planora_logo.jpg" 
+                alt="PlanOra Logo" 
+                className="w-24 h-24 md:w-32 md:h-32 object-contain"
+              />
+            </div>
+            
+            <div className="text-center md:text-right">
+              <h1 className="text-3xl md:text-5xl font-bold mb-4 leading-tight">
+                נמאס לכם מהבלגן
+                <br />
+                בארגון אירועים ומפגשים?
+              </h1>
+              
+              <p className="text-base md:text-lg opacity-95 max-w-xl mb-3 leading-relaxed">
+                <span className="font-semibold">PlanOra</span> מרכזת הכל במקום אחד - מיציאה לסרט עם חברים ועד חתונה משפחתית
+              </p>
+              
+              <p className="text-sm opacity-80 max-w-md">
+                אירועים קטנים וגדולים • יומיומיים ומיוחדים • חברתיים ומשפחתיים
+              </p>
+            </div>
           </div>
-          
-          <h1 className="text-3xl md:text-5xl font-bold mb-6 leading-tight">
-            נמאס לכם מהבלגן
-            <br />
-            בארגון אירועים ומפגשים?
-          </h1>
-          
-          <p className="text-base md:text-lg opacity-95 max-w-xl mx-auto mb-4 leading-relaxed">
-            <span className="font-semibold">PlanOra</span> מרכזת הכל במקום אחד - מיציאה לסרט עם חברים ועד חתונה משפחתית
-          </p>
-          
-          <p className="text-sm opacity-80 max-w-md mx-auto mb-10">
-            אירועים קטנים וגדולים • יומיומיים ומיוחדים • חברתיים ומשפחתיים
-          </p>
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-4">
