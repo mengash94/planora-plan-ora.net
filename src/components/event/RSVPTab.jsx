@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getEventRSVPs, deleteEventRSVP, updateEvent, getInvitationTemplates, getInvitationTemplate } from '@/components/instabackService';
+import { getEventRSVPs, deleteEventRSVP, updateEvent } from '@/components/instabackService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -7,8 +7,8 @@ import { Input } from '@/components/ui/input';
 import { 
   Users, Check, X, HelpCircle, Trash2, Loader2, 
   Copy, Share2, UserPlus, BarChart3, RefreshCw,
-  Phone, MessageSquare, Download, FileSpreadsheet, FileText, Bell, BellOff, Link as LinkIcon,
-  ChevronDown, ChevronUp, Search, Filter, Palette, Eye
+  Phone, MessageSquare, Download, FileSpreadsheet, Bell, BellOff, Link as LinkIcon,
+  ChevronDown, ChevronUp, Search, Filter
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -22,17 +22,9 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { toast } from 'sonner';
 import { createPageUrl } from '@/utils';
 import InviteLinksManager from './InviteLinksManager';
-import InvitationCard from './InvitationCard';
-import EventTemplateSelector from './EventTemplateSelector';
 
 export default function RSVPTab({ eventId, event, isManager }) {
   const [rsvps, setRsvps] = useState([]);
@@ -49,11 +41,6 @@ export default function RSVPTab({ eventId, event, isManager }) {
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
-  
-  // Design dialog
-  const [isDesignDialogOpen, setIsDesignDialogOpen] = useState(false);
-  const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false);
-  const [currentTemplate, setCurrentTemplate] = useState(null);
 
   const loadRSVPs = async () => {
     if (!eventId) return;
@@ -101,24 +88,8 @@ export default function RSVPTab({ eventId, event, isManager }) {
     }
   };
 
-  // Load invitation template
-  const loadTemplate = async () => {
-    const templateId = event?.invitationTemplateId || event?.invitation_template_id;
-    if (templateId) {
-      try {
-        const template = await getInvitationTemplate(templateId);
-        if (template) {
-          setCurrentTemplate(template);
-        }
-      } catch (e) {
-        console.warn('Failed to load invitation template', e);
-      }
-    }
-  };
-
   useEffect(() => {
     loadRSVPs();
-    loadTemplate();
   }, [eventId]);
 
   const handleDeleteRSVP = async (rsvpId) => {
@@ -151,8 +122,8 @@ export default function RSVPTab({ eventId, event, isManager }) {
 
   const handleShareWhatsApp = () => {
     const ownerName = event?.ownerName || event?.owner_name || '';
-    const ownerText = ownerName ? `\n👤 מזמין: ${ownerName}` : '';
-    const message = `🎉 הוזמנת לאירוע "${event?.title || 'אירוע'}"!${ownerText}\n\n📋 לחץ/י על הקישור כדי לאשר הגעה:\n${getRSVPLink()}`;
+    const ownerText = ownerName ? `\nמזמין: ${ownerName}` : '';
+    const message = `הוזמנת לאירוע "${event?.title || 'אירוע'}"!${ownerText}\n\nלחץ/י על הקישור כדי לאשר הגעה:\n${getRSVPLink()}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
   };
 
@@ -356,28 +327,7 @@ export default function RSVPTab({ eventId, event, isManager }) {
         </CardContent>
       </Card>
 
-      {/* Design Button - Only for managers */}
-      {isManager && (
-        <div className="grid grid-cols-2 gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setIsDesignDialogOpen(true)}
-            className="w-full"
-          >
-            <Palette className="w-4 h-4 ml-2" />
-            עיצוב ההזמנה
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => setIsPreviewDialogOpen(true)}
-            className="w-full"
-            disabled={!currentTemplate}
-          >
-            <Eye className="w-4 h-4 ml-2" />
-            תצוגה מקדימה
-          </Button>
-        </div>
-      )}
+
 
       {/* Invite Links - Collapsible - Only for managers */}
       {isManager && (
@@ -618,56 +568,7 @@ export default function RSVPTab({ eventId, event, isManager }) {
         </Card>
       </Collapsible>
 
-      {/* Design Dialog */}
-      <Dialog open={isDesignDialogOpen} onOpenChange={setIsDesignDialogOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Palette className="w-5 h-5 text-orange-500" />
-              עיצוב ההזמנה
-            </DialogTitle>
-          </DialogHeader>
-          <EventTemplateSelector 
-            eventId={eventId}
-            currentTemplateId={event?.invitationTemplateId || event?.invitation_template_id}
-            onUpdate={() => {
-              setIsDesignDialogOpen(false);
-              loadTemplate();
-            }}
-            isReadOnly={!isManager}
-          />
-        </DialogContent>
-      </Dialog>
 
-      {/* Preview Dialog */}
-      <Dialog open={isPreviewDialogOpen} onOpenChange={setIsPreviewDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Eye className="w-5 h-5 text-blue-500" />
-              תצוגה מקדימה של ההזמנה
-            </DialogTitle>
-          </DialogHeader>
-          {currentTemplate ? (
-            <InvitationCard template={currentTemplate} event={event} />
-          ) : (
-            <div className="text-center py-8 text-gray-500">
-              <Palette className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-              <p>לא נבחר עיצוב להזמנה</p>
-              <Button 
-                variant="outline" 
-                className="mt-3"
-                onClick={() => {
-                  setIsPreviewDialogOpen(false);
-                  setIsDesignDialogOpen(true);
-                }}
-              >
-                בחר עיצוב
-              </Button>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
