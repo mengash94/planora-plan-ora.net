@@ -259,20 +259,14 @@ export default function SmartEventChat({ onEventCreated, currentUser }) {
 
     const handlePlaceSelect = async (place) => {
         setShowPlaceSearch(false);
-        setEventData(prev => ({ ...prev, location: `${place.name}, ${place.address}` }));
+        setSearchedPlaces([]);
         
-        addBotMessage(`מעולה! ${place.name} 📍`, []);
-
-        // Continue with AI
-        const { data } = await processEventChat({
-            userMessage: `בחרתי את המקום: ${place.name}`,
-            eventData: { ...eventData, location: `${place.name}, ${place.address}` }
-        });
-
-        if (data.extractedData) {
-            setEventData(prev => ({ ...prev, ...data.extractedData }));
-        }
-        addBotMessage(data.reply, data.suggestedButtons || []);
+        const newLocation = place.address ? `${place.name}, ${place.address}` : place.name;
+        const updatedEventData = { ...eventData, location: newLocation };
+        setEventData(updatedEventData);
+        
+        // Continue conversation with AI
+        await sendMessage(`בחרתי את המקום: ${place.name}`);
     };
 
     const handleDateSelected = async (startDate, endDate) => {
