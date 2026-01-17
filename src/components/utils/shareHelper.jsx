@@ -51,9 +51,8 @@ export const openWhatsApp = async (message, phoneNumber = null) => {
     ? `https://wa.me/${phoneNumber}?text=${encodedMessage}`
     : `https://wa.me/?text=${encodedMessage}`;
   
-  // For deep links like WhatsApp, always use window.open directly
-  // Browser.open in Capacitor sometimes breaks emoji encoding
-  window.open(url, '_blank');
+  // Use openExternalUrl which handles both Capacitor and web
+  await openExternalUrl(url);
 };
 
 /**
