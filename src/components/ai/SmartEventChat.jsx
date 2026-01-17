@@ -290,7 +290,7 @@ export default function SmartEventChat({ onEventCreated, currentUser }) {
 
     const generateAndCreateEvent = async () => {
         setIsLoading(true);
-        addBotMessage('יוצר את האירוע שלך... ✨', []);
+        addBotMessage('מייצר תוכנית אירוע מלאה... ✨', []);
 
         try {
             // Validate required fields
@@ -298,10 +298,28 @@ export default function SmartEventChat({ onEventCreated, currentUser }) {
                 throw new Error('חסר שם לאירוע');
             }
 
-            // Create the event
+            // Step 1: Generate the event plan (itinerary + tasks)
+            addBotMessage('בונה לו"ז ומשימות מותאמים אישית... 📋', []);
+            
+            let generatedPlan = null;
+            try {
+                const planResponse = await generateEventPlan({ eventData });
+                if (planResponse?.data?.data) {
+                    generatedPlan = planResponse.data.data;
+                } else if (planResponse?.data) {
+                    generatedPlan = planResponse.data;
+                }
+                console.log('[SmartEventChat] Generated plan:', generatedPlan);
+            } catch (planError) {
+                console.warn('[SmartEventChat] Plan generation failed, continuing without:', planError);
+            }
+
+            // Step 2: Create the event
+            addBotMessage('יוצר את האירוע... 🎯', []);
+            
             const event = await createEvent({
                 title: eventData.title,
-                description: eventData.description || '',
+                description: eventData.description || generatedPlan?.summary || '',
                 location: eventData.location || eventData.destination || '',
                 event_date: eventData.eventDate || null,
                 end_date: eventData.endDate || null,
@@ -319,14 +337,57 @@ export default function SmartEventChat({ onEventCreated, currentUser }) {
 
             console.log('[SmartEventChat] Event created:', event.id);
 
-            // Add user as organizer
+            // Step 3: Add user as organizer
             await createEventMember({
                 eventId: event.id,
                 userId: currentUser.id,
                 role: 'organizer'
             });
 
-            // Create recurring rule if needed
+            // Step 4: Create tasks from generated plan
+            if (generatedPlan?.tasks && generatedPlan.tasks.length > 0) {
+                addBotMessage(`מוסיף ${generatedPlan.tasks.length} משימות... ✅`, []);
+                
+                for (const task of generatedPlan.tasks) {
+                    try {
+                        await createTask({
+                            event_id: event.id,
+                            eventId: event.id,
+                            title: task.title,
+                            description: task.description || '',
+                            category: task.category || 'other',
+                            priority: task.priority || 'medium',
+                            status: 'todo',
+                            due_date: task.dueDate || null,
+                            dueDate: task.dueDate || null
+                        });
+                    } catch (taskError) {
+                        console.warn('[SmartEventChat] Failed to create task:', task.title, taskError);
+                    }
+                }
+            }
+
+            // Step 5: Create itinerary items from generated plan
+            if (generatedPlan?.itinerary && generatedPlan.itinerary.length > 0) {
+                addBotMessage(`מוסיף ${generatedPlan.itinerary.length} פריטים ללו"ז... 📅`, []);
+                
+                for (const item of generatedPlan.itinerary) {
+                    try {
+                        await createItineraryItem({
+                            eventId: event.id,
+                            title: item.title,
+                            location: item.location || '',
+                            date: item.date || eventData.eventDate || null,
+                            endDate: item.endDate || null,
+                            order: item.order || 0
+                        });
+                    } catch (itineraryError) {
+                        console.warn('[SmartEventChat] Failed to create itinerary item:', item.title, itineraryError);
+                    }
+                }
+            }
+
+            // Step 6: Create recurring rule if needed
             if (eventData.isRecurring && eventData.recurrenceRule) {
                 await createRecurringEventRule({
                     event_id: event.id,
@@ -334,10 +395,22 @@ export default function SmartEventChat({ onEventCreated, currentUser }) {
                 });
             }
 
-            // Success!
-            addBotMessage('האירוע נוצר בהצלחה! 🎉', []);
+            // Success message with summary
+            let successMessage = 'האירוע נוצר בהצלחה! 🎉';
+            if (generatedPlan) {
+                const taskCount = generatedPlan.tasks?.length || 0;
+                const itineraryCount = generatedPlan.itinerary?.length || 0;
+                successMessage = `האירוע נוצר בהצלחה! 🎉\n\n`;
+                if (taskCount > 0) successMessage += `✅ ${taskCount} משימות\n`;
+                if (itineraryCount > 0) successMessage += `📅 ${itineraryCount} פריטים בלו"ז\n`;
+                if (generatedPlan.suggestions?.length > 0) {
+                    successMessage += `\n💡 טיפ: ${generatedPlan.suggestions[0]}`;
+                }
+            }
             
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            addBotMessage(successMessage, []);
+            
+            await new Promise(resolve => setTimeout(resolve, 2000));
             
             onEventCreated(event);
 
@@ -345,7 +418,7 @@ export default function SmartEventChat({ onEventCreated, currentUser }) {
             console.error('[SmartEventChat] Error creating event:', error);
             toast.error('שגיאה ביצירת האירוע', { description: error.message });
             addBotMessage(`שגיאה: ${error.message} 😕 בוא ננסה שוב?`, [
-                { text: 'נסה שוב 🔄', action: 'continue', icon: '🔄' }
+                { text: 'נסה שוב 🔄', action: 'generate_plan', icon: '🔄' }
             ]);
         } finally {
             setIsLoading(false);
