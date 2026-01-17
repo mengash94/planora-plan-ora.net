@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Sparkles, CheckCircle2, Calendar, MapPin, PartyPopper } from 'lucide-react';
-import EventCreationChat from '@/components/ai/EventCreationChat';
+import SmartEventChat from '@/components/ai/SmartEventChat';
 import { useAuth } from '@/components/AuthProvider';
 import { toast } from 'sonner';
 import { notifyAdminsNewEvent } from '@/components/instabackService';
@@ -149,7 +149,7 @@ export default function CreateEventAI() {
 
       {/* Chat Area - Full Height */}
       <div className="flex-1 overflow-hidden">
-        <EventCreationChat
+        <SmartEventChat
           onEventCreated={handleEventCreated}
           currentUser={user}
         />
