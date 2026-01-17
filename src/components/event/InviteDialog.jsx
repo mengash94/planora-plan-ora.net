@@ -66,8 +66,7 @@ export default function InviteDialog({ isOpen, onOpenChange, event, onCopyLink, 
     const inviteLink = generateInviteLink();
     if (!inviteLink) return;
 
-    const tadaEmoji = String.fromCodePoint(0x1F389);
-    const message = `היי! ${tadaEmoji}\n\n${inviterName} מזמין/ה אותך לאירוע "${event.title}"!\n\nלחץ/י על הקישור כדי לראות את הפרטים ולהצטרף:\n${inviteLink}`;
+    const message = `היי! 🎉\n\n${inviterName} מזמין/ה אותך לאירוע "${event.title}"!\n\nלחץ/י על הקישור כדי לראות את הפרטים ולהצטרף:\n${inviteLink}`;
     
     await openWhatsApp(message);
     if (onShareWhatsApp) onShareWhatsApp();
@@ -77,8 +76,7 @@ export default function InviteDialog({ isOpen, onOpenChange, event, onCopyLink, 
     const inviteLink = generateInviteLink();
     if (!inviteLink) return;
 
-    const tadaEmoji = String.fromCodePoint(0x1F389);
-    const message = `היי ${contact.first_name}! ${tadaEmoji}\n\n${inviterName} מזמין/ה אותך לאירוע "${event.title}"!\n\nלחץ/י על הקישור להצטרפות:\n${inviteLink}`;
+    const message = `היי ${contact.first_name}! 🎉\n\n${inviterName} מזמין/ה אותך לאירוע "${event.title}"!\n\nלחץ/י על הקישור להצטרפות:\n${inviteLink}`;
     const cleanedPhoneNumber = contact.phone ? contact.phone.replace(/[^\d]/g, '') : '';
     
     await openWhatsApp(message, cleanedPhoneNumber);
