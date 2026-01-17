@@ -303,9 +303,13 @@ export default function SmartEventChat({ onEventCreated, currentUser }) {
         addBotMessage('מייצר תוכנית אירוע מלאה... ✨', []);
 
         try {
-            // Validate required fields
+            // Auto-generate title if missing
             if (!eventData.title) {
-                throw new Error('חסר שם לאירוע');
+                const autoTitle = eventData.eventType 
+                    ? `${eventData.eventType}${eventData.destination ? ` ב${eventData.destination}` : ''}`
+                    : 'אירוע חדש';
+                setEventData(prev => ({ ...prev, title: autoTitle }));
+                eventData.title = autoTitle;
             }
 
             // Step 1: Generate the event plan (itinerary + tasks)
