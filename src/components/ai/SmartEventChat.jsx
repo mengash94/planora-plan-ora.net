@@ -83,79 +83,75 @@ export default function SmartEventChat({ onEventCreated, currentUser }) {
 
     const handleSend = async () => {
         if (!input.trim() || isLoading) return;
-
         const userInput = input.trim();
-        addUserMessage(userInput);
         setInput('');
+        await sendMessage(userInput);
+    };
+
+    const sendMessage = async (text) => {
+        addUserMessage(text);
         setIsLoading(true);
 
         try {
-            // Call the Edge Function via Base44 backend
             const { data } = await processEventChat({
-                userMessage: userInput,
+                userMessage: text,
                 eventData: eventData
             });
 
             console.log('[SmartEventChat] AI Response:', data);
 
-            // Update eventData with extracted data
-            if (data.extractedData && Object.keys(data.extractedData).length > 0) {
-                setEventData(prev => ({ ...prev, ...data.extractedData }));
-            }
-
-            // Show AI reply
-            addBotMessage(data.reply, data.suggestedButtons || []);
-
-            // Check if ready to create event
-            if (data.isReadyToSummary) {
-                console.log('[SmartEventChat] Ready to create event!');
+            if (data.data) {
+                // Response wrapped in data.data
+                const aiResponse = data.data;
+                if (aiResponse.extractedData && Object.keys(aiResponse.extractedData).length > 0) {
+                    setEventData(prev => ({ ...prev, ...aiResponse.extractedData }));
+                }
+                addBotMessage(aiResponse.reply, aiResponse.suggestedButtons || []);
+            } else if (data.extractedData !== undefined) {
+                // Direct response
+                if (data.extractedData && Object.keys(data.extractedData).length > 0) {
+                    setEventData(prev => ({ ...prev, ...data.extractedData }));
+                }
+                addBotMessage(data.reply, data.suggestedButtons || []);
             }
 
         } catch (error) {
             console.error('[SmartEventChat] Error:', error);
-            addBotMessage('אופס, משהו השתבש 😕 אבל אני כאן! נסה שוב או ספר לי מה קרה.', [
-                { text: 'המשך 🔄', action: 'continue', icon: '🔄' }
-            ]);
+            addBotMessage('אופס, משהו השתבש 😕 אבל אני כאן! נסה שוב.', []);
         } finally {
             setIsLoading(false);
         }
     };
 
     const handleAction = async (action) => {
-        setIsLoading(true);
+        // Handle quick suggestions
+        if (action === 'suggest_birthday') {
+            await sendMessage('יום הולדת');
+            return;
+        }
+        if (action === 'suggest_wedding') {
+            await sendMessage('חתונה');
+            return;
+        }
+        if (action === 'suggest_party') {
+            await sendMessage('מסיבה');
+            return;
+        }
+        if (action === 'suggest_trip') {
+            await sendMessage('טיול');
+            return;
+        }
+        if (action === 'suggest_work') {
+            await sendMessage('אירוע עבודה');
+            return;
+        }
+        if (action === 'suggest_other') {
+            await sendMessage('אירוע אחר');
+            return;
+        }
 
+        setIsLoading(true);
         try {
-            // Handle quick suggestions
-            if (action === 'suggest_birthday') {
-                addUserMessage('יום הולדת');
-                await handleSend();
-                return;
-            }
-            if (action === 'suggest_wedding') {
-                addUserMessage('חתונה');
-                await handleSend();
-                return;
-            }
-            if (action === 'suggest_party') {
-                addUserMessage('מסיבה');
-                await handleSend();
-                return;
-            }
-            if (action === 'suggest_trip') {
-                addUserMessage('טיול');
-                await handleSend();
-                return;
-            }
-            if (action === 'suggest_work') {
-                addUserMessage('אירוע עבודה');
-                await handleSend();
-                return;
-            }
-            if (action === 'suggest_other') {
-                addUserMessage('אירוע אחר');
-                await handleSend();
-                return;
-            }
 
             // Handle date selection
             if (action === 'select_date') {
@@ -222,13 +218,11 @@ export default function SmartEventChat({ onEventCreated, currentUser }) {
             }
 
             // Default: send action as user message
-            addUserMessage(action);
-            await handleSend();
+            await sendMessage(action);
 
         } catch (error) {
             console.error('[SmartEventChat] Action error:', error);
             addBotMessage('אופס, משהו השתבש 😕 נסה שוב!', []);
-        } finally {
             setIsLoading(false);
         }
     };
