@@ -282,18 +282,9 @@ export default function SmartEventChat({ onEventCreated, currentUser }) {
         setEventData(updatedData);
 
         const dateStr = startDate ? new Date(startDate).toLocaleDateString('he-IL') : '';
-        addBotMessage(`מעולה! ${dateStr} 📅`, []);
-
+        
         // Continue with AI
-        const { data } = await processEventChat({
-            userMessage: `התאריך: ${dateStr}`,
-            eventData: updatedData
-        });
-
-        if (data.extractedData) {
-            setEventData(prev => ({ ...prev, ...data.extractedData }));
-        }
-        addBotMessage(data.reply, data.suggestedButtons || []);
+        await sendMessage(`התאריך: ${dateStr}`);
     };
 
     const generateAndCreateEvent = async () => {
@@ -414,14 +405,41 @@ export default function SmartEventChat({ onEventCreated, currentUser }) {
                                 className="p-4 cursor-pointer hover:shadow-lg transition-all border-2 hover:border-orange-400"
                             >
                                 <div className="flex items-start gap-3">
-                                    <div className="flex-1">
-                                        <p className="font-bold text-gray-900">{place.name}</p>
-                                        <p className="text-xs text-gray-600 mt-1">{place.address}</p>
-                                        {place.rating && (
-                                            <div className="flex items-center gap-1 mt-2">
-                                                <span className="text-amber-500">⭐</span>
-                                                <span className="text-sm font-semibold">{place.rating}</span>
-                                            </div>
+                                    {place.photo_url && (
+                                        <img 
+                                            src={place.photo_url} 
+                                            alt={place.name}
+                                            className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
+                                        />
+                                    )}
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-bold text-gray-900 truncate">{place.name}</p>
+                                        <p className="text-xs text-gray-600 mt-1 line-clamp-2">{place.address}</p>
+                                        <div className="flex items-center gap-3 mt-2 flex-wrap">
+                                            {place.rating && (
+                                                <div className="flex items-center gap-1">
+                                                    <span className="text-amber-500">⭐</span>
+                                                    <span className="text-sm font-semibold">{place.rating}</span>
+                                                    {place.user_ratings_total && (
+                                                        <span className="text-xs text-gray-500">({place.user_ratings_total})</span>
+                                                    )}
+                                                </div>
+                                            )}
+                                            {place.price_level && (
+                                                <span className="text-sm text-green-600">
+                                                    {'₪'.repeat(place.price_level)}
+                                                </span>
+                                            )}
+                                            {place.opening_hours?.open_now !== undefined && (
+                                                <span className={`text-xs px-2 py-0.5 rounded-full ${place.opening_hours.open_now ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                    {place.opening_hours.open_now ? 'פתוח' : 'סגור'}
+                                                </span>
+                                            )}
+                                        </div>
+                                        {place.types && place.types.length > 0 && (
+                                            <p className="text-xs text-gray-500 mt-1 truncate">
+                                                {place.types.slice(0, 3).join(' • ')}
+                                            </p>
                                         )}
                                     </div>
                                 </div>
