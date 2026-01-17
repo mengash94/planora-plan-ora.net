@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Loader2, Send, Sparkles, ChevronDown, PartyPopper } from 'lucide-react';
 import { processEventChat } from '@/functions/processEventChat';
+import { generateEventPlan } from '@/functions/generateEventPlan';
 import { 
     createEvent, 
     createEventMember, 
