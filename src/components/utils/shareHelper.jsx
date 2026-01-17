@@ -45,30 +45,15 @@ export const openExternalUrl = async (url) => {
  * @param {string} [phoneNumber] - Optional phone number (with country code, no +)
  */
 export const openWhatsApp = async (message, phoneNumber = null) => {
-  // Ensure proper UTF-8 encoding for emojis
+  // Encode the message for URL (handles emojis and special characters)
   const encodedMessage = encodeURIComponent(message);
   const url = phoneNumber 
     ? `https://wa.me/${phoneNumber}?text=${encodedMessage}`
     : `https://wa.me/?text=${encodedMessage}`;
   
-  // For Capacitor, try using the App plugin to open WhatsApp directly
-  // This handles emojis better than the Browser plugin
-  if (isCapacitor()) {
-    const plugins = getCapacitorPlugins();
-    
-    // Try App.openUrl first (better for deep links)
-    if (plugins?.App) {
-      try {
-        await plugins.App.openUrl({ url });
-        return;
-      } catch (error) {
-        console.warn('[ShareHelper] Capacitor App.openUrl failed:', error);
-      }
-    }
-  }
-  
-  // Fallback to openExternalUrl
-  await openExternalUrl(url);
+  // For deep links like WhatsApp, always use window.open directly
+  // Browser.open in Capacitor sometimes breaks emoji encoding
+  window.open(url, '_blank');
 };
 
 /**
