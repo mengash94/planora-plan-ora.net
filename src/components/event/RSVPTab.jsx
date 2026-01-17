@@ -122,8 +122,8 @@ export default function RSVPTab({ eventId, event, isManager }) {
 
   const handleShareWhatsApp = () => {
     const ownerName = event?.ownerName || event?.owner_name || '';
-    const ownerText = ownerName ? `\nמזמין: ${ownerName}` : '';
-    const message = `הוזמנת לאירוע "${event?.title || 'אירוע'}"!${ownerText}\n\nלחץ/י על הקישור כדי לאשר הגעה:\n${getRSVPLink()}`;
+    const ownerText = ownerName ? `\n👤 מזמין: ${ownerName}` : '';
+    const message = `🎉 הוזמנת לאירוע "${event?.title || 'אירוע'}"!${ownerText}\n\n📋 לחץ/י על הקישור כדי לאשר הגעה:\n${getRSVPLink()}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
   };
 
@@ -211,9 +211,9 @@ export default function RSVPTab({ eventId, event, isManager }) {
 
     let text = `📋 אישורי הגעה - ${event?.title || 'אירוע'}\n`;
     text += `סה"כ תשובות: ${stats?.total || 0}\n`;
-    text += `מגיעים: ${stats?.totalGuests || 0} (${stats?.attending || 0} תשובות)\n`;
-    text += `לא מגיעים: ${stats?.notAttending || 0}\n`;
-    text += `אולי: ${stats?.maybe || 0}\n\n`;
+    text += `✅ מגיעים: ${stats?.totalGuests || 0} (${stats?.attending || 0} תשובות)\n`;
+    text += `❌ לא מגיעים: ${stats?.notAttending || 0}\n`;
+    text += `❓ אולי: ${stats?.maybe || 0}\n\n`;
     
     text += `--- רשימה מלאה ---\n`;
     rsvps.forEach(rsvp => {
