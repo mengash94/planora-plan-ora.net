@@ -48,13 +48,14 @@ export const openWhatsApp = async (message, phoneNumber = null) => {
   // Encode the message for URL (handles emojis and special characters)
   const encodedMessage = encodeURIComponent(message);
   
-  // Use api.whatsapp.com - more stable for complex parameters than wa.me
+  // Use api.whatsapp.com/send/ with trailing slash - this preserves emojis correctly
+  // wa.me redirects and breaks emoji encoding during the redirect
   const url = phoneNumber 
-    ? `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodedMessage}`
-    : `https://api.whatsapp.com/send?text=${encodedMessage}`;
+    ? `https://api.whatsapp.com/send/?phone=${phoneNumber}&text=${encodedMessage}`
+    : `https://api.whatsapp.com/send/?text=${encodedMessage}`;
   
-  // Use _system to open in external app (WhatsApp) instead of in-app browser
-  window.open(url, '_system');
+  // Use _blank to open - emojis may show as � in browser URL bar but will display correctly in WhatsApp
+  window.open(url, '_blank');
 };
 
 /**
