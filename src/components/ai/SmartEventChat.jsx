@@ -212,8 +212,8 @@ export default function SmartEventChat({ onEventCreated, currentUser }) {
                 return;
             }
 
-            // Handle generate plan
-            if (action === 'generate_plan') {
+            // Handle generate plan - check multiple variations
+            if (action === 'generate_plan' || action === 'צור תוכנית' || action.includes('plan') || action.includes('תוכנית')) {
                 await generateAndCreateEvent();
                 return;
             }
