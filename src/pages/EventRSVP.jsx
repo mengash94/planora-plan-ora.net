@@ -2,8 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useAuth } from '@/components/AuthProvider';
-import { getEventDetails, getUserById, createNotificationAndSendPush, getInviteLinkByCode, getInvitationTemplate } from '@/components/instabackService';
-import InvitationCard from '@/components/event/InvitationCard';
+import { getEventDetails, getUserById, createNotificationAndSendPush, getInviteLinkByCode } from '@/components/instabackService';
 
 // Local createEventRSVP function
 const createEventRSVP = async (rsvpData) => {
@@ -72,7 +71,6 @@ export default function EventRSVPPage() {
   const [submitted, setSubmitted] = useState(false);
   const [inviteLink, setInviteLink] = useState(null);
   const [eventId, setEventId] = useState(eventIdFromUrl);
-  const [inviteTemplate, setInviteTemplate] = useState(null);
   
   // Prevent infinite loop - load only once
   const hasLoadedRef = useRef(false);
@@ -198,21 +196,6 @@ export default function EventRSVPPage() {
         }
 
         setEvent(eventDetails);
-
-        // Fetch invitation template if exists
-        const templateId = eventDetails.invitationTemplateId || eventDetails.invitation_template_id;
-        console.log('[RSVP] Event invitationTemplateId:', templateId);
-        if (templateId) {
-            try {
-                const template = await getInvitationTemplate(templateId);
-                console.log('[RSVP] Loaded template:', template);
-                if (template) {
-                    setInviteTemplate(template);
-                }
-            } catch (e) {
-                console.warn('Failed to load invitation template', e);
-            }
-        }
 
         const ownerId = eventDetails.ownerId || eventDetails.owner_id || eventDetails._uid;
         
@@ -530,16 +513,11 @@ export default function EventRSVPPage() {
             )}
           </div>
 
-          {/* Invitation Card */}
-          {inviteTemplate && (
-            <InvitationCard template={inviteTemplate} event={event} />
-          )}
-
           {/* Event Details - Styled for "Hagiga" */}
           <div className="bg-white/50 rounded-xl border border-orange-100 p-1">
 
-            {/* Standard Cover - only if no invitation template */}
-            {!inviteTemplate && event?.cover_image_url && (
+            {/* Standard Cover */}
+            {event?.cover_image_url && (
               <div className="w-full h-32 rounded-lg mb-3 overflow-hidden">
                 <img 
                   src={event.cover_image_url} 
