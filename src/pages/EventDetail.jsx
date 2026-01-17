@@ -866,9 +866,8 @@ export default function EventDetailPage() {
   const isTabVisible = (tabId) => {
     const eventType = event?.eventType || event?.event_type || 'social';
     
-    // RSVP tab - only for specific event categories (managers always see it)
+    // RSVP tab - only for specific event categories
     if (tabId === 'rsvp') {
-      if (canManage) return true; // Managers always see RSVP tab
       return rsvpCategories.includes(event?.category);
     }
     
