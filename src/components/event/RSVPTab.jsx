@@ -25,6 +25,7 @@ import {
 import { toast } from 'sonner';
 import { createPageUrl } from '@/utils';
 import InviteLinksManager from './InviteLinksManager';
+import { openWhatsApp } from '@/components/utils/shareHelper';
 
 export default function RSVPTab({ eventId, event, isManager }) {
   const [rsvps, setRsvps] = useState([]);
@@ -120,11 +121,11 @@ export default function RSVPTab({ eventId, event, isManager }) {
     }
   };
 
-  const handleShareWhatsApp = () => {
+  const handleShareWhatsApp = async () => {
     const ownerName = event?.ownerName || event?.owner_name || '';
-    const ownerText = ownerName ? `\n👤 מזמין: ${ownerName}` : '';
-    const message = `🎉 הוזמנת לאירוע "${event?.title || 'אירוע'}"!${ownerText}\n\n📋 לחץ/י על הקישור כדי לאשר הגעה:\n${getRSVPLink()}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+    const ownerText = ownerName ? `\nמזמין: ${ownerName}` : '';
+    const message = `הוזמנת לאירוע "${event?.title || 'אירוע'}"!${ownerText}\n\nלחץ/י על הקישור כדי לאשר הגעה:\n${getRSVPLink()}`;
+    await openWhatsApp(message);
   };
 
   const handleToggleNotify = async (checked) => {
