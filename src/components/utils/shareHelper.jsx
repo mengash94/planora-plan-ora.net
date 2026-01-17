@@ -54,7 +54,19 @@ export const openWhatsApp = async (message, phoneNumber = null) => {
     ? `https://api.whatsapp.com/send/?phone=${phoneNumber}&text=${encodedMessage}`
     : `https://api.whatsapp.com/send/?text=${encodedMessage}`;
   
-  // Use _blank to open - emojis may show as � in browser URL bar but will display correctly in WhatsApp
+  // For Capacitor, use Browser plugin to open externally
+  const plugins = getCapacitorPlugins();
+  
+  if (isCapacitor() && plugins?.Browser) {
+    try {
+      await plugins.Browser.open({ url });
+      return;
+    } catch (error) {
+      console.warn('[ShareHelper] Capacitor Browser failed for WhatsApp:', error);
+    }
+  }
+  
+  // Fallback for web
   window.open(url, '_blank');
 };
 
