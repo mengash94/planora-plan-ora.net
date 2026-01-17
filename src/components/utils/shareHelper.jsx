@@ -47,12 +47,14 @@ export const openExternalUrl = async (url) => {
 export const openWhatsApp = async (message, phoneNumber = null) => {
   // Encode the message for URL (handles emojis and special characters)
   const encodedMessage = encodeURIComponent(message);
-  const url = phoneNumber 
-    ? `https://wa.me/${phoneNumber}?text=${encodedMessage}`
-    : `https://wa.me/?text=${encodedMessage}`;
   
-  // Use openExternalUrl which handles both Capacitor and web
-  await openExternalUrl(url);
+  // Use api.whatsapp.com - more stable for complex parameters than wa.me
+  const url = phoneNumber 
+    ? `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodedMessage}`
+    : `https://api.whatsapp.com/send?text=${encodedMessage}`;
+  
+  // Use _system to open in external app (WhatsApp) instead of in-app browser
+  window.open(url, '_system');
 };
 
 /**
