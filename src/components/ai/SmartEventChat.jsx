@@ -90,6 +90,16 @@ export default function SmartEventChat({ onEventCreated, currentUser }) {
     };
 
     const sendMessage = async (text) => {
+        // Check if user wants to generate plan
+        const planKeywords = ['צור תוכנית', 'תוכנית', 'create plan', 'generate plan', 'plan'];
+        const wantsToGeneratePlan = planKeywords.some(kw => text.toLowerCase().includes(kw.toLowerCase()));
+        
+        if (wantsToGeneratePlan && eventData.title) {
+            addUserMessage(text);
+            await generateAndCreateEvent();
+            return;
+        }
+        
         addUserMessage(text);
         setIsLoading(true);
 
