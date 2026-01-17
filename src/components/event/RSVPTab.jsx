@@ -123,8 +123,11 @@ export default function RSVPTab({ eventId, event, isManager }) {
 
   const handleShareWhatsApp = async () => {
     const ownerName = event?.ownerName || event?.owner_name || '';
-    const ownerText = ownerName ? `\n\u{1F464} מזמין: ${ownerName}` : '';
-    const message = `\u{1F389} הוזמנת לאירוע "${event?.title || 'אירוע'}"!${ownerText}\n\n\u{1F4CB} לחץ/י על הקישור כדי לאשר הגעה:\n${getRSVPLink()}`;
+    const tadaEmoji = String.fromCodePoint(0x1F389);
+    const personEmoji = String.fromCodePoint(0x1F464);
+    const clipboardEmoji = String.fromCodePoint(0x1F4CB);
+    const ownerText = ownerName ? `\n${personEmoji} מזמין: ${ownerName}` : '';
+    const message = `${tadaEmoji} הוזמנת לאירוע "${event?.title || 'אירוע'}"!${ownerText}\n\n${clipboardEmoji} לחץ/י על הקישור כדי לאשר הגעה:\n${getRSVPLink()}`;
     await openWhatsApp(message);
   };
 
