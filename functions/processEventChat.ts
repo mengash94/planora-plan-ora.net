@@ -18,14 +18,28 @@ Deno.serve(async (req) => {
         console.log('[processEventChat] Processing message:', userMessage);
         console.log('[processEventChat] Current eventData:', eventData);
 
-        const currentDate = new Date().toLocaleDateString('he-IL', { 
+        // Get current date info for Israeli context
+        const now = new Date();
+        const currentDate = now.toLocaleDateString('he-IL', { 
             weekday: 'long', 
             year: 'numeric', 
             month: 'long', 
             day: 'numeric' 
         });
+        
+        // Calculate Shabbat times (rough estimate - Friday 4-7pm depending on season)
+        const currentMonth = now.getMonth();
+        const isWinter = currentMonth >= 10 || currentMonth <= 2;
+        const shabbatEntry = isWinter ? '16:30' : '19:30';
+        
+        // Israeli season analysis
+        const seasonInfo = {
+            summer: currentMonth >= 5 && currentMonth <= 8,
+            winter: currentMonth >= 11 || currentMonth <= 2,
+            holiday: false // TODO: Add Jewish holiday detection
+        };
 
-        // Analyze what data is already collected
+        // === STATE ANALYSIS (ניתוח מצב) ===
         const hasTitle = !!(eventData?.title);
         const hasEventType = !!(eventData?.eventType || eventData?.category);
         const hasLocation = !!(eventData?.location);
@@ -34,84 +48,140 @@ Deno.serve(async (req) => {
         const hasParticipants = !!(eventData?.participants);
         const hasBudget = !!(eventData?.budget);
         const hasDatePoll = !!(eventData?.datePollEnabled);
+        const hasLocationPoll = !!(eventData?.locationPollEnabled);
+        const hasForWhom = !!(eventData?.forWhom);
+        const hasVenuePreference = !!(eventData?.venuePreference);
         
-        // Determine what's missing
+        // Calculate readiness score
+        const readinessScore = [hasEventType, hasDate || hasDatePoll, hasLocation || hasDestination || hasLocationPoll].filter(Boolean).length;
+        const isReadyToCreate = readinessScore >= 2;
+        
+        // Determine missing critical fields
         const missingFields = [];
-        if (!hasTitle && !hasEventType) missingFields.push('סוג האירוע');
+        if (!hasEventType) missingFields.push('סוג האירוע');
         if (!hasDate && !hasDatePoll) missingFields.push('תאריך');
-        if (!hasLocation && !hasDestination) missingFields.push('מיקום');
-        if (!hasParticipants) missingFields.push('כמות אורחים');
+        if (!hasLocation && !hasDestination && !hasLocationPoll) missingFields.push('מיקום');
+        
+        // Determine event date info for risk analysis
+        let eventDateInfo = null;
+        if (eventData?.eventDate) {
+            const eventDate = new Date(eventData.eventDate);
+            const dayOfWeek = eventDate.getDay();
+            const hour = eventDate.getHours();
+            const month = eventDate.getMonth();
+            eventDateInfo = {
+                isThursday: dayOfWeek === 4,
+                isFriday: dayOfWeek === 5,
+                isSaturday: dayOfWeek === 6,
+                isEvening: hour >= 17,
+                isMidday: hour >= 11 && hour <= 15,
+                isSummer: month >= 5 && month <= 8,
+                isWinter: month >= 11 || month <= 2
+            };
+        }
 
-        // Check if ready to create
-        const isReadyToCreate = hasEventType && (hasDate || hasDatePoll) && (hasLocation || hasDestination);
+        // Build the Expert AI Agent prompt
+        const prompt = `### 🎭 זהות: פלנורה - מפיקת אירועים מקצועית
+אתה **פלנורה** – לא בוט, אלא מפיקת אירועים מומחית עם 15 שנות ניסיון בישראל.
+אתה מכירה כל אולם, כל קייטרינג, כל DJ. יש לך קשרים עם כולם.
+אתה יודעת מה עובד ומה לא, ואת לא מפחדת להגיד את האמת.
 
-        // Build the Planora AI prompt
-        const prompt = `### זהות ותפקיד
-אתה "פלנורה" (Planora) – מומחה AI אישי לתכנון וניהול אירועים.
-תאריך היום: ${currentDate}
+### 📅 הקשר זמן
+- תאריך היום: ${currentDate}
+- עונה: ${seasonInfo.summer ? '☀️ קיץ (חם מאוד בצהריים!)' : seasonInfo.winter ? '🌧️ חורף (גשמים אפשריים)' : '🍂 עונת מעבר'}
+- כניסת שבת הקרובה: יום שישי בערך ${shabbatEntry}
 
-### מצב נוכחי של האירוע:
-${JSON.stringify(eventData, null, 2)}
+### 🧠 ניתוח לוגיסטי שקט (Chain of Thought)
+לפני שאתה עונה, בצע ניתוח פנימי:
 
-### ניתוח המצב:
-- יש סוג אירוע: ${hasEventType ? 'כן ✓' : 'לא ✗'}
-- יש תאריך: ${hasDate ? 'כן ✓' : (hasDatePoll ? 'סקר תאריכים ✓' : 'לא ✗')}
-- יש מיקום: ${hasLocation ? 'כן ✓' : (hasDestination ? 'רק עיר' : 'לא ✗')}
-- יש כמות אורחים: ${hasParticipants ? 'כן ✓' : 'לא ✗'}
-- מוכן ליצירה: ${isReadyToCreate ? 'כן! ✓' : 'לא עדיין'}
-${missingFields.length > 0 ? `- חסר: ${missingFields.join(', ')}` : ''}
+${eventDateInfo ? `
+**סיכונים שזיהיתי באירוע:**
+${eventDateInfo.isThursday && eventDateInfo.isEvening ? '⚠️ יום חמישי בערב = פקקים קשים מאוד! צריך להזהיר.' : ''}
+${eventDateInfo.isFriday ? '⚠️ יום שישי = כניסת שבת! צריך לסיים לפני ' + shabbatEntry : ''}
+${eventDateInfo.isSummer && eventDateInfo.isMidday && (hasDestination || hasLocation) ? '⚠️ אירוע בצהריים בקיץ = חם מאוד! להמליץ על מיזוג/צל' : ''}
+${eventDateInfo.isWinter && !hasLocation ? '⚠️ חורף = לוודא מקום סגור או גיבוי לגשם' : ''}
+` : ''}
 
-### המשתמש אמר:
+### 📊 מצב האירוע הנוכחי
+\`\`\`json
+${JSON.stringify(eventData || {}, null, 2)}
+\`\`\`
+
+**ציון מוכנות:** ${readinessScore}/3 ${isReadyToCreate ? '✅ מוכן!' : '🔄 בתהליך'}
+${missingFields.length > 0 ? `**חסר:** ${missingFields.join(', ')}` : '**יש הכל!**'}
+
+### 💬 המשתמש אמר:
 "${userMessage}"
 
-### הוראות חשובות לכפתורים:
-**הכפתורים חייבים להיות רלוונטיים למה שחסר או לשלב הבא!**
+### 🎯 המשימה שלך
+
+**1. חילוץ נתונים (Extraction):**
+חלץ מההודעה כל מידע רלוונטי. המשתמש יכול לומר משפט אחד שמכיל הרבה מידע!
+דוגמה: "יום הולדת 30 לאשתי ביום שישי הקרוב בצהריים, איפשהו בתל אביב, נהיה בערך 20 איש"
+→ חלץ: eventType, forWhom, eventDate, destination, participants
+
+**2. תשובה מקצועית:**
+- ענה קצר וחם, כמו מפיקה אמיתית
+- אם זיהית סיכון (למעלה) - הזהר בעדינות!
+- תן טיפ מקצועי אם רלוונטי
+- שאל על מה שחסר בצורה טבעית
+
+**3. כפתורי פעולה חכמים:**
+הצע רק כפתורים שרלוונטיים למצב הנוכחי!
 
 ${isReadyToCreate ? `
-🎉 כל הפרטים החיוניים קיימים! הצע:
-- { "text": "צור את האירוע! 🎉", "action": "generate_plan", "icon": "🎉" }
-- { "text": "הוסף עוד פרטים ✏️", "action": "add_more_details", "icon": "✏️" }
+✅ **מוכן ליצירה!** הצע:
+{ "text": "בוא ניצור את האירוע! 🎉", "action": "generate_plan", "icon": "🎉" }
 ` : ''}
 
 ${!hasDate && !hasDatePoll ? `
-📅 חסר תאריך - הצע:
-- { "text": "בחר תאריך 📅", "action": "select_date", "icon": "📅" }
-- { "text": "סקר תאריכים 🗳️", "action": "create_date_poll", "icon": "🗳️" }
+📅 **חסר תאריך** - הצע אחד מ:
+{ "text": "בחר תאריך 📅", "action": "select_date", "icon": "📅" }
+{ "text": "צור סקר תאריכים 🗳️", "action": "create_date_poll", "icon": "🗳️" }
 ` : ''}
 
-${!hasLocation && hasDestination ? `
-📍 יש עיר אבל אין מקום ספציפי - הצע:
-- { "text": "חפש מקומות 🔍", "action": "search_places_${eventData?.venuePreference || 'restaurant'}", "icon": "🔍" }
-- { "text": "כתוב מקום ✏️", "action": "manual_location", "icon": "✏️" }
+${hasDestination && !hasLocation && !hasLocationPoll ? `
+📍 **יש עיר, חסר מקום** - הצע:
+{ "text": "מצא מקומות מומלצים 🔍", "action": "search_places_${eventData?.venuePreference || 'restaurant'}", "icon": "🔍" }
+{ "text": "יש לי מקום, אכתוב ✏️", "action": "manual_location", "icon": "✏️" }
 ` : ''}
 
-${!hasLocation && !hasDestination ? `
-🏠 חסר מיקום - שאל באיזו עיר או הצע:
-- { "text": "תל אביב 🌇", "action": "תל אביב", "icon": "🌇" }
-- { "text": "ירושלים 🏛️", "action": "ירושלים", "icon": "🏛️" }
-- { "text": "עיר אחרת ✏️", "action": "other_city", "icon": "✏️" }
+${!hasDestination && !hasLocation ? `
+🏠 **חסר מיקום** - שאל או הצע ערים פופולריות
 ` : ''}
 
-### חוקים:
-1. **אל תציע כפתורים למשהו שכבר קיים!** אם יש location, אל תציע "חפש מקומות"
-2. **ענה על שאלת המשתמש קודם** - אם הוא שואל משהו, ענה לו ואז המשך
-3. **כפתור אחד עיקרי** - תמיד הצע את הפעולה הכי חשובה לשלב הנוכחי
-4. **מקסימום 3 כפתורים** - יותר מדי כפתורים מבלבל
+### ⚠️ חוקים קריטיים:
+1. **לעולם אל תציע כפתור למשהו שכבר קיים!**
+2. **מקסימום 3 כפתורים** - פחות = יותר טוב
+3. **כל כפתור חייב להיות רלוונטי לשלב הנוכחי**
+4. **אם המשתמש שאל שאלה - ענה עליה קודם!**
+5. **אל תשכח להיות אנושית וחמה**
 
-### פורמט פלט (JSON בלבד):
+### 💡 טיפים מקצועיים לפי סוג אירוע:
+- **יום הולדת**: "כמה אורחים? זה משפיע על בחירת המקום"
+- **חתונה**: "יש לכם כבר אולם? זה הדבר הראשון לסגור"
+- **מסיבת רווקים/ות**: "איזה סגנון - מסעדה יוקרתית או אקטיביטי?"
+- **אירוע חברה**: "האם צריך ציוד מצגות? מקרן?"
+
+### 📤 פורמט תשובה (JSON בלבד):
 {
-  "extractedData": { /* רק שדות חדשים מההודעה */ },
-  "reply": "תשובה קצרה וחמה בעברית",
+  "extractedData": {
+    // רק שדות חדשים שחילצת מההודעה!
+    // אפשרי: title, eventType, category, participants, destination, location, eventDate, forWhom, privacy, description, venuePreference, budget, isRecurring, datePollEnabled, kosher, accessibility
+  },
+  "reply": "תשובה קצרה, חמה ומקצועית בעברית",
+  "expertTip": "טיפ מקצועי קצר (או null אם אין)", 
   "suggestedButtons": [
-    { "text": "טקסט + אימוג'י", "action": "פעולה", "icon": "אימוג'י" }
+    { "text": "טקסט + אימוג'י", "action": "action_name", "icon": "🎯" }
   ],
-  "isReadyToSummary": ${isReadyToCreate}
+  "riskWarning": "אזהרה אם יש סיכון לוגיסטי (או null)",
+  "isReadyToCreate": ${isReadyToCreate}
 }`;
 
-        // Call Base44 LLM to process the conversation
+        // Call Base44 LLM to process the conversation with internet for real-time data
         const result = await base44.integrations.Core.InvokeLLM({
             prompt,
-            add_context_from_internet: false,
+            add_context_from_internet: true, // Enable for Israeli holidays, venues, weather
             response_json_schema: {
                 type: 'object',
                 properties: {
@@ -132,10 +202,13 @@ ${!hasLocation && !hasDestination ? `
                             budget: { type: 'string' },
                             isRecurring: { type: 'boolean' },
                             datePollEnabled: { type: 'boolean' },
-                            locationPollEnabled: { type: 'boolean' }
+                            locationPollEnabled: { type: 'boolean' },
+                            kosher: { type: 'boolean' },
+                            accessibility: { type: 'boolean' }
                         }
                     },
                     reply: { type: 'string' },
+                    expertTip: { type: 'string' },
                     suggestedButtons: {
                         type: 'array',
                         items: {
@@ -147,17 +220,22 @@ ${!hasLocation && !hasDestination ? `
                             }
                         }
                     },
-                    isReadyToSummary: { type: 'boolean' }
+                    riskWarning: { type: 'string' },
+                    isReadyToCreate: { type: 'boolean' }
                 }
             }
         });
 
         console.log('[processEventChat] AI response:', result);
 
-        // Return the AI's response
+        // Return the AI's response with enhanced data
         return Response.json({
             success: true,
-            data: result
+            data: {
+                ...result,
+                // Ensure backward compatibility
+                isReadyToSummary: result.isReadyToCreate
+            }
         });
 
     } catch (error) {
