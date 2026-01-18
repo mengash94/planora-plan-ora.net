@@ -164,28 +164,11 @@ export default function SmartEventChat({ onEventCreated, currentUser }) {
                     setEventData(updatedEventData);
                 }
 
-                // Check if any suggested button is a search action and we have a destination
-                const searchButton = (aiResponse.suggestedButtons || []).find(btn => 
-                    btn.action && btn.action.startsWith('search_places_')
-                );
-
-                if (searchButton && updatedEventData.destination) {
-                    // Auto-trigger the search
-                    addBotMessage(aiResponse.reply, [], {
-                        expertTip: aiResponse.expertTip,
-                        riskWarning: aiResponse.riskWarning
-                    });
-
-                    // Execute the search automatically
-                    setTimeout(() => {
-                        handleAction(searchButton.action);
-                    }, 500);
-                } else {
-                    addBotMessage(aiResponse.reply, aiResponse.suggestedButtons || [], {
-                        expertTip: aiResponse.expertTip,
-                        riskWarning: aiResponse.riskWarning
-                    });
-                }
+                // Show the message with buttons - let user click to search
+                addBotMessage(aiResponse.reply, aiResponse.suggestedButtons || [], {
+                    expertTip: aiResponse.expertTip,
+                    riskWarning: aiResponse.riskWarning
+                });
             }
 
         } catch (error) {
