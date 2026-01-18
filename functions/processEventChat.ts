@@ -250,26 +250,41 @@ ${!hasDestination && !hasLocation ? `
 }`;
 
         // Call Base44 LLM to process the conversation
-        // IMPORTANT: AI should NOT search for places itself - it should trigger search_places action
+        // Internet access enabled for general info, but NOT for place recommendations
         const result = await base44.integrations.Core.InvokeLLM({
-            prompt: prompt + `\n\n### ⚠️ הנחיות קריטיות:
-        1. **לעולם אל תחפש מקומות בעצמך ואל תציג רשימות של מסעדות/מלונות/אולמות!**
-        - במקום זה, תמיד הצע כפתור חיפוש מתאים (search_places_restaurant, search_places_hotel, וכו')
-        - המערכת תחפש דרך Google Places API ותציג תוצאות אמיתיות
+            prompt: prompt + `\n\n### ⚠️ הנחיות קריטיות לגבי מקומות וחיפושים:
 
-        2. **אל תציג קישורים בתשובה** - אין לך גישה לקישורים תקינים
+        1. **לעולם אל תציג רשימות של מסעדות/מלונות/אולמות ספציפיים!**
+        - אל תתן שמות של מקומות ספציפיים
+        - אל תציג קישורים
+        - המערכת תחפש דרך Google Places API
 
-        3. **כשמשתמש מבקש מקום בעיר ספציפית** (לדוגמה: "מסעדה בבית שמש"):
-        - עדכן את destination לעיר החדשה
-        - הצע כפתור חיפוש מתאים
-        - אל תנסה לתת שמות של מקומות ספציפיים!
+        2. **תמיד שאל על עיר/אזור לפני חיפוש:**
+        - אם המשתמש לא ציין עיר/אזור - שאל אותו!
+        - "באיזו עיר/אזור אתה מחפש?"
+        - רק אחרי שיש destination, הצע כפתור חיפוש
 
-        4. **דוגמה נכונה:**
+        3. **כשיש עיר/אזור - הצע כפתור חיפוש מתאים:**
+        - עדכן destination בתשובה
+        - הצע כפתור: { text: "חפש מסעדות 🍽️", action: "search_places_restaurant", icon: "🍽️" }
+
+        4. **דוגמאות:**
+
+        משתמש: "אני רוצה מסעדה"
+        תשובה: "בשמחה! באיזו עיר או אזור אתה מחפש מסעדה?"
+        extractedData: { venuePreference: "restaurant" }
+        suggestedButtons: [] // אין כפתור חיפוש כי אין עיר
+
+        משתמש: "בבית שמש"
+        תשובה: "מעולה! אחפש לך מסעדות בבית שמש."
+        extractedData: { destination: "בית שמש" }
+        suggestedButtons: [{ text: "חפש מסעדות 🍽️", action: "search_places_restaurant", icon: "🍽️" }]
+
         משתמש: "אני רוצה מסעדה בבית שמש ל10 אנשים"
-        תשובה: "מעולה! אחפש לך מסעדות בבית שמש. כמה אנשים אמרת?"
+        תשובה: "מצוין! אחפש לך מסעדות בבית שמש שמתאימות ל-10 אנשים."
         extractedData: { destination: "בית שמש", participants: 10, venuePreference: "restaurant" }
         suggestedButtons: [{ text: "חפש מסעדות 🍽️", action: "search_places_restaurant", icon: "🍽️" }]`,
-            add_context_from_internet: false, // Disabled - we use Google Places API instead
+            add_context_from_internet: true, // Enabled for general info (holidays, tips, etc.) but NOT for places
             response_json_schema: {
                 type: 'object',
                 properties: {
