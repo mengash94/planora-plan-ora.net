@@ -773,15 +773,35 @@ export default function SmartEventChat({ onEventCreated, currentUser }) {
                 </div>
             )}
 
-            {/* Input Area */}
-            <div className="flex-shrink-0 p-3 bg-white/95 backdrop-blur-sm border-t border-orange-100">
+            {/* Input Area - with keyboard handling */}
+            <div 
+                className="flex-shrink-0 p-3 bg-white/95 backdrop-blur-sm border-t border-orange-100 transition-all duration-200"
+                style={{ paddingBottom: keyboardHeight > 0 ? '12px' : '12px' }}
+            >
+                {/* Event Progress Indicator */}
+                {Object.keys(eventData).length > 0 && (
+                    <div className="flex items-center gap-2 mb-2 px-1">
+                        <div className="flex gap-1">
+                            <Badge variant={eventData.eventType ? "default" : "outline"} className="text-xs">
+                                {eventData.eventType ? `📍 ${eventData.eventType}` : 'סוג אירוע'}
+                            </Badge>
+                            <Badge variant={eventData.eventDate || eventData.datePollEnabled ? "default" : "outline"} className="text-xs">
+                                {eventData.eventDate ? '📅 יש תאריך' : eventData.datePollEnabled ? '🗳️ סקר' : 'תאריך'}
+                            </Badge>
+                            <Badge variant={eventData.location || eventData.destination ? "default" : "outline"} className="text-xs">
+                                {eventData.location ? '📍 יש מקום' : eventData.destination ? `🏙️ ${eventData.destination}` : 'מיקום'}
+                            </Badge>
+                        </div>
+                    </div>
+                )}
+                
                 <div className="flex gap-2 max-w-3xl mx-auto">
                     <Input
                         ref={inputRef}
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-                        placeholder="ספר לי על האירוע שלך..."
+                        placeholder="ספר לי על האירוע שלך... (אפשר להגיד הכל במשפט אחד!)"
                         disabled={isLoading}
                         className="flex-1 text-sm py-5 px-4 rounded-2xl border-2 border-orange-200 focus:border-orange-400 shadow-sm"
                         autoComplete="off"
