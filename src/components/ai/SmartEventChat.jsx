@@ -232,25 +232,38 @@ export default function SmartEventChat({ onEventCreated, currentUser }) {
                 return;
             }
 
-            // Handle place search actions
-            if (action.startsWith('search_places_')) {
-                const venueType = action.replace('search_places_', '');
+            // Handle place search actions - support multiple formats
+            if (action.startsWith('search_places_') || action.startsWith('search_') || action.includes('hotel') || action.includes('מלון')) {
+                let venueType = 'hotel'; // Default to hotel
+                
+                if (action.startsWith('search_places_')) {
+                    venueType = action.replace('search_places_', '');
+                } else if (action.startsWith('search_')) {
+                    venueType = action.replace('search_', '').replace('s', ''); // search_hotels -> hotel
+                }
+                
                 const venueMap = {
                     'restaurant': 'מסעדה',
                     'hall': 'אולם אירועים',
                     'cafe': 'בית קפה',
                     'club': 'מועדון',
                     'garden': 'גן אירועים',
-                    'hotel': 'מלון'
+                    'hotel': 'hotel', // Keep in English for international searches
+                    'hotels': 'hotel',
+                    'מלון': 'hotel',
+                    'מלונות': 'hotel'
                 };
                 
-                const venueHebrew = venueMap[venueType] || venueType;
-                setEventData(prev => ({ ...prev, venuePreference: venueHebrew }));
+                const searchTerm = venueMap[venueType] || venueType;
+                setEventData(prev => ({ ...prev, venuePreference: searchTerm }));
                 
-                if (eventData.destination) {
-                    await searchPlaces(venueHebrew, eventData.destination);
+                // Get destination - support both Hebrew and English destinations
+                const destination = eventData.destination || eventData.location;
+                
+                if (destination) {
+                    await searchPlaces(searchTerm, destination);
                 } else {
-                    addBotMessage('באיזו עיר אתה מחפש?', []);
+                    addBotMessage('באיזו עיר/מדינה אתה מחפש מלון? 🏨', []);
                 }
                 
                 setIsLoading(false);
