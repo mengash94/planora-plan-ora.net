@@ -249,12 +249,27 @@ ${!hasDestination && !hasLocation ? `
   "isReadyToCreate": ${isReadyToCreate}
 }`;
 
-        // Call Base44 LLM to process the conversation with internet for real-time data
-        // Note: AI will verify links exist but won't display them to users
+        // Call Base44 LLM to process the conversation
+        // IMPORTANT: AI should NOT search for places itself - it should trigger search_places action
         const result = await base44.integrations.Core.InvokeLLM({
-            prompt: prompt + `\n\n### ⚠️ הנחיה חשובה לגבי קישורים:
-        כאשר אתה מביא מידע מהאינטרנט, אל תציג קישורים בתשובה שלך. וודא שכל המידע שאתה מספק מבוסס על קישורים תקינים וקיימים, אך אל תכלול את הקישורים עצמם בתשובה למשתמש.`,
-            add_context_from_internet: true, // Enable for Israeli holidays, venues, weather
+            prompt: prompt + `\n\n### ⚠️ הנחיות קריטיות:
+        1. **לעולם אל תחפש מקומות בעצמך ואל תציג רשימות של מסעדות/מלונות/אולמות!**
+        - במקום זה, תמיד הצע כפתור חיפוש מתאים (search_places_restaurant, search_places_hotel, וכו')
+        - המערכת תחפש דרך Google Places API ותציג תוצאות אמיתיות
+
+        2. **אל תציג קישורים בתשובה** - אין לך גישה לקישורים תקינים
+
+        3. **כשמשתמש מבקש מקום בעיר ספציפית** (לדוגמה: "מסעדה בבית שמש"):
+        - עדכן את destination לעיר החדשה
+        - הצע כפתור חיפוש מתאים
+        - אל תנסה לתת שמות של מקומות ספציפיים!
+
+        4. **דוגמה נכונה:**
+        משתמש: "אני רוצה מסעדה בבית שמש ל10 אנשים"
+        תשובה: "מעולה! אחפש לך מסעדות בבית שמש. כמה אנשים אמרת?"
+        extractedData: { destination: "בית שמש", participants: 10, venuePreference: "restaurant" }
+        suggestedButtons: [{ text: "חפש מסעדות 🍽️", action: "search_places_restaurant", icon: "🍽️" }]`,
+            add_context_from_internet: false, // Disabled - we use Google Places API instead
             response_json_schema: {
                 type: 'object',
                 properties: {
