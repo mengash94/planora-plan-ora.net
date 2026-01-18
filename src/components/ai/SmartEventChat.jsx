@@ -29,8 +29,15 @@ export default function SmartEventChat({ onEventCreated, currentUser }) {
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [showPlaceSearch, setShowPlaceSearch] = useState(false);
     const [searchedPlaces, setSearchedPlaces] = useState([]);
+    const [allPlaces, setAllPlaces] = useState([]); // All fetched places
+    const [visiblePlacesCount, setVisiblePlacesCount] = useState(6);
     const [isSearchingPlaces, setIsSearchingPlaces] = useState(false);
     const [showScrollToBottom, setShowScrollToBottom] = useState(false);
+    const [selectedPlaceForDetails, setSelectedPlaceForDetails] = useState(null);
+    const [showPlaceDetails, setShowPlaceDetails] = useState(false);
+    const [selectedPlacesForPoll, setSelectedPlacesForPoll] = useState([]);
+    const [showLocationPollMode, setShowLocationPollMode] = useState(false);
+    const [showEventSummary, setShowEventSummary] = useState(false);
     
     const messagesEndRef = useRef(null);
     const messagesContainerRef = useRef(null);
