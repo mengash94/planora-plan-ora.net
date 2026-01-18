@@ -3,7 +3,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Calendar, MapPin, Users, Tag, Clock, FileText, Sparkles } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Calendar, MapPin, Users, Tag, Clock, FileText, Sparkles, CheckCircle, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 
@@ -28,6 +29,12 @@ export default function EventSummaryDialog({
         onEventDataChange({ ...eventData, [field]: value });
     };
 
+    // Calculate readiness
+    const hasType = !!(eventData.eventType || eventData.category);
+    const hasDate = !!(eventData.eventDate || eventData.datePollEnabled);
+    const hasLocation = !!(eventData.location || eventData.destination || eventData.locationPollEnabled);
+    const readinessScore = [hasType, hasDate, hasLocation].filter(Boolean).length;
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
@@ -38,8 +45,27 @@ export default function EventSummaryDialog({
                     </DialogTitle>
                 </DialogHeader>
 
+                {/* Readiness Indicator */}
+                <div className="flex items-center justify-between p-3 bg-gradient-to-r from-orange-50 to-pink-50 rounded-xl border border-orange-100 mb-4">
+                    <div className="flex items-center gap-2">
+                        {readinessScore === 3 ? (
+                            <CheckCircle className="w-5 h-5 text-green-500" />
+                        ) : (
+                            <AlertTriangle className="w-5 h-5 text-amber-500" />
+                        )}
+                        <span className="text-sm font-medium">
+                            {readinessScore === 3 ? 'האירוע מוכן ליצירה! ✨' : `${readinessScore}/3 פרטים חיוניים`}
+                        </span>
+                    </div>
+                    <div className="flex gap-1">
+                        <Badge variant={hasType ? "default" : "outline"} className="text-xs">סוג</Badge>
+                        <Badge variant={hasDate ? "default" : "outline"} className="text-xs">תאריך</Badge>
+                        <Badge variant={hasLocation ? "default" : "outline"} className="text-xs">מיקום</Badge>
+                    </div>
+                </div>
+
                 <p className="text-gray-600 text-sm mb-4">
-                    בדוק את הפרטים ולחץ "צור אירוע" או ערוך לפי הצורך:
+                    🎯 בדוק את הפרטים ולחץ "צור אירוע". פלנורה תייצר לך משימות ולו"ז מקצועיים!
                 </p>
 
                 <div className="space-y-4">
