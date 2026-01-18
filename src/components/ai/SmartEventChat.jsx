@@ -546,6 +546,32 @@ export default function SmartEventChat({ onEventCreated, currentUser }) {
                                 {msg.text}
                             </p>
 
+                            {/* Expert Tip */}
+                            {msg.expertTip && (
+                                <div className="mt-3 p-3 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200">
+                                    <div className="flex items-start gap-2">
+                                        <Lightbulb className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                                        <div>
+                                            <p className="text-xs font-bold text-amber-800 mb-1">💡 טיפ של מומחה</p>
+                                            <p className="text-xs text-amber-700">{msg.expertTip}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Risk Warning */}
+                            {msg.riskWarning && (
+                                <div className="mt-3 p-3 bg-gradient-to-r from-red-50 to-orange-50 rounded-xl border border-red-200">
+                                    <div className="flex items-start gap-2">
+                                        <AlertTriangle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+                                        <div>
+                                            <p className="text-xs font-bold text-red-800 mb-1">⚠️ שימי לב</p>
+                                            <p className="text-xs text-red-700">{msg.riskWarning}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                             {msg.actions && msg.actions.length > 0 && (
                                 <div className="grid grid-cols-2 gap-2 mt-3">
                                     {msg.actions.map((action, actionIdx) => (
