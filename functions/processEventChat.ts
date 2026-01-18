@@ -141,8 +141,10 @@ ${!hasDate && !hasDatePoll ? `
 ` : ''}
 
 ${hasDestination && !hasLocation && !hasLocationPoll ? `
-📍 **יש עיר, חסר מקום** - הצע:
-{ "text": "מצא מקומות מומלצים 🔍", "action": "search_places_${eventData?.venuePreference || 'restaurant'}", "icon": "🔍" }
+📍 **יש יעד (${eventData?.destination}), חסר מקום ספציפי** - הצע:
+${eventData?.eventType === 'טיול' || eventData?.category === 'טיול' ? 
+`{ "text": "חפש מלונות 🏨", "action": "search_places_hotel", "icon": "🏨" }` :
+`{ "text": "מצא מקומות מומלצים 🔍", "action": "search_places_${eventData?.venuePreference || 'restaurant'}", "icon": "🔍" }`}
 { "text": "יש לי מקום, אכתוב ✏️", "action": "manual_location", "icon": "✏️" }
 ` : ''}
 
