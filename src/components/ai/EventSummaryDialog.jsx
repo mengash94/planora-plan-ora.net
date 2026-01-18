@@ -177,6 +177,17 @@ export default function EventSummaryDialog({
                     </div>
                 </div>
 
+                {/* What will be created */}
+                <div className="p-3 bg-blue-50 rounded-xl border border-blue-100 mb-4">
+                    <p className="text-sm font-medium text-blue-800 mb-2">🤖 מה פלנורה תיצור עבורך:</p>
+                    <ul className="text-xs text-blue-700 space-y-1">
+                        <li>✅ משימות הכנה עם תאריכי יעד</li>
+                        <li>✅ לו"ז מפורט ליום האירוע</li>
+                        <li>✅ טיפים והמלצות מקצועיות</li>
+                        <li>✅ הערכת תקציב (לפי סוג האירוע)</li>
+                    </ul>
+                </div>
+
                 <DialogFooter className="flex gap-2 mt-6">
                     <Button
                         variant="outline"
@@ -187,18 +198,18 @@ export default function EventSummaryDialog({
                     </Button>
                     <Button
                         onClick={onConfirm}
-                        disabled={isLoading || !eventData.title}
+                        disabled={isLoading}
                         className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600"
                     >
                         {isLoading ? (
                             <>
                                 <span className="animate-spin mr-2">⏳</span>
-                                יוצר אירוע...
+                                פלנורה עובדת...
                             </>
                         ) : (
                             <>
                                 <Sparkles className="w-4 h-4 ml-2" />
-                                צור אירוע!
+                                צור אירוע מקצועי! 🎉
                             </>
                         )}
                     </Button>
