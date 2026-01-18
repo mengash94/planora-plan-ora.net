@@ -264,9 +264,13 @@ export default function SmartEventChat({ onEventCreated, currentUser }) {
                 return;
             }
 
-            setSearchedPlaces(places.slice(0, 10));
+            setAllPlaces(places);
+            setSearchedPlaces(places.slice(0, 6));
+            setVisiblePlacesCount(6);
             setShowPlaceSearch(true);
-            addBotMessage(`מצאתי ${places.length} מקומות! 📍 בחר מקום או המשך הלאה.`, []);
+            setSelectedPlacesForPoll([]);
+            setShowLocationPollMode(false);
+            addBotMessage(`מצאתי ${places.length} מקומות! 📍\n\n💡 טיפ: לחץ על "פרטים נוספים" לראות תמונות ומידע נוסף.\n🗳️ רוצה לתת למשתתפים לבחור? סמן כמה מקומות וצור סקר!`, []);
 
         } catch (error) {
             console.error('[SmartEventChat] Place search error:', error);
@@ -276,6 +280,42 @@ export default function SmartEventChat({ onEventCreated, currentUser }) {
         } finally {
             setIsSearchingPlaces(false);
         }
+    };
+
+    const handleShowMorePlaces = () => {
+        const newCount = visiblePlacesCount + 6;
+        setVisiblePlacesCount(newCount);
+        setSearchedPlaces(allPlaces.slice(0, newCount));
+    };
+
+    const togglePlaceForPoll = (place) => {
+        setSelectedPlacesForPoll(prev => {
+            const isSelected = prev.some(p => p.place_id === place.place_id);
+            if (isSelected) {
+                return prev.filter(p => p.place_id !== place.place_id);
+            } else {
+                return [...prev, place];
+            }
+        });
+    };
+
+    const handleCreateLocationPoll = () => {
+        if (selectedPlacesForPoll.length < 2) {
+            toast.error('יש לבחור לפחות 2 מקומות לסקר');
+            return;
+        }
+        
+        setEventData(prev => ({
+            ...prev,
+            locationPollEnabled: true,
+            locationPollOptions: selectedPlacesForPoll
+        }));
+        
+        setShowPlaceSearch(false);
+        setShowLocationPollMode(false);
+        addBotMessage(`מעולה! 🗳️ יצרתי סקר עם ${selectedPlacesForPoll.length} מקומות:\n${selectedPlacesForPoll.map(p => `• ${p.name}`).join('\n')}\n\nהמשתתפים יוכלו להצביע על המקום המועדף!`, [
+            { text: 'המשך ליצירת האירוע 🎉', action: 'generate_plan', icon: '🎉' }
+        ]);
     };
 
     const handlePlaceSelect = async (place) => {
