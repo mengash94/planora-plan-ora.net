@@ -250,8 +250,10 @@ ${!hasDestination && !hasLocation ? `
 }`;
 
         // Call Base44 LLM to process the conversation with internet for real-time data
+        // Note: AI will verify links exist but won't display them to users
         const result = await base44.integrations.Core.InvokeLLM({
-            prompt,
+            prompt: prompt + `\n\n### ⚠️ הנחיה חשובה לגבי קישורים:
+        כאשר אתה מביא מידע מהאינטרנט, אל תציג קישורים בתשובה שלך. וודא שכל המידע שאתה מספק מבוסס על קישורים תקינים וקיימים, אך אל תכלול את הקישורים עצמם בתשובה למשתמש.`,
             add_context_from_internet: true, // Enable for Israeli holidays, venues, weather
             response_json_schema: {
                 type: 'object',
