@@ -241,26 +241,74 @@ export default function SmartEventChat({ onEventCreated, currentUser }) {
                 return;
             }
 
-            // Handle place search actions - support multiple formats
+            // Handle place search actions - comprehensive venue types
             if (action.startsWith('search_places_') || action.startsWith('search_') || action.includes('hotel') || action.includes('מלון')) {
-                let venueType = 'hotel'; // Default to hotel
+                let venueType = 'restaurant'; // Default
                 
                 if (action.startsWith('search_places_')) {
                     venueType = action.replace('search_places_', '');
                 } else if (action.startsWith('search_')) {
-                    venueType = action.replace('search_', '').replace('s', ''); // search_hotels -> hotel
+                    venueType = action.replace('search_', '').replace('s', '');
+                } else if (action.includes('hotel') || action.includes('מלון')) {
+                    venueType = 'hotel';
                 }
                 
+                // Comprehensive venue type mapping
                 const venueMap = {
-                    'restaurant': 'מסעדה',
-                    'hall': 'אולם אירועים',
-                    'cafe': 'בית קפה',
-                    'club': 'מועדון',
-                    'garden': 'גן אירועים',
-                    'hotel': 'hotel', // Keep in English for international searches
+                    // Accommodation
+                    'hotel': 'hotel',
                     'hotels': 'hotel',
                     'מלון': 'hotel',
-                    'מלונות': 'hotel'
+                    'מלונות': 'hotel',
+                    'לינה': 'hotel',
+                    'צימר': 'צימר',
+                    'zimmer': 'צימר',
+                    
+                    // Event venues
+                    'hall': 'אולם אירועים',
+                    'venue': 'אולם אירועים',
+                    'אולם': 'אולם אירועים',
+                    'garden': 'גן אירועים',
+                    'גן': 'גן אירועים',
+                    'conference': 'מרכז כנסים',
+                    'כנסים': 'מרכז כנסים',
+                    
+                    // Food & Drink
+                    'restaurant': 'מסעדה',
+                    'מסעדה': 'מסעדה',
+                    'cafe': 'בית קפה',
+                    'קפה': 'בית קפה',
+                    'bar': 'בר',
+                    'בר': 'בר',
+                    'pub': 'פאב',
+                    'club': 'מועדון',
+                    'מועדון': 'מועדון',
+                    
+                    // Activities
+                    'activity': 'אטרקציה',
+                    'אטרקציה': 'אטרקציה',
+                    'פעילות': 'אטרקציה',
+                    'escape': 'חדר בריחה',
+                    'bowling': 'באולינג',
+                    'karting': 'קארטינג',
+                    
+                    // Nature & Outdoor
+                    'park': 'פארק',
+                    'פארק': 'פארק',
+                    'beach': 'חוף',
+                    'חוף': 'חוף',
+                    'camping': 'קמפינג',
+                    'קמפינג': 'קמפינג',
+                    
+                    // Wellness
+                    'spa': 'ספא',
+                    'ספא': 'ספא',
+                    
+                    // Sports
+                    'gym': 'חדר כושר',
+                    'pool': 'בריכה',
+                    'court': 'מגרש',
+                    'field': 'מגרש'
                 };
                 
                 const searchTerm = venueMap[venueType] || venueType;
@@ -272,7 +320,14 @@ export default function SmartEventChat({ onEventCreated, currentUser }) {
                 if (destination) {
                     await searchPlaces(searchTerm, destination);
                 } else {
-                    addBotMessage('באיזו עיר/מדינה אתה מחפש מלון? 🏨', []);
+                    // Ask for location based on venue type
+                    const locationPrompts = {
+                        'hotel': 'באיזו עיר/מדינה אתה מחפש מלון? 🏨',
+                        'מסעדה': 'באיזו עיר אתה מחפש מסעדה? 🍽️',
+                        'אולם אירועים': 'באיזור איזו עיר אתה מחפש אולם? 🏛️',
+                        'ספא': 'באיזור איזו עיר אתה מחפש ספא? 💆'
+                    };
+                    addBotMessage(locationPrompts[searchTerm] || 'באיזו עיר אתה מחפש? 📍', []);
                 }
                 
                 setIsLoading(false);
