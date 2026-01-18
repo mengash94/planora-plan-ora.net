@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { Loader2, Send, Sparkles, ChevronDown, PartyPopper } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Loader2, Send, Sparkles, ChevronDown, PartyPopper, Info, ChevronRight, MapPin, Star } from 'lucide-react';
 import { processEventChat } from '@/functions/processEventChat';
 import { generateEventPlan } from '@/functions/generateEventPlan';
 import { 
@@ -17,6 +18,8 @@ import {
 import { toast } from 'sonner';
 import DateRangePicker from '@/components/ui/DateRangePicker';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import PlaceDetailsDialog, { translatePlaceTypes } from './PlaceDetailsDialog';
+import EventSummaryDialog from './EventSummaryDialog';
 
 export default function SmartEventChat({ onEventCreated, currentUser }) {
     const [messages, setMessages] = useState([]);
