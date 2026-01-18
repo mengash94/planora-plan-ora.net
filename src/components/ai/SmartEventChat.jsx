@@ -179,29 +179,36 @@ export default function SmartEventChat({ onEventCreated, currentUser }) {
     };
 
     const handleAction = async (action) => {
-        // Handle quick suggestions
-        if (action === 'suggest_birthday') {
-            await sendMessage('יום הולדת');
-            return;
-        }
-        if (action === 'suggest_wedding') {
-            await sendMessage('חתונה');
-            return;
-        }
-        if (action === 'suggest_party') {
-            await sendMessage('מסיבה');
-            return;
-        }
-        if (action === 'suggest_trip') {
-            await sendMessage('טיול');
-            return;
-        }
-        if (action === 'suggest_work') {
-            await sendMessage('אירוע עבודה');
-            return;
-        }
-        if (action === 'suggest_other') {
-            await sendMessage('אירוע אחר');
+        // Handle quick suggestions - comprehensive event types
+        const quickSuggestions = {
+            'suggest_birthday': 'יום הולדת',
+            'suggest_wedding': 'חתונה',
+            'suggest_engagement': 'אירוסין',
+            'suggest_party': 'מסיבה',
+            'suggest_trip': 'טיול',
+            'suggest_work': 'אירוע עבודה',
+            'suggest_other': 'אירוע אחר',
+            'suggest_barmitzvah': 'בר מצווה',
+            'suggest_batmitzvah': 'בת מצווה',
+            'suggest_brit': 'ברית',
+            'suggest_anniversary': 'יום נישואין',
+            'suggest_graduation': 'סיום לימודים',
+            'suggest_bachelor': 'מסיבת רווקים',
+            'suggest_bachelorette': 'מסיבת רווקות',
+            'suggest_conference': 'כנס',
+            'suggest_workshop': 'סדנה',
+            'suggest_teambuilding': 'יום גיבוש',
+            'suggest_picnic': 'פיקניק',
+            'suggest_bbq': 'על האש',
+            'suggest_sport': 'אירוע ספורטיבי',
+            'suggest_concert': 'הופעה',
+            'suggest_meeting': 'פגישה',
+            'suggest_vacation': 'חופשה',
+            'suggest_camping': 'קמפינג'
+        };
+        
+        if (quickSuggestions[action]) {
+            await sendMessage(quickSuggestions[action]);
             return;
         }
 
