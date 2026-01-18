@@ -99,12 +99,14 @@ export default function SmartEventChat({ onEventCreated, currentUser }) {
         setShowScrollToBottom(!atBottom);
     };
 
-    const addBotMessage = (text, actions = []) => {
+    const addBotMessage = (text, actions = [], extras = {}) => {
         setMessages(prev => [...prev, { 
             type: 'bot', 
             text, 
             actions, 
-            timestamp: new Date() 
+            timestamp: new Date(),
+            expertTip: extras.expertTip || null,
+            riskWarning: extras.riskWarning || null
         }]);
     };
 
@@ -151,13 +153,19 @@ export default function SmartEventChat({ onEventCreated, currentUser }) {
                 if (aiResponse.extractedData && Object.keys(aiResponse.extractedData).length > 0) {
                     setEventData(prev => ({ ...prev, ...aiResponse.extractedData }));
                 }
-                addBotMessage(aiResponse.reply, aiResponse.suggestedButtons || []);
+                addBotMessage(aiResponse.reply, aiResponse.suggestedButtons || [], {
+                    expertTip: aiResponse.expertTip,
+                    riskWarning: aiResponse.riskWarning
+                });
             } else if (data.extractedData !== undefined) {
                 // Direct response
                 if (data.extractedData && Object.keys(data.extractedData).length > 0) {
                     setEventData(prev => ({ ...prev, ...data.extractedData }));
                 }
-                addBotMessage(data.reply, data.suggestedButtons || []);
+                addBotMessage(data.reply, data.suggestedButtons || [], {
+                    expertTip: data.expertTip,
+                    riskWarning: data.riskWarning
+                });
             }
 
         } catch (error) {
