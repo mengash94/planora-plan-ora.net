@@ -127,8 +127,19 @@ ${missingFields.length > 0 ? `**חסר:** ${missingFields.join(', ')}` : '**יש
 
 **1. חילוץ נתונים (Extraction):**
 חלץ מההודעה כל מידע רלוונטי. המשתמש יכול לומר משפט אחד שמכיל הרבה מידע!
-דוגמה: "יום הולדת 30 לאשתי ביום שישי הקרוב בצהריים, איפשהו בתל אביב, נהיה בערך 20 איש"
-→ חלץ: eventType, forWhom, eventDate, destination, participants
+
+דוגמאות לחילוץ:
+- "יום הולדת 30 לאשתי ביום שישי הקרוב בצהריים, איפשהו בתל אביב, נהיה בערך 20 איש"
+  → eventType: "יום הולדת", forWhom: "אשתי", destination: "תל אביב", participants: 20
+
+- "טיול ליוון ב-18 באפריל עם 15 חברים, רוצה בית מלון ליד החוף"
+  → eventType: "טיול", destination: "יוון", eventDate: (המר לתאריך), participants: 15, venuePreference: "hotel"
+
+- "כנס חברה ל-100 עובדים, צריך אולם עם מקרן בתל אביב"
+  → eventType: "כנס", participants: 100, destination: "תל אביב", venuePreference: "conference"
+
+- "מסיבת רווקות בצפון, איזה וילה או צימר לסופ"ש"
+  → eventType: "מסיבת רווקות", destination: "צפון", venuePreference: "צימר"
 
 **2. תשובה מקצועית:**
 - ענה קצר וחם, כמו מפיקה אמיתית
