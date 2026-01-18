@@ -502,16 +502,36 @@ export default function SmartEventChat({ onEventCreated, currentUser }) {
                 });
             }
 
-            // Success message with summary
+            // Success message with summary - Expert style
             let successMessage = 'האירוע נוצר בהצלחה! 🎉';
             if (generatedPlan) {
                 const taskCount = generatedPlan.tasks?.length || 0;
                 const itineraryCount = generatedPlan.itinerary?.length || 0;
-                successMessage = `האירוע נוצר בהצלחה! 🎉\n\n`;
-                if (taskCount > 0) successMessage += `✅ ${taskCount} משימות\n`;
+                successMessage = `🎉 מזל טוב! יצרתי לך אירוע מקצועי!\n\n`;
+
+                if (generatedPlan.summary) {
+                    successMessage += `📋 ${generatedPlan.summary}\n\n`;
+                }
+
+                if (taskCount > 0) successMessage += `✅ ${taskCount} משימות מתוזמנות\n`;
                 if (itineraryCount > 0) successMessage += `📅 ${itineraryCount} פריטים בלו"ז\n`;
+
+                // Budget estimate if available
+                if (generatedPlan.budgetEstimate?.medium) {
+                    successMessage += `\n💰 הערכת תקציב: ${generatedPlan.budgetEstimate.medium}`;
+                }
+
+                // Risk alerts
+                if (generatedPlan.riskAlerts?.length > 0) {
+                    successMessage += `\n\n⚠️ לשים לב:\n`;
+                    generatedPlan.riskAlerts.forEach(alert => {
+                        successMessage += `• ${alert}\n`;
+                    });
+                }
+
+                // Top suggestion
                 if (generatedPlan.suggestions?.length > 0) {
-                    successMessage += `\n💡 טיפ: ${generatedPlan.suggestions[0]}`;
+                    successMessage += `\n💡 טיפ ראשון: ${generatedPlan.suggestions[0]}`;
                 }
             }
             
