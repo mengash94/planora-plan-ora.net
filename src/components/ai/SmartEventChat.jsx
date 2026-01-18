@@ -444,15 +444,24 @@ export default function SmartEventChat({ onEventCreated, currentUser }) {
 
             // Step 4: Create tasks from generated plan
             if (generatedPlan?.tasks && generatedPlan.tasks.length > 0) {
-                addBotMessage(`מוסיף ${generatedPlan.tasks.length} משימות... ✅`, []);
-                
+                addBotMessage(`מוסיף ${generatedPlan.tasks.length} משימות מקצועיות... ✅`, []);
+
                 for (const task of generatedPlan.tasks) {
                     try {
+                        // Build description with vendor tip if available
+                        let fullDescription = task.description || '';
+                        if (task.vendorTip) {
+                            fullDescription += `\n\n💡 טיפ: ${task.vendorTip}`;
+                        }
+                        if (task.estimatedCost) {
+                            fullDescription += `\n💰 הערכת עלות: ${task.estimatedCost}`;
+                        }
+
                         await createTask({
                             event_id: event.id,
                             eventId: event.id,
                             title: task.title,
-                            description: task.description || '',
+                            description: fullDescription,
                             category: task.category || 'other',
                             priority: task.priority || 'medium',
                             status: 'todo',
