@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, Send, Sparkles, ChevronDown, PartyPopper, Info, ChevronRight, MapPin, Star } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Loader2, Send, Sparkles, ChevronDown, PartyPopper, Info, ChevronRight, MapPin, Star, Lightbulb, AlertTriangle } from 'lucide-react';
 import { processEventChat } from '@/functions/processEventChat';
 import { generateEventPlan } from '@/functions/generateEventPlan';
 import { 
@@ -42,11 +43,34 @@ export default function SmartEventChat({ onEventCreated, currentUser }) {
     const messagesEndRef = useRef(null);
     const messagesContainerRef = useRef(null);
     const inputRef = useRef(null);
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
 
-    // Welcome message
+    // Visual Viewport API for mobile keyboard handling
+    useLayoutEffect(() => {
+        if (typeof window === 'undefined' || !window.visualViewport) return;
+        
+        const handleResize = () => {
+            const currentHeight = window.visualViewport.height;
+            const windowHeight = window.innerHeight;
+            const newKeyboardHeight = windowHeight - currentHeight;
+            
+            if (newKeyboardHeight > 100) {
+                setKeyboardHeight(newKeyboardHeight);
+                // Scroll to bottom when keyboard opens
+                setTimeout(() => scrollToBottom(true), 100);
+            } else {
+                setKeyboardHeight(0);
+            }
+        };
+        
+        window.visualViewport.addEventListener('resize', handleResize);
+        return () => window.visualViewport.removeEventListener('resize', handleResize);
+    }, []);
+
+    // Welcome message - Expert persona
     useEffect(() => {
         addBotMessage(
-            'שלום! 👋 אני פלנורה, העוזרת החכמה שלך לתכנון אירועים.\n\nספר לי על האירוע שלך - אני כאן כדי לעזור!',
+            'שלום! 👋 אני פלנורה, מפיקת האירועים האישית שלך.\n\n🎯 ספר לי על האירוע שאתה מתכנן - אני כאן עם כל הניסיון והקשרים כדי לעזור לך ליצור אירוע מושלם!',
             [
                 { text: 'יום הולדת 🎂', action: 'suggest_birthday', icon: '🎂' },
                 { text: 'חתונה 💍', action: 'suggest_wedding', icon: '💍' },
