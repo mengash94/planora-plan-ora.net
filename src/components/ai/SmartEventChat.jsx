@@ -443,20 +443,28 @@ export default function SmartEventChat({ onEventCreated, currentUser }) {
 
     const handleDateSelected = async (startDate, endDate) => {
         setShowDatePicker(false);
-        
+
         const updatedData = {
             ...eventData,
             eventDate: startDate,
             endDate: endDate,
             datePollEnabled: false
         };
-        
+
         setEventData(updatedData);
 
-        const dateStr = startDate ? new Date(startDate).toLocaleDateString('he-IL') : '';
-        
+        // Format dates for display
+        const startDateStr = startDate ? new Date(startDate).toLocaleDateString('he-IL') : '';
+        const endDateStr = endDate ? new Date(endDate).toLocaleDateString('he-IL') : '';
+
+        // Build message with date range if applicable
+        let dateMessage = `התאריך: ${startDateStr}`;
+        if (endDate && endDateStr !== startDateStr) {
+            dateMessage = `התאריכים: ${startDateStr} עד ${endDateStr}`;
+        }
+
         // Continue with AI
-        await sendMessage(`התאריך: ${dateStr}`);
+        await sendMessage(dateMessage);
     };
 
     const generateAndCreateEvent = async () => {
