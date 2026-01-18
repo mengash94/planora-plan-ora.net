@@ -161,10 +161,10 @@ ${isWinter ? `
   "summary": "סיכום מקצועי של התוכנית (3-4 משפטים)"
 }`;
 
-        // Call Base44 LLM to generate the plan
+        // Call Base44 LLM to generate the plan with internet for real-time data
         const result = await base44.integrations.Core.InvokeLLM({
             prompt,
-            add_context_from_internet: false,
+            add_context_from_internet: true, // Enable for venue prices, vendor info
             response_json_schema: {
                 type: 'object',
                 properties: {
@@ -178,7 +178,8 @@ ${isWinter ? `
                                 startTime: { type: 'string' },
                                 endTime: { type: 'string' },
                                 location: { type: 'string' },
-                                order: { type: 'number' }
+                                order: { type: 'number' },
+                                notes: { type: 'string' }
                             }
                         }
                     },
@@ -191,11 +192,26 @@ ${isWinter ? `
                                 description: { type: 'string' },
                                 category: { type: 'string' },
                                 priority: { type: 'string' },
-                                due_offset_days: { type: 'number' }
+                                due_offset_days: { type: 'number' },
+                                estimatedCost: { type: 'string' },
+                                vendorTip: { type: 'string' }
                             }
                         }
                     },
                     suggestions: {
+                        type: 'array',
+                        items: { type: 'string' }
+                    },
+                    budgetEstimate: {
+                        type: 'object',
+                        properties: {
+                            low: { type: 'string' },
+                            medium: { type: 'string' },
+                            high: { type: 'string' },
+                            notes: { type: 'string' }
+                        }
+                    },
+                    riskAlerts: {
                         type: 'array',
                         items: { type: 'string' }
                     },
@@ -213,9 +229,15 @@ ${isWinter ? `
             tasksWithDates = tasksWithDates.map(task => {
                 const dueDate = new Date(eventDateObj);
                 dueDate.setDate(dueDate.getDate() + (task.due_offset_days || 0));
+                
+                // Don't set due date in the past
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const finalDueDate = dueDate < today ? today : dueDate;
+                
                 return {
                     ...task,
-                    dueDate: dueDate.toISOString()
+                    dueDate: finalDueDate.toISOString()
                 };
             });
         }
@@ -254,6 +276,8 @@ ${isWinter ? `
                 itinerary: itineraryWithDates,
                 tasks: tasksWithDates,
                 suggestions: result.suggestions || [],
+                budgetEstimate: result.budgetEstimate || null,
+                riskAlerts: result.riskAlerts || [],
                 summary: result.summary || ''
             }
         });
