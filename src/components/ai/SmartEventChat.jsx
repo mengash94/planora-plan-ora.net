@@ -312,12 +312,16 @@ export default function SmartEventChat({ onEventCreated, currentUser }) {
                 };
                 
                 const searchTerm = venueMap[venueType] || venueType;
-                setEventData(prev => ({ ...prev, venuePreference: searchTerm }));
                 
-                // Get destination - support both Hebrew and English destinations
-                const destination = eventData.destination || eventData.location;
+                // Update eventData with venue preference
+                const updatedEventData = { ...eventData, venuePreference: searchTerm };
+                setEventData(updatedEventData);
+                
+                // Get destination from the UPDATED eventData (in case AI just extracted it)
+                const destination = updatedEventData.destination || updatedEventData.location;
                 
                 if (destination) {
+                    // Use Google Places API via instabackService
                     await searchPlaces(searchTerm, destination);
                 } else {
                     // Ask for location based on venue type
