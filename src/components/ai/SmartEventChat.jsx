@@ -538,53 +538,152 @@ export default function SmartEventChat({ onEventCreated, currentUser }) {
                 {/* Place Search Results */}
                 {showPlaceSearch && searchedPlaces.length > 0 && (
                     <div className="space-y-3 animate-in fade-in">
-                        {searchedPlaces.map((place, idx) => (
-                            <Card 
-                                key={idx}
-                                onClick={() => handlePlaceSelect(place)}
-                                className="p-4 cursor-pointer hover:shadow-lg transition-all border-2 hover:border-orange-400"
-                            >
-                                <div className="flex items-start gap-3">
-                                    {place.photo_url && (
-                                        <img 
-                                            src={place.photo_url} 
-                                            alt={place.name}
-                                            className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
-                                        />
-                                    )}
-                                    <div className="flex-1 min-w-0">
-                                        <p className="font-bold text-gray-900 truncate">{place.name}</p>
-                                        <p className="text-xs text-gray-600 mt-1 line-clamp-2">{place.address}</p>
-                                        <div className="flex items-center gap-3 mt-2 flex-wrap">
-                                            {place.rating && (
-                                                <div className="flex items-center gap-1">
-                                                    <span className="text-amber-500">⭐</span>
-                                                    <span className="text-sm font-semibold">{place.rating}</span>
-                                                    {place.user_ratings_total && (
-                                                        <span className="text-xs text-gray-500">({place.user_ratings_total})</span>
-                                                    )}
-                                                </div>
-                                            )}
-                                            {place.price_level && (
-                                                <span className="text-sm text-green-600">
-                                                    {'₪'.repeat(place.price_level)}
-                                                </span>
-                                            )}
-                                            {place.opening_hours?.open_now !== undefined && (
-                                                <span className={`text-xs px-2 py-0.5 rounded-full ${place.opening_hours.open_now ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                                    {place.opening_hours.open_now ? 'פתוח' : 'סגור'}
-                                                </span>
-                                            )}
-                                        </div>
-                                        {place.types && place.types.length > 0 && (
-                                            <p className="text-xs text-gray-500 mt-1 truncate">
-                                                {place.types.slice(0, 3).join(' • ')}
-                                            </p>
-                                        )}
-                                    </div>
+                        {/* Poll Mode Toggle */}
+                        <div className="bg-blue-50 rounded-xl p-3 border border-blue-200">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <Checkbox
+                                        id="pollMode"
+                                        checked={showLocationPollMode}
+                                        onCheckedChange={(checked) => {
+                                            setShowLocationPollMode(checked);
+                                            if (!checked) setSelectedPlacesForPoll([]);
+                                        }}
+                                    />
+                                    <label htmlFor="pollMode" className="text-sm font-medium text-blue-800 cursor-pointer">
+                                        🗳️ מצב סקר מקומות
+                                    </label>
                                 </div>
-                            </Card>
-                        ))}
+                                {showLocationPollMode && selectedPlacesForPoll.length > 0 && (
+                                    <span className="text-xs bg-blue-200 text-blue-800 px-2 py-1 rounded-full">
+                                        נבחרו {selectedPlacesForPoll.length}
+                                    </span>
+                                )}
+                            </div>
+                            {showLocationPollMode && (
+                                <p className="text-xs text-blue-600 mt-2">
+                                    סמן את המקומות שתרצה להוסיף לסקר (מינימום 2). המשתתפים יוכלו להצביע על המקום המועדף עליהם.
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Places List */}
+                        {searchedPlaces.map((place, idx) => {
+                            const isSelectedForPoll = selectedPlacesForPoll.some(p => p.place_id === place.place_id);
+                            const translatedTypes = translatePlaceTypes(place.types);
+                            
+                            return (
+                                <Card 
+                                    key={place.place_id || idx}
+                                    className={`p-4 transition-all border-2 ${
+                                        isSelectedForPoll 
+                                            ? 'border-blue-400 bg-blue-50' 
+                                            : 'hover:border-orange-400'
+                                    }`}
+                                >
+                                    <div className="flex items-start gap-3">
+                                        {/* Checkbox for poll mode */}
+                                        {showLocationPollMode && (
+                                            <Checkbox
+                                                checked={isSelectedForPoll}
+                                                onCheckedChange={() => togglePlaceForPoll(place)}
+                                                className="mt-2"
+                                            />
+                                        )}
+                                        
+                                        {place.photo_url && (
+                                            <img 
+                                                src={place.photo_url} 
+                                                alt={place.name}
+                                                className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
+                                            />
+                                        )}
+                                        <div className="flex-1 min-w-0">
+                                            <p className="font-bold text-gray-900 truncate">{place.name}</p>
+                                            <p className="text-xs text-gray-600 mt-1 line-clamp-2">{place.address}</p>
+                                            <div className="flex items-center gap-3 mt-2 flex-wrap">
+                                                {place.rating && (
+                                                    <div className="flex items-center gap-1">
+                                                        <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                                                        <span className="text-sm font-semibold">{place.rating}</span>
+                                                        {place.user_ratings_total && (
+                                                            <span className="text-xs text-gray-500">({place.user_ratings_total})</span>
+                                                        )}
+                                                    </div>
+                                                )}
+                                                {place.price_level && (
+                                                    <span className="text-sm text-green-600">
+                                                        {'₪'.repeat(place.price_level)}
+                                                    </span>
+                                                )}
+                                                {place.opening_hours?.open_now !== undefined && (
+                                                    <span className={`text-xs px-2 py-0.5 rounded-full ${place.opening_hours.open_now ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                        {place.opening_hours.open_now ? 'פתוח' : 'סגור'}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            {translatedTypes.length > 0 && (
+                                                <p className="text-xs text-gray-500 mt-1 truncate">
+                                                    {translatedTypes.slice(0, 3).join(' • ')}
+                                                </p>
+                                            )}
+                                            
+                                            {/* Action Buttons */}
+                                            <div className="flex gap-2 mt-3">
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setSelectedPlaceForDetails(place);
+                                                        setShowPlaceDetails(true);
+                                                    }}
+                                                    className="text-xs"
+                                                >
+                                                    <Info className="w-3 h-3 ml-1" />
+                                                    פרטים נוספים
+                                                </Button>
+                                                {!showLocationPollMode && (
+                                                    <Button
+                                                        size="sm"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handlePlaceSelect(place);
+                                                        }}
+                                                        className="text-xs bg-orange-500 hover:bg-orange-600"
+                                                    >
+                                                        <MapPin className="w-3 h-3 ml-1" />
+                                                        בחר מקום
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Card>
+                            );
+                        })}
+
+                        {/* Show More Button */}
+                        {allPlaces.length > visiblePlacesCount && (
+                            <Button
+                                variant="outline"
+                                onClick={handleShowMorePlaces}
+                                className="w-full border-orange-300 text-orange-600 hover:bg-orange-50"
+                            >
+                                הצג עוד מקומות
+                                <ChevronRight className="w-4 h-4 mr-2 rotate-90" />
+                            </Button>
+                        )}
+
+                        {/* Create Poll Button */}
+                        {showLocationPollMode && selectedPlacesForPoll.length >= 2 && (
+                            <Button
+                                onClick={handleCreateLocationPoll}
+                                className="w-full bg-blue-500 hover:bg-blue-600"
+                            >
+                                🗳️ צור סקר עם {selectedPlacesForPoll.length} מקומות
+                            </Button>
+                        )}
                     </div>
                 )}
 
