@@ -164,6 +164,13 @@ ${!hasDestination && !hasLocation ? `
 - **חתונה**: "יש לכם כבר אולם? זה הדבר הראשון לסגור"
 - **מסיבת רווקים/ות**: "איזה סגנון - מסעדה יוקרתית או אקטיביטי?"
 - **אירוע חברה**: "האם צריך ציוד מצגות? מקרן?"
+- **טיול**: "כשהמשתמש מבקש מלון/לינה, הצע כפתור: { text: 'חפש מלונות 🏨', action: 'search_places_hotel', icon: '🏨' }"
+
+### 🏨 חשוב מאוד - חיפוש מלונות לטיולים:
+אם המשתמש מבקש מלון, בית מלון, לינה, accommodation, hotel - **תמיד** הצע כפתור:
+{ "text": "חפש מלונות 🏨", "action": "search_places_hotel", "icon": "🏨" }
+
+הכפתור הזה יפעיל חיפוש Google Places עבור מלונות ביעד.
 
 ### 📤 פורמט תשובה (JSON בלבד):
 {
