@@ -67,16 +67,18 @@ export default function SmartEventChat({ onEventCreated, currentUser }) {
         return () => window.visualViewport.removeEventListener('resize', handleResize);
     }, []);
 
-    // Welcome message - Expert persona
+    // Welcome message - Expert persona with comprehensive event types
     useEffect(() => {
         addBotMessage(
-            'שלום! 👋 אני פלנורה, מפיקת האירועים האישית שלך.\n\n🎯 ספר לי על האירוע שאתה מתכנן - אני כאן עם כל הניסיון והקשרים כדי לעזור לך ליצור אירוע מושלם!',
+            'שלום! 👋 אני פלנורה, מפיקת האירועים האישית שלך.\n\n🎯 ספר לי על האירוע שאתה מתכנן - אני מומחית בכל סוגי האירועים!',
             [
+                { text: 'חתונה/אירוסין 💍', action: 'suggest_wedding', icon: '💍' },
                 { text: 'יום הולדת 🎂', action: 'suggest_birthday', icon: '🎂' },
-                { text: 'חתונה 💍', action: 'suggest_wedding', icon: '💍' },
-                { text: 'מסיבה 🎉', action: 'suggest_party', icon: '🎉' },
-                { text: 'טיול ✈️', action: 'suggest_trip', icon: '✈️' },
-                { text: 'אירוע עבודה 🏢', action: 'suggest_work', icon: '🏢' },
+                { text: 'בר/בת מצווה 📜', action: 'suggest_barmitzvah', icon: '📜' },
+                { text: 'טיול/נופש ✈️', action: 'suggest_trip', icon: '✈️' },
+                { text: 'אירוע חברה 🏢', action: 'suggest_work', icon: '🏢' },
+                { text: 'מסיבה/מפגש 🎉', action: 'suggest_party', icon: '🎉' },
+                { text: 'ספורט/פעילות 🏃', action: 'suggest_sport', icon: '🏃' },
                 { text: 'אחר 📝', action: 'suggest_other', icon: '📝' }
             ]
         );
