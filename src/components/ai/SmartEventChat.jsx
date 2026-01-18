@@ -131,13 +131,13 @@ export default function SmartEventChat({ onEventCreated, currentUser }) {
         // Check if user wants to generate plan
         const planKeywords = ['צור תוכנית', 'תוכנית', 'create plan', 'generate plan', 'plan'];
         const wantsToGeneratePlan = planKeywords.some(kw => text.toLowerCase().includes(kw.toLowerCase()));
-        
+
         if (wantsToGeneratePlan && eventData.title) {
             addUserMessage(text);
             await generateAndCreateEvent();
             return;
         }
-        
+
         addUserMessage(text);
         setIsLoading(true);
 
@@ -149,25 +149,43 @@ export default function SmartEventChat({ onEventCreated, currentUser }) {
 
             console.log('[SmartEventChat] AI Response:', data);
 
+            let aiResponse = null;
             if (data.data) {
-                // Response wrapped in data.data
-                const aiResponse = data.data;
-                if (aiResponse.extractedData && Object.keys(aiResponse.extractedData).length > 0) {
-                    setEventData(prev => ({ ...prev, ...aiResponse.extractedData }));
-                }
-                addBotMessage(aiResponse.reply, aiResponse.suggestedButtons || [], {
-                    expertTip: aiResponse.expertTip,
-                    riskWarning: aiResponse.riskWarning
-                });
+                aiResponse = data.data;
             } else if (data.extractedData !== undefined) {
-                // Direct response
-                if (data.extractedData && Object.keys(data.extractedData).length > 0) {
-                    setEventData(prev => ({ ...prev, ...data.extractedData }));
+                aiResponse = data;
+            }
+
+            if (aiResponse) {
+                // Update eventData with extracted data
+                let updatedEventData = eventData;
+                if (aiResponse.extractedData && Object.keys(aiResponse.extractedData).length > 0) {
+                    updatedEventData = { ...eventData, ...aiResponse.extractedData };
+                    setEventData(updatedEventData);
                 }
-                addBotMessage(data.reply, data.suggestedButtons || [], {
-                    expertTip: data.expertTip,
-                    riskWarning: data.riskWarning
-                });
+
+                // Check if any suggested button is a search action and we have a destination
+                const searchButton = (aiResponse.suggestedButtons || []).find(btn => 
+                    btn.action && btn.action.startsWith('search_places_')
+                );
+
+                if (searchButton && updatedEventData.destination) {
+                    // Auto-trigger the search
+                    addBotMessage(aiResponse.reply, [], {
+                        expertTip: aiResponse.expertTip,
+                        riskWarning: aiResponse.riskWarning
+                    });
+
+                    // Execute the search automatically
+                    setTimeout(() => {
+                        handleAction(searchButton.action);
+                    }, 500);
+                } else {
+                    addBotMessage(aiResponse.reply, aiResponse.suggestedButtons || [], {
+                        expertTip: aiResponse.expertTip,
+                        riskWarning: aiResponse.riskWarning
+                    });
+                }
             }
 
         } catch (error) {
