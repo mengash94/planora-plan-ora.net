@@ -770,6 +770,27 @@ export default function SmartEventChat({ onEventCreated, currentUser }) {
                     </div>
                 </DialogContent>
             </Dialog>
+
+            {/* Place Details Dialog */}
+            <PlaceDetailsDialog
+                place={selectedPlaceForDetails}
+                open={showPlaceDetails}
+                onOpenChange={setShowPlaceDetails}
+                onSelect={handlePlaceSelect}
+            />
+
+            {/* Event Summary Dialog */}
+            <EventSummaryDialog
+                open={showEventSummary}
+                onOpenChange={setShowEventSummary}
+                eventData={eventData}
+                onEventDataChange={setEventData}
+                onConfirm={async () => {
+                    setShowEventSummary(false);
+                    await generateAndCreateEvent();
+                }}
+                isLoading={isLoading}
+            />
         </div>
     );
 }
