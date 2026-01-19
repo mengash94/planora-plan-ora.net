@@ -3,8 +3,7 @@ import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useAuth } from '@/components/AuthProvider';
 import { getEventDetails, createNotificationAndSendPush, getInviteLinkByCode, getEventMembers } from '@/components/instabackService';
-import { isNativeCapacitor } from '@/components/onesignalService';
-import { openExternalUrl } from '@/components/utils/shareHelper';
+import { isNativeCapacitor, openExternalUrl } from '@/components/shareHelper';
 
 // Local createEventRSVP function
 const createEventRSVP = async (rsvpData) => {
@@ -359,45 +358,46 @@ export default function EventRSVPPage() {
     { icon: MessageCircle, text: 'צ\'אט קבוצתי עם כל המשתתפים', color: 'text-indigo-500' },
     { icon: Star, text: 'צרו אירועים משלכם בחינם!', color: 'text-orange-500' },
   ];
+const addToCalendar = () => {
+    if (!event) return;
+    const startDate = event.date || event.eventDate || event.event_date;
+    if (!startDate) return;
 
-  const addToCalendar = () => {
-    if (!event) return;
-    const startDate = event.date || event.eventDate || event.event_date;
-    if (!startDate) return;
+    const start = new Date(startDate);
+    const end = event.endDate ? new Date(event.endDate) : new Date(start.getTime() + 2 * 60 * 60 * 1000);
 
-    const start = new Date(startDate);
-    const endDate = event.end_date || event.endDate;
-    const end = endDate ? new Date(endDate) : new Date(start.getTime() + 2 * 60 * 60 * 1000);
+    const startStr = start.toISOString().replace(/-|:|\.\d+/g, '');
+    const endStr = end.toISOString().replace(/-|:|\.\d+/g, '');
 
-    // Use Google Calendar URL - works on both web and native
-    // On native, openExternalUrl uses _system target which opens in external browser
-    // The external browser then allows the user to choose their calendar app
-    const startStr = start.toISOString().replace(/-|:|\.\d+/g, '');
-    const endStr = end.toISOString().replace(/-|:|\.\d+/g, '');
+    const title = encodeURIComponent(event.title);
+    const details = encodeURIComponent(event.description || 'הוזמנת לאירוע');
+    const location = encodeURIComponent(event.location || '');
 
-    const title = encodeURIComponent(event.title);
-    const details = encodeURIComponent(event.description || 'הוזמנת לאירוע');
-    const location = encodeURIComponent(event.location || '');
+    // הדרך היציבה ביותר ב-Native ללא פלאגין קבצים: קישור גוגל יומן
+    // נפתח דרך openExternalUrl (שמשתמשת ב-_system)
+    const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startStr}/${endStr}&details=${details}&location=${location}`;
+    
+    openExternalUrl(url);
+    toast.success('פותח יומן... 📅');
+  };
 
-    const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startStr}/${endStr}&details=${details}&location=${location}`;
+  const openWaze = () => {
+    if (!event?.location) return;
+    const query = encodeURIComponent(event.location);
+    // כתובת Universal Link תקנית
+    const url = `https://waze.com/ul?q=${query}&navigate=yes`;
+    openExternalUrl(url); // בזכות ה-_system ב-helper, זה יקפוץ לאפליקציה
+  };
 
-    openExternalUrl(url);
-    toast.success('פותח יומן... 📅');
-  };
+  const openGoogleMaps = () => {
+    if (!event?.location) return;
+    const query = encodeURIComponent(event.location);
+    // תיקון ה-URL לפורמט חיפוש תקני של גוגל מפות
+    const url = `https://www.google.com/maps/search/?api=1&query=${query}`;
+    openExternalUrl(url);
+  };
 
-  const openWaze = () => {
-    if (!event?.location) return;
-    const query = encodeURIComponent(event.location);
-    const url = `https://waze.com/ul?q=${query}&navigate=yes`;
-    openExternalUrl(url);
-  };
 
-  const openGoogleMaps = () => {
-    if (!event?.location) return;
-    const query = encodeURIComponent(event.location);
-    const url = `https://www.google.com/maps/search/?api=1&query=${query}`;
-    openExternalUrl(url);
-  };
 
   // Loading state
   if (isLoading || isAuthLoading) {
