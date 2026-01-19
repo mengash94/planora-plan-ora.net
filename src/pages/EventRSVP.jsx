@@ -75,6 +75,25 @@ export default function EventRSVPPage() {
   const [submitted, setSubmitted] = useState(false);
   const [inviteLink, setInviteLink] = useState(null);
   const [eventId, setEventId] = useState(eventIdFromUrl);
+
+  // Env diagnostics (on-screen)
+  const isNative = React.useMemo(() => {
+    const w = typeof window !== 'undefined' ? window : null;
+    if (!w) return false;
+    try {
+      if (w.Capacitor?.isNativePlatform?.()) return true;
+      const p = w.Capacitor?.getPlatform?.();
+      return p === 'ios' || p === 'android';
+    } catch {
+      return false;
+    }
+  }, []);
+
+  const browserAvailable = React.useMemo(() => {
+    const w = typeof window !== 'undefined' ? window : null;
+    if (!w) return false;
+    return !!(w.Capacitor?.Browser || w.Capacitor?.Plugins?.Browser);
+  }, []);
   
   // Prevent infinite loop - load only once
   const hasLoadedRef = useRef(false);
@@ -500,6 +519,16 @@ const addToCalendar = async () => {
         </div>
         
         <CardContent className="p-6 space-y-5">
+          <div className="mb-2 text-[11px] text-gray-600">
+            מצב פתיחה חיצונית — סביבה:
+            <span className={isNative ? 'text-green-600 font-medium ml-1' : 'text-amber-600 font-medium ml-1'}>
+              {isNative ? 'נייטיב' : 'ווב'}
+            </span>
+            · דפדפן חיצוני (Capacitor.Browser):
+            <span className={browserAvailable ? 'text-green-600 font-medium ml-1' : 'text-red-600 font-medium ml-1'}>
+              {browserAvailable ? 'זמין' : 'לא זמין'}
+            </span>
+          </div>
           {/* Event Info */}
           <div className="text-center pb-4 border-b">
             <h2 className="text-2xl font-bold text-gray-900 mb-1">{event?.title}</h2>
