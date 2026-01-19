@@ -8,6 +8,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { toast } from 'sonner';
 import { notifyAdminsNewEvent } from '@/components/instabackService';
 import { base44 } from '@/api/base44Client';
+import { incrementPositiveActions, requestReviewIfAppropriate } from '@/components/utils/appReview';
 
 export default function CreateEventAI() {
   const navigate = useNavigate();
@@ -86,6 +87,10 @@ export default function CreateEventAI() {
       } catch (analyticsError) {
         console.warn('[CreateEventAI] Failed to track analytics:', analyticsError);
       }
+
+      // ⭐ בקשת דירוג אחרי יצירת אירוע מוצלחת
+      incrementPositiveActions();
+      requestReviewIfAppropriate();
 
       await new Promise(resolve => setTimeout(resolve, 2000));
 

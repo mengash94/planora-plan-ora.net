@@ -12,6 +12,7 @@ import {
     resolveInstabackFileUrl
 } from '@/components/instabackService';
 import { compressImage } from '@/components/utils/imageCompressor';
+import { incrementPositiveActions, requestReviewIfAppropriate } from '@/components/utils/appReview';
 
 export default function GalleryTab({ eventId, currentUser, initialMediaItems = [], isManager, isReadOnly = false, onDataRefresh }) {
     const [mediaItems, setMediaItems] = useState(initialMediaItems);
@@ -112,6 +113,10 @@ export default function GalleryTab({ eventId, currentUser, initialMediaItems = [
                 description: 'התמונות נוספו לגלריית האירוע',
                 duration: 3000
             });
+
+            // ⭐ בקשת דירוג אחרי העלאת תמונות
+            incrementPositiveActions();
+            requestReviewIfAppropriate();
 
             if (onDataRefresh) {
                 onDataRefresh();

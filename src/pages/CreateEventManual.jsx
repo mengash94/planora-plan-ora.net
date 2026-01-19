@@ -29,6 +29,7 @@ import DateRangePicker from '@/components/ui/DateRangePicker';
 import { compressImage } from '@/components/utils/imageCompressor';
 import PaymentSettingsSection from '@/components/event/PaymentSettingsSection';
 import RecurrenceSettings from '@/components/event/RecurrenceSettings';
+import { incrementPositiveActions, requestReviewIfAppropriate } from '@/components/utils/appReview';
 
 export default function CreateEventManualPage() {
   const navigate = useNavigate();
@@ -624,6 +625,10 @@ export default function CreateEventManualPage() {
       toast.success('האירוע נוצר בהצלחה! 🎉', {
         description: 'מועבר לדף האירוע...'
       });
+
+      // ⭐ בקשת דירוג אחרי יצירת אירוע מוצלחת
+      incrementPositiveActions();
+      requestReviewIfAppropriate();
 
       // Wait a bit to ensure everything is saved and notifications are sent
       await new Promise(resolve => setTimeout(resolve, 800));
