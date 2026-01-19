@@ -330,14 +330,9 @@ export default function EventRSVPPage() {
 
               // console.log('[RSVP] ✅✅✅ Notification sent successfully! Result:', notifResult);
             } catch (notifyErr) {
-              // console.error('[RSVP] ❌❌❌ NOTIFICATION FAILED:', notifyErr);
-              // console.error('[RSVP] Error details:', {
-                message: notifyErr.message,
-                stack: notifyErr.stack,
-                name: notifyErr.name
-              });
+              /* notification error silenced */
             }
-          } else {
+            } else {
             // console.log('[RSVP] ⚠️ Notification SKIPPED - Reason:', {
               notifyOnRsvp,
               hasOwnerId: !!ownerId,
