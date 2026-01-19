@@ -20,6 +20,27 @@ export default function CreateEventAI() {
     window.scrollTo(0, 0);
   }, []);
 
+  // Auth gate: require login before using AI creation (fixes production 401)
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-pink-50 flex items-center justify-center p-4" style={{ direction: 'rtl' }}>
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 text-center border border-orange-100">
+          <div className="w-14 h-14 mx-auto mb-3 bg-orange-100 rounded-full flex items-center justify-center">
+            <Sparkles className="w-7 h-7 text-orange-600" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 mb-1">כדי ליצור אירוע עם AI צריך להתחבר</h2>
+          <p className="text-gray-600 mb-5">נפנה אותך לעמוד ההתחברות ונחזיר אותך לכאן מיד לאחר מכן.</p>
+          <Button
+            onClick={() => base44.auth.redirectToLogin(createPageUrl('CreateEventAI'))}
+            className="w-full bg-orange-500 hover:bg-orange-600"
+          >
+            התחברות
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   const handleEventCreated = async (eventResult) => {
     console.log('🎉 Event result received:', eventResult);
 
