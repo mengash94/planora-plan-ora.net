@@ -333,12 +333,8 @@ export default function EventRSVPPage() {
               /* notification error silenced */
             }
             } else {
-            // console.log('[RSVP] ⚠️ Notification SKIPPED - Reason:', {
-              notifyOnRsvp,
-              hasOwnerId: !!ownerId,
-              ownerId
-            });
-          }
+              // Notification skipped
+            }
 
           // console.log('[RSVP] ========== RSVP SUBMISSION COMPLETED ==========');
           setSubmitted(true);
