@@ -52,17 +52,24 @@ export async function requestReview() {
   }
 
   try {
-    // Dynamic import של InAppReview
-    const { InAppReview } = await import('@capacitor-community/in-app-review');
-    await InAppReview.requestReview();
+    // ⚠️ Dynamic import עם Function constructor כדי לעקוף את Vite
+    const importDynamic = new Function('specifier', 'return import(specifier)');
+    const module = await importDynamic('@capacitor-community/in-app-review');
     
-    console.log('[AppReview] Review dialog requested successfully');
-    
-    // שמור שהוצגה בקשת דירוג
-    localStorage.setItem(REVIEW_SHOWN_KEY, 'true');
-    localStorage.setItem(LAST_REVIEW_DATE_KEY, Date.now().toString());
-    
-    return true;
+    if (module?.InAppReview?.requestReview) {
+      await module.InAppReview.requestReview();
+      
+      console.log('[AppReview] Review dialog requested successfully');
+      
+      // שמור שהוצגה בקשת דירוג
+      localStorage.setItem(REVIEW_SHOWN_KEY, 'true');
+      localStorage.setItem(LAST_REVIEW_DATE_KEY, Date.now().toString());
+      
+      return true;
+    } else {
+      console.warn('[AppReview] InAppReview plugin not available');
+      return false;
+    }
   } catch (error) {
     console.warn('[AppReview] Error requesting review:', error);
     return false;
@@ -199,18 +206,22 @@ export async function openStoreListing() {
   
   if (isNativeCapacitor()) {
     try {
-      const { Browser } = await import('@capacitor/browser');
-      await Browser.open({ url });
-      return true;
+      // ⚠️ Dynamic import עם Function constructor
+      const importDynamic = new Function('specifier', 'return import(specifier)');
+      const module = await importDynamic('@capacitor/browser');
+      
+      if (module?.Browser?.open) {
+        await module.Browser.open({ url });
+        return true;
+      }
     } catch (error) {
       console.warn('[AppReview] Error opening store:', error);
-      window.open(url, '_blank');
-      return true;
     }
-  } else {
-    window.open(url, '_blank');
-    return true;
   }
+  
+  // Fallback לפתיחה רגילה
+  window.open(url, '_blank');
+  return true;
 }
 
 /**
