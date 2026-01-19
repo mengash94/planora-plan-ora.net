@@ -54,20 +54,34 @@ function LayoutContent({ children, currentPageName }) {
     if (typeof navigator === 'undefined') return false;
     return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   }, []);
-  
+
+  // Allow forcing web mode (use ?web=1 or ?noapp=1 or localStorage 'disable_mobile_redirect' = 'true')
+  const disableMobileRedirect = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const q = params.get('web') || params.get('noapp');
+      if (q === '1') return true;
+      return localStorage.getItem('disable_mobile_redirect') === 'true';
+    } catch { return false; }
+  }, []);
+
   // Check if should redirect mobile users to app store
   const shouldRedirectToAppStore = useMemo(() => {
     // Never redirect if in native app
     if (isNativeCapacitor()) return false;
-    
+
+    // Respect override to keep web while testing
+    if (disableMobileRedirect) return false;
+
     // Only redirect on mobile devices
     if (!isMobileDevice) return false;
-    
+
     // Allow specific pages on mobile web
     if (mobileAllowedPages.includes(currentPageName)) return false;
-    
+
     return true;
-  }, [currentPageName, mobileAllowedPages, isMobileDevice]);
+  }, [currentPageName, mobileAllowedPages, isMobileDevice, disableMobileRedirect]);
 
   const isNativeRef = useRef(null);
   if (isNativeRef.current === null) {
@@ -580,7 +594,7 @@ function LayoutContent({ children, currentPageName }) {
 
       {showBottomNav && (
         <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50" style={isNative ? { paddingBottom: 'env(safe-area-inset-bottom)' } : {}}>
-          <div className="flex justify-around items-center h-16">
+          <div className="flex justify-around items-center h-16" title="Tip: כדי לכפות מצב ווב הוסיפו ?web=1 לכתובת או הגדירו localStorage.disable_mobile_redirect=true">
             <NavLink 
               to={createPageUrl('Home')} 
               isActive={isActivePage('Home')}
