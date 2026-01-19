@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useAuth } from '@/components/AuthProvider';
 import { getEventDetails, createNotificationAndSendPush, getInviteLinkByCode, getEventMembers } from '@/components/instabackService';
+import { isNativeCapacitor, openExternalUrl } from '@/components/onesignalService';
 
 // Local createEventRSVP function
 const createEventRSVP = async (rsvpData) => {
@@ -358,52 +359,83 @@ export default function EventRSVPPage() {
     { icon: Star, text: 'צרו אירועים משלכם בחינם!', color: 'text-orange-500' },
   ];
 
-  const addToCalendar = () => {
+  const addToCalendar = async () => {
     if (!event) return;
     const startDate = event.date || event.eventDate || event.event_date;
     if (!startDate) return;
 
-    const start = new Date(startDate).toISOString().replace(/-|:|\.\d+/g, '');
-    // Default to 2 hours if no end date
-    const endDate = event.end_date || event.endDate;
-    const end = endDate 
-      ? new Date(endDate).toISOString().replace(/-|:|\.\d+/g, '') 
-      : new Date(new Date(startDate).getTime() + 2 * 60 * 60 * 1000).toISOString().replace(/-|:|\.\d+/g, '');
+    // Native calendar support
+    if (isNativeCapacitor()) {
+      try {
+        // Use Capacitor Preferences to trigger native calendar
+        const { Capacitor } = window;
+        const { Browser } = await import('@capacitor/browser');
 
-    const title = encodeURIComponent(event.title);
-    const details = encodeURIComponent(event.description || 'הוזמנת לאירוע');
-    const location = encodeURIComponent(event.location || '');
+        // Create calendar data URL that will be handled by the native system
+        const start = new Date(startDate);
+        const endDate = event.end_date || event.endDate;
+        const end = endDate ? new Date(endDate) : new Date(start.getTime() + 2 * 60 * 60 * 1000);
 
-    const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&location=${location}`;
-    window.open(url, '_blank');
+        // Format for webcal/ics
+        const formatDate = (date) => {
+          return date.toISOString().replace(/-|:|\.\d+/g, '');
+        };
+
+        // Create ICS content
+        const icsContent = [
+          'BEGIN:VCALENDAR',
+          'VERSION:2.0',
+          'BEGIN:VEVENT',
+          `DTSTART:${formatDate(start)}`,
+          `DTEND:${formatDate(end)}`,
+          `SUMMARY:${event.title}`,
+          `DESCRIPTION:${event.description || 'הוזמנת לאירוע'}`,
+          `LOCATION:${event.location || ''}`,
+          'END:VEVENT',
+          'END:VCALENDAR'
+        ].join('\n');
+
+        // Create blob and URL
+        const blob = new Blob([icsContent], { type: 'text/calendar' });
+        const url = URL.createObjectURL(blob);
+
+        // Open with Browser to trigger calendar app
+        await Browser.open({ url });
+
+        toast.success('נפתח יומן הטלפון');
+      } catch (error) {
+        console.error('Failed to open native calendar:', error);
+        toast.error('לא ניתן לפתוח את היומן');
+      }
+    } else {
+      // Web - Google Calendar
+      const start = new Date(startDate).toISOString().replace(/-|:|\.\d+/g, '');
+      const endDate = event.end_date || event.endDate;
+      const end = endDate 
+        ? new Date(endDate).toISOString().replace(/-|:|\.\d+/g, '') 
+        : new Date(new Date(startDate).getTime() + 2 * 60 * 60 * 1000).toISOString().replace(/-|:|\.\d+/g, '');
+
+      const title = encodeURIComponent(event.title);
+      const details = encodeURIComponent(event.description || 'הוזמנת לאירוע');
+      const location = encodeURIComponent(event.location || '');
+
+      const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&location=${location}`;
+      window.open(url, '_blank');
+    }
   };
 
   const openWaze = () => {
     if (!event?.location) return;
     const query = encodeURIComponent(event.location);
-    // Use universal link which works in Capacitor and browsers
     const url = `https://waze.com/ul?q=${query}&navigate=yes`;
-
-    // For Capacitor/native apps, use window.location.href to properly open external apps
-    // window.open with _blank doesn't work well in Capacitor WebView
-    if (window.Capacitor?.isNativePlatform?.()) {
-      window.location.href = url;
-    } else {
-      window.open(url, '_blank');
-    }
+    openExternalUrl(url);
   };
 
   const openGoogleMaps = () => {
     if (!event?.location) return;
     const query = encodeURIComponent(event.location);
     const url = `https://www.google.com/maps/search/?api=1&query=${query}`;
-
-    // For Capacitor/native apps, use window.location.href
-    if (window.Capacitor?.isNativePlatform?.()) {
-      window.location.href = url;
-    } else {
-      window.open(url, '_blank');
-    }
+    openExternalUrl(url);
   };
 
   // Loading state
