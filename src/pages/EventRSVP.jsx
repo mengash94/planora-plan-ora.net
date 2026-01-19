@@ -386,18 +386,18 @@ export default function EventRSVPPage() {
     }
   };
 
-  const openWaze = () => {
+  const openWaze = async () => {
     if (!event?.location) return;
     const query = encodeURIComponent(event.location);
     const url = `https://waze.com/ul?q=${query}&navigate=yes`;
-    openExternalUrl(url);
+    await openExternalUrl(url);
   };
 
-  const openGoogleMaps = () => {
+  const openGoogleMaps = async () => {
     if (!event?.location) return;
     const query = encodeURIComponent(event.location);
     const url = `https://www.google.com/maps/search/?api=1&query=${query}`;
-    openExternalUrl(url);
+    await openExternalUrl(url);
   };
 
   // Loading state
