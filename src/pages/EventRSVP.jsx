@@ -201,9 +201,16 @@ export default function EventRSVPPage() {
         // Fetch organizer name from EventMembers
         try {
           const members = await getEventMembers(eventId);
+          console.log('[RSVP] Event members:', members);
           const organizer = members.find(m => m.role === 'organizer');
-          if (organizer && organizer.name) {
-            setOrganizerName(organizer.name);
+          console.log('[RSVP] Found organizer:', organizer);
+          if (organizer) {
+            // The name could be in different fields
+            const name = organizer.name || organizer.full_name || organizer.userName;
+            if (name && !name.includes('@')) {
+              // Only use if it's not an email
+              setOrganizerName(name);
+            }
           }
         } catch (memberError) {
           console.warn('[RSVP] Failed to load organizer:', memberError);
