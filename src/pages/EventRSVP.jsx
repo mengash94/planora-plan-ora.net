@@ -3,8 +3,7 @@ import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useAuth } from '@/components/AuthProvider';
 import { getEventDetails, createNotificationAndSendPush, getInviteLinkByCode, getEventMembers } from '@/components/instabackService';
-import { isNativeCapacitor } from '@/components/onesignalService';
-import { openExternalUrl } from '@/components/utils/shareHelper';
+import { isNativeCapacitor, openExternalUrl } from '@/components/shareHelper';
 
 // Local createEventRSVP function
 const createEventRSVP = async (rsvpData) => {
@@ -369,17 +368,51 @@ export default function EventRSVPPage() {
     const endDate = event.end_date || event.endDate;
     const end = endDate ? new Date(endDate) : new Date(start.getTime() + 2 * 60 * 60 * 1000);
 
-    const startStr = start.toISOString().replace(/-|:|\.\d+/g, '');
-    const endStr = end.toISOString().replace(/-|:|\.\d+/g, '');
+    // Native calendar support - create ICS file
+    if (isNativeCapacitor()) {
+      try {
+        const formatDate = (date) => {
+          return date.toISOString().replace(/-|:|\.\d+/g, '');
+        };
 
-    const title = encodeURIComponent(event.title);
-    const details = encodeURIComponent(event.description || 'הוזמנת לאירוע');
-    const location = encodeURIComponent(event.location || '');
+        // Create ICS content
+        const icsContent = [
+          'BEGIN:VCALENDAR',
+          'VERSION:2.0',
+          'PRODID:-//Planora//Event//EN',
+          'BEGIN:VEVENT',
+          `DTSTART:${formatDate(start)}`,
+          `DTEND:${formatDate(end)}`,
+          `SUMMARY:${event.title}`,
+          `DESCRIPTION:${event.description || 'הוזמנת לאירוע'}`,
+          `LOCATION:${event.location || ''}`,
+          'END:VEVENT',
+          'END:VCALENDAR'
+        ].join('\r\n');
 
-    const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startStr}/${endStr}&details=${details}&location=${location}`;
+        // Create data URL for ICS
+        const dataUrl = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(icsContent);
 
-    openExternalUrl(url);
-    toast.success('פותח יומן... 📅');
+        // Open data URL - this will trigger the native calendar app
+        openExternalUrl(dataUrl);
+
+        toast.success('נפתח יומן הטלפון 📅');
+      } catch (error) {
+        console.error('Failed to open native calendar:', error);
+        toast.error('לא ניתן לפתוח את היומן');
+      }
+    } else {
+      // Web - Google Calendar
+      const startStr = start.toISOString().replace(/-|:|\.\d+/g, '');
+      const endStr = end.toISOString().replace(/-|:|\.\d+/g, '');
+
+      const title = encodeURIComponent(event.title);
+      const details = encodeURIComponent(event.description || 'הוזמנת לאירוע');
+      const location = encodeURIComponent(event.location || '');
+
+      const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startStr}/${endStr}&details=${details}&location=${location}`;
+      window.open(url, '_blank');
+    }
   };
 
   const openWaze = () => {
