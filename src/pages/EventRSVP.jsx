@@ -607,7 +607,13 @@ export default function EventRSVPPage() {
                 </div>
               )}
 
-
+              {/* Organizer */}
+              <div className="flex items-center gap-2 justify-center pt-2 pb-1 opacity-80">
+                <Users className="w-4 h-4 text-gray-400" />
+                <span className="text-xs text-gray-500">
+                  מארגן/ת: <span className="font-medium">{ownerName}</span>
+                </span>
+              </div>
               </div>
               </div>
 
