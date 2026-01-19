@@ -374,28 +374,41 @@ const addToCalendar = () => {
     const details = encodeURIComponent(event.description || 'הוזמנת לאירוע');
     const location = encodeURIComponent(event.location || '');
 
-    // הדרך היציבה ביותר ב-Native ללא פלאגין קבצים: קישור גוגל יומן
-    // נפתח דרך openExternalUrl (שמשתמשת ב-_system)
     const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startStr}/${endStr}&details=${details}&location=${location}`;
     
-    openExternalUrl(url);
+    // ב-Native Capacitor: פתח בדפדפן חיצוני
+    if (isNativeCapacitor()) {
+      window.open(url, '_system');
+    } else {
+      window.open(url, '_blank');
+    }
     toast.success('פותח יומן... 📅');
   };
 
   const openWaze = () => {
     if (!event?.location) return;
     const query = encodeURIComponent(event.location);
-    // Universal Link - דפדפנים מודרניים יפתחו את האפליקציה אם מותקנת
     const url = `https://waze.com/ul?q=${query}&navigate=yes`;
-    window.open(url, '_blank');
+    
+    // ב-Native Capacitor: פתח בדפדפן חיצוני כדי שה-Universal Link יעבוד
+    if (isNativeCapacitor()) {
+      window.open(url, '_system');
+    } else {
+      window.open(url, '_blank');
+    }
   };
 
   const openGoogleMaps = () => {
     if (!event?.location) return;
     const query = encodeURIComponent(event.location);
-    // Google Maps Universal Link
     const url = `https://www.google.com/maps/search/?api=1&query=${query}`;
-    window.open(url, '_blank');
+    
+    // ב-Native Capacitor: פתח בדפדפן חיצוני כדי שה-Universal Link יעבוד
+    if (isNativeCapacitor()) {
+      window.open(url, '_system');
+    } else {
+      window.open(url, '_blank');
+    }
   };
 
 
