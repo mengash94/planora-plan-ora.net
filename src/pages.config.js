@@ -37,6 +37,7 @@ import VerifiedVenueFinder from './pages/VerifiedVenueFinder';
 import WelcomePage from './pages/WelcomePage';
 import WelcomeTest from './pages/WelcomeTest';
 import WhatsNew from './pages/WhatsNew';
+import ShortLink from './pages/ShortLink';
 import __Layout from './Layout.jsx';
 
 
@@ -80,6 +81,7 @@ export const PAGES = {
     "WelcomePage": WelcomePage,
     "WelcomeTest": WelcomeTest,
     "WhatsNew": WhatsNew,
+    "ShortLink": ShortLink,
 }
 
 export const pagesConfig = {
