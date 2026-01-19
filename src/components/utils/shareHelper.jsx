@@ -19,31 +19,32 @@ const getCapacitorPlugins = () => {
   return null;
 };
 
-// Prefer Capacitor v5 Browser API if present, else Plugins.Browser
-const getCapacitorBrowser = () => {
-  const w = typeof window !== 'undefined' ? window : null;
-  return w?.Capacitor?.Browser || w?.Capacitor?.Plugins?.Browser || null;
-};
-
 /**
  * Open a URL externally (WhatsApp, browser, Waze, Maps, Calendar, etc.)
  * @param {string} url - The URL to open
  */
 export const openExternalUrl = async (url) => {
+  const plugins = getCapacitorPlugins();
+  
   if (isCapacitor()) {
-    const Browser = getCapacitorBrowser();
-    if (Browser?.open) {
+    console.log('[ShareHelper] 📱 Native Mode: Forcing _system target');
+    
+    // Try Browser plugin first
+    if (plugins?.Browser) {
       try {
-        await Browser.open({ url });
+        await plugins.Browser.open({ url });
         return;
       } catch (error) {
         console.warn('[ShareHelper] Capacitor Browser failed:', error);
       }
     }
-    // Fallback for native: try to leave the WebView
+    
+    // Fallback: Use window.open with _system target
+    // This forces Capacitor to open in external browser, allowing Universal Links to work
     window.open(url, '_system');
     return;
   }
+  
   // Web - open in new tab
   window.open(url, '_blank');
 };
@@ -54,11 +55,29 @@ export const openExternalUrl = async (url) => {
  * @param {string} [phoneNumber] - Optional phone number (with country code, no +)
  */
 export const openWhatsApp = async (message, phoneNumber = null) => {
+  // Encode the message for URL (handles emojis and special characters)
   const encodedMessage = encodeURIComponent(message);
+  
+  // Use api.whatsapp.com/send/ with trailing slash - this preserves emojis correctly
+  // wa.me redirects and breaks emoji encoding during the redirect
   const url = phoneNumber 
     ? `https://api.whatsapp.com/send/?phone=${phoneNumber}&text=${encodedMessage}`
     : `https://api.whatsapp.com/send/?text=${encodedMessage}`;
-  await openExternalUrl(url);
+  
+  // For Capacitor, use Browser plugin to open externally
+  const plugins = getCapacitorPlugins();
+  
+  if (isCapacitor() && plugins?.Browser) {
+    try {
+      await plugins.Browser.open({ url });
+      return;
+    } catch (error) {
+      console.warn('[ShareHelper] Capacitor Browser failed for WhatsApp:', error);
+    }
+  }
+  
+  // Fallback for web
+  window.open(url, '_blank');
 };
 
 /**
@@ -69,17 +88,19 @@ export const openWhatsApp = async (message, phoneNumber = null) => {
 export const openSMS = async (phoneNumber, message) => {
   const encodedMessage = encodeURIComponent(message);
   const url = `sms:${phoneNumber}?body=${encodedMessage}`;
-  if (isCapacitor()) {
-    const Browser = getCapacitorBrowser();
-    if (Browser?.open) {
-      try {
-        await Browser.open({ url });
-        return;
-      } catch (error) {
-        console.warn('[ShareHelper] Capacitor Browser failed for SMS, falling back:', error);
-      }
+  
+  const plugins = getCapacitorPlugins();
+  
+  if (isCapacitor() && plugins?.Browser) {
+    try {
+      await plugins.Browser.open({ url });
+      return;
+    } catch (error) {
+      console.warn('[ShareHelper] Capacitor Browser failed for SMS, falling back:', error);
     }
   }
+  
+  // Fallback for web
   window.location.href = url;
 };
 
@@ -89,17 +110,19 @@ export const openSMS = async (phoneNumber, message) => {
  */
 export const openPhone = async (phoneNumber) => {
   const url = `tel:${phoneNumber}`;
-  if (isCapacitor()) {
-    const Browser = getCapacitorBrowser();
-    if (Browser?.open) {
-      try {
-        await Browser.open({ url });
-        return;
-      } catch (error) {
-        console.warn('[ShareHelper] Capacitor Browser failed for phone, falling back:', error);
-      }
+  
+  const plugins = getCapacitorPlugins();
+  
+  if (isCapacitor() && plugins?.Browser) {
+    try {
+      await plugins.Browser.open({ url });
+      return;
+    } catch (error) {
+      console.warn('[ShareHelper] Capacitor Browser failed for phone, falling back:', error);
     }
   }
+  
+  // Fallback for web
   window.location.href = url;
 };
 
@@ -165,16 +188,18 @@ export const shareContent = async ({ text, url, title }) => {
  */
 export const openEmail = async ({ to = '', subject, body }) => {
   const mailtoUrl = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  if (isCapacitor()) {
-    const Browser = getCapacitorBrowser();
-    if (Browser?.open) {
-      try {
-        await Browser.open({ url: mailtoUrl });
-        return;
-      } catch (error) {
-        console.warn('[ShareHelper] Capacitor Browser failed for email, falling back:', error);
-      }
+  
+  const plugins = getCapacitorPlugins();
+  
+  if (isCapacitor() && plugins?.Browser) {
+    try {
+      await plugins.Browser.open({ url: mailtoUrl });
+      return;
+    } catch (error) {
+      console.warn('[ShareHelper] Capacitor Browser failed for email, falling back:', error);
     }
   }
+  
+  // Fallback for web
   window.open(mailtoUrl);
 };
