@@ -30,27 +30,43 @@ function getNativePlatform() {
   return null;
 }
 
-// Browser plugin not used; we rely on universal links and window.open
+function getCapacitorBrowser() {
+  const w = getWin();
+  // Capacitor v5 exposes Browser directly; older versions under Plugins
+  return w?.Capacitor?.Browser || w?.Capacitor?.Plugins?.Browser || null;
+}
 
 export async function openExternalApp(url) {
   const w = getWin();
   try {
     if (!w) return false;
-    // Prefer opening in a new context to avoid WebView restrictions
+
+    // Prefer Capacitor Browser if available (more reliable on iOS)
+    const Browser = getCapacitorBrowser();
+    if (Browser?.open) {
+      await Browser.open({ url });
+      return true;
+    }
+
+    // Fallback: open in a new tab/context
     const newWin = w.open(url, '_blank');
     if (newWin) return true;
-    // Fallback to same-window navigation
+
+    // Last resort: same-window navigation
     w.location.href = url;
     return true;
   } catch (err) {
     console.error('[externalApps] Failed to open:', url, err);
     try {
-      w?.location && (w.location.href = url);
-      return true;
+      // Try again via same-window navigation
+      if (w?.location) {
+        w.location.href = url;
+        return true;
+      }
     } catch (fallbackErr) {
       console.error('[externalApps] Fallback failed:', fallbackErr);
-      return false;
     }
+    return false;
   }
 }
 
