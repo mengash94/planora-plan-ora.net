@@ -35,35 +35,67 @@ function getNativePlatform() {
 
 /**
  * הליבה של פתיחת אפליקציות חיצוניות
- * ⚠️ פתרון שעובד בלי שינויים ב-Capacitor/Info.plist/AndroidManifest
- * משתמש ב-window.location.href שפועל עם Universal Links
+ * ⚠️ משתמש ב-Browser plugin עם dynamic import
+ * windowName: '_system' פותח בדפדפן החיצוני, שם המערכת מזהה Universal Links
  */
 export async function openExternalApp(url) {
   const w = getWin();
   if (!w) return false;
 
   try {
-    // ⚠️ פתרון: תמיד משתמש ב-window.location.href
-    // זה עובד גם ב-WebView של Capacitor - המערכת תזהה Universal Links אוטומטית
-    // אם האפליקציה מותקנת, היא תיפתח. אם לא, זה יפתח בדפדפן
-    w.location.href = url;
-    
-    // תן זמן למערכת לטפל בבקשה
-    await new Promise(resolve => setTimeout(resolve, 200));
-    
-    return true;
+    if (isNativeCapacitor()) {
+      // ⚠️ ניסיון 1: Dynamic import של Browser plugin
+      try {
+        const { Browser } = await import('@capacitor/browser');
+        
+        // windowName: '_system' פותח את הדפדפן החיצוני (Safari/Chrome)
+        // שם iOS/Android מזהה Universal Links ותפתח אפליקציות אוטומטית
+        await Browser.open({ 
+          url, 
+          windowName: '_system' // ⚠️ זה הקריטי - פותח בדפדפן החיצוני
+        });
+        return true;
+      } catch (importErr) {
+        console.warn('[externalApps] Browser plugin not available, trying alternative:', importErr);
+        
+        // ⚠️ ניסיון 2: נסה דרך Capacitor bridge ישירות (אם plugin נטען)
+        if (w.Capacitor?.Plugins?.Browser?.open) {
+          await w.Capacitor.Plugins.Browser.open({ url, windowName: '_system' });
+          return true;
+        }
+        
+        // ⚠️ ניסיון 3: נסה לפתוח דרך iframe (עבודה עוקפת)
+        // יוצר iframe זמני שפותח את הקישור, מה שיגרום ל-WebView להעביר למערכת
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = url;
+        document.body.appendChild(iframe);
+        
+        // הסר אחרי זמן קצר
+        setTimeout(() => {
+          document.body.removeChild(iframe);
+        }, 1000);
+        
+        return true;
+      }
+    } else {
+      // Web רגיל - פתיחה רגילה
+      const newWin = w.open(url, '_blank');
+      if (newWin) return true;
+      
+      // Fallback
+      w.location.href = url;
+      return true;
+    }
   } catch (err) {
     console.error('[externalApps] Failed to open:', url, err);
     
-    // Fallback: נסה לפתוח בטאב חדש (רק ב-Web)
+    // Fallback אחרון: נסה location.href (יעבוד רק אם זה לא WebView)
     try {
-      if (!isNativeCapacitor()) {
-        const newWin = w.open(url, '_blank');
-        if (newWin) return true;
-      }
-      return false;
+      w.location.href = url;
+      return true;
     } catch (fallbackErr) {
-      console.error('[externalApps] Fallback also failed:', fallbackErr);
+      console.error('[externalApps] All methods failed:', fallbackErr);
       return false;
     }
   }
