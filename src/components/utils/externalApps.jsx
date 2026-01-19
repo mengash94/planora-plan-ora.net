@@ -48,14 +48,17 @@ export async function openExternalApp(url) {
 
   try {
     if (isNativeCapacitor()) {
-      // Prefer Capacitor Browser (Custom Tabs / SFSafariViewController)
+      // Prefer full system browser to best mimic a regular Chrome/Safari session
+      try {
+        w.open(url, '_system');
+        return true;
+      } catch {}
+      // Fallback: Capacitor Browser (Custom Tabs / SFSafariViewController)
       const Browser = getCapacitorBrowser();
       if (Browser?.open) {
         await Browser.open({ url });
         return true;
       }
-      // Fallback: try system browser
-      w.open(url, '_system');
       return true;
     }
 
@@ -81,8 +84,8 @@ export async function openWazeByQuery(query, navigate = true) {
   const w = getWin();
   const native = isNativeCapacitor();
   const httpsUrl = useLl
-    ? `https://waze.com/ul?ll=${ll}&navigate=${navigate ? 'yes' : 'no'}`
-    : `https://waze.com/ul?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
+    ? `https://ul.waze.com/ul?ll=${ll}&navigate=${navigate ? 'yes' : 'no'}`
+    : `https://ul.waze.com/ul?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
 
   // On native: try direct scheme first (more reliable), then fallback to https
   if (native && w) {
