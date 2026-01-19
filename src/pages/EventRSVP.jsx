@@ -337,10 +337,15 @@ export default function EventRSVPPage() {
   };
 
   const handleJoinApp = () => {
-    if (eventId) {
-      localStorage.setItem('pendingEventJoin', eventId);
-    }
-    navigate(createPageUrl('Auth?mode=register'));
+    // Redirect to app store instead of registration
+    const ua = navigator.userAgent;
+    const isIOS = /iPad|iPhone|iPod/.test(ua);
+
+    // TODO: Update with real app store URLs
+    const APP_STORE_URL = 'https://apps.apple.com/app/planora/id123456789';
+    const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.planora.app';
+
+    window.location.href = isIOS ? APP_STORE_URL : PLAY_STORE_URL;
   };
 
   const benefits = [

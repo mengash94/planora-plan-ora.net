@@ -31,13 +31,13 @@ import OnePager from './pages/OnePager';
 import Privacy from './pages/Privacy';
 import Profile from './pages/Profile';
 import ResetPassword from './pages/ResetPassword';
+import ShortLink from './pages/ShortLink';
 import Tasks from './pages/Tasks';
 import Terms from './pages/Terms';
 import VerifiedVenueFinder from './pages/VerifiedVenueFinder';
 import WelcomePage from './pages/WelcomePage';
 import WelcomeTest from './pages/WelcomeTest';
 import WhatsNew from './pages/WhatsNew';
-import ShortLink from './pages/ShortLink';
 import __Layout from './Layout.jsx';
 
 
@@ -75,13 +75,13 @@ export const PAGES = {
     "Privacy": Privacy,
     "Profile": Profile,
     "ResetPassword": ResetPassword,
+    "ShortLink": ShortLink,
     "Tasks": Tasks,
     "Terms": Terms,
     "VerifiedVenueFinder": VerifiedVenueFinder,
     "WelcomePage": WelcomePage,
     "WelcomeTest": WelcomeTest,
     "WhatsNew": WhatsNew,
-    "ShortLink": ShortLink,
 }
 
 export const pagesConfig = {

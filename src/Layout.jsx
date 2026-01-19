@@ -8,7 +8,6 @@ import NetworkStatusBanner from '@/components/NetworkStatusBanner';
 import { AuthProvider, useAuth } from '@/components/AuthProvider';
 import { getAnnouncements, getUnreadNotificationsCount, getUnreadMessagesCount, updateSystemMessage, incrementSystemMessageViewCount } from '@/components/instabackService';
 import NotificationDropdown from '@/components/NotificationDropdown';
-import InstallPromptCustomBanner from '@/components/InstallPromptCustomBanner';
 import SideHelpTab from '@/components/SideHelpTab';
 import { isNativeCapacitor } from '@/components/onesignalService';
 import { useDeepLinkHandler } from '@/components/DeepLinkHandler';
@@ -18,6 +17,7 @@ import AppVersionChecker from '@/components/AppVersionChecker';
 import { getCachedData, setCachedData, CACHE_KEYS } from '@/components/utils/dataCache';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import MobileAppRedirect, { isMobileDevice } from '@/components/MobileAppRedirect';
 export default function LayoutWrapper({ children, currentPageName }) {
   return (
     <AuthProvider>
@@ -37,7 +37,6 @@ function LayoutContent({ children, currentPageName }) {
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
   const isCheckingChatsRef = useRef(false);
   const isCheckingNotificationsRef = useRef(false);
-  const [deferredInstallPrompt, setDeferredInstallPrompt] = useState(null);
   const pollIntervalRef = useRef(null);
   const lastCheckTimeRef = useRef(Date.now());
   const [newVersions, setNewVersions] = useState([]);
@@ -46,6 +45,23 @@ function LayoutContent({ children, currentPageName }) {
   const [updateVersion, setUpdateVersion] = useState(null);
   
   useDeepLinkHandler();
+
+  // Pages allowed on mobile web (without redirecting to app store)
+  const mobileAllowedPages = useMemo(() => ['EventRSVP', 'ShortLink'], []);
+  
+  // Check if should redirect mobile users to app store
+  const shouldRedirectToAppStore = useMemo(() => {
+    // Never redirect if in native app
+    if (isNativeCapacitor()) return false;
+    
+    // Only redirect on mobile devices
+    if (!isMobileDevice()) return false;
+    
+    // Allow specific pages on mobile web
+    if (mobileAllowedPages.includes(currentPageName)) return false;
+    
+    return true;
+  }, [currentPageName, mobileAllowedPages]);
 
   const isNativeRef = useRef(null);
   if (isNativeRef.current === null) {
@@ -214,26 +230,7 @@ function LayoutContent({ children, currentPageName }) {
     };
   }, [isNative]);
 
-  useEffect(() => {
-    if (isNative) {
-      return;
-    }
-
-    const handleBeforeInstallPrompt = (e) => {
-      e.preventDefault();
-      setDeferredInstallPrompt(e);
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    };
-  }, [isNative]);
-
-  const handlePromptUsed = useCallback(() => {
-    setDeferredInstallPrompt(null);
-  }, []);
+  // PWA install prompt disabled - we want users to download native app instead
 
   const viewedAnnouncementsRef = useRef(new Set());
   
@@ -481,6 +478,11 @@ function LayoutContent({ children, currentPageName }) {
 
   const hideBottomNavPages = useMemo(() => ['Auth', 'WelcomePage', 'CreateEvent', 'CreateEventAI', 'EventChat', 'App'], []);
   const showBottomNav = isAuthenticated && !hideBottomNavPages.includes(currentPageName);
+
+  // If mobile user should be redirected to app store, show the redirect page
+  if (shouldRedirectToAppStore) {
+    return <MobileAppRedirect />;
+  }
   
   return (
     <div className="min-h-screen w-full bg-white text-gray-900" style={{ direction: 'rtl', margin: 0, padding: 0 }}>
@@ -561,12 +563,7 @@ function LayoutContent({ children, currentPageName }) {
       {/* App Version Checker - Auto-reload on new version */}
       <AppVersionChecker />
 
-      {!isNative && currentPageName !== 'App' && (
-                <InstallPromptCustomBanner 
-                  deferredPrompt={deferredInstallPrompt}
-                  onPromptUsed={handlePromptUsed}
-                />
-              )}
+      {/* PWA install banner removed - redirecting mobile users to app store instead */}
 
       <main 
         className={`w-full ${showBottomNav ? "pb-20" : ""}`}
