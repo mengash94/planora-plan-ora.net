@@ -33,6 +33,12 @@ function getNativePlatform() {
   return null;
 }
 
+function getCapacitorBrowser() {
+  const w = getWin();
+  // Prefer Capacitor v5 Browser API if present, else Plugins.Browser
+  return w?.Capacitor?.Browser || w?.Capacitor?.Plugins?.Browser || null;
+}
+
 /**
  * הליבה של פתיחת אפליקציות חיצוניות
  */
@@ -42,18 +48,20 @@ export async function openExternalApp(url) {
 
   try {
     if (isNativeCapacitor()) {
-      console.log('[externalApps] Native detected: using _system target for URL:', url);
-      // שימוש ב-_system הוא קריטי ב-Capacitor. 
-      // הוא מוציא את הלינק מה-WebView לדפדפן החיצוני (Safari/Chrome).
-      // רק שם מערכת ההפעלה תזהה שמדובר ב-Waze/Google Maps ותפתח את האפליקציה.
+      // Prefer Capacitor Browser (external) like WhatsApp flow
+      const Browser = getCapacitorBrowser();
+      if (Browser?.open) {
+        await Browser.open({ url });
+        return true;
+      }
+      // Fallback: force external browser from WebView
       w.open(url, '_system');
       return true;
     }
-    
-    // ב-Web רגיל משתמשים ב-_blank
+
+    // Web: open new tab
     const newWin = w.open(url, '_blank');
     if (newWin) return true;
-    
     w.location.href = url;
     return true;
   } catch (err) {
