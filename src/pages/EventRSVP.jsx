@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useAuth } from '@/components/AuthProvider';
-import { getEventDetails, getUserById, createNotificationAndSendPush, getInviteLinkByCode } from '@/components/instabackService';
+import { getEventDetails, createNotificationAndSendPush, getInviteLinkByCode, getEventMembers } from '@/components/instabackService';
 
 // Local createEventRSVP function
 const createEventRSVP = async (rsvpData) => {
@@ -64,6 +64,7 @@ export default function EventRSVPPage() {
   
   const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const [event, setEvent] = useState(null);
+  const [organizerName, setOrganizerName] = useState(null);
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -197,9 +198,18 @@ export default function EventRSVPPage() {
 
         setEvent(eventDetails);
 
+        // Fetch organizer name from EventMembers
+        try {
+          const members = await getEventMembers(eventId);
+          const organizer = members.find(m => m.role === 'organizer');
+          if (organizer && organizer.name) {
+            setOrganizerName(organizer.name);
+          }
+        } catch (memberError) {
+          console.warn('[RSVP] Failed to load organizer:', memberError);
+        }
 
-
-      } catch (err) {
+        } catch (err) {
         console.error('[RSVP] Error loading event:', err);
         setError('שגיאה בטעינת האירוע');
       } finally {
@@ -549,6 +559,16 @@ export default function EventRSVPPage() {
                       <CalendarPlus className="w-5 h-5" />
                     </Button>
                   </div>
+                </div>
+              )}
+
+              {/* Organizer */}
+              {organizerName && (
+                <div className="flex items-center gap-2 justify-center py-2">
+                  <Users className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm text-gray-600">
+                    מארגן/ת: <span className="font-medium">{organizerName}</span>
+                  </span>
                 </div>
               )}
 
