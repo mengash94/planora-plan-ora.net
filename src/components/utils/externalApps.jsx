@@ -85,7 +85,29 @@ export async function openWazeByQuery(query, navigate = true) {
   const ll = useLl ? `${coordMatch[1]},${coordMatch[2]}` : null;
   const q = encodeURIComponent(raw);
   
-  // Universal Link של Waze - המערכת תזהה אוטומטית אם האפליקציה מותקנת
+  const w = getWin();
+  const platform = getNativePlatform();
+  
+  // ב-Native: נסה URL scheme ישיר (פותח ישירות את האפליקציה)
+  if (isNativeCapacitor() && platform) {
+    try {
+      const schemeUrl = useLl
+        ? `waze://?ll=${ll}&navigate=${navigate ? 'yes' : 'no'}`
+        : `waze://?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
+      
+      // נסה לפתוח URL scheme ישיר דרך location.href
+      // זה יעבוד אם LSApplicationQueriesSchemes מוגדר ב-Info.plist
+      w.location.href = schemeUrl;
+      
+      // תן זמן לאפליקציה להיפתח
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return true;
+    } catch (err) {
+      console.debug('[externalApps] Waze URL scheme failed, trying Universal Link:', err);
+    }
+  }
+  
+  // Fallback: Universal Link (יעבוד בדפדפן או אם URL scheme לא עובד)
   const url = useLl
     ? `https://waze.com/ul?ll=${ll}&navigate=${navigate ? 'yes' : 'no'}`
     : `https://waze.com/ul?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
@@ -95,6 +117,22 @@ export async function openWazeByQuery(query, navigate = true) {
 
 // פתיחת Waze עם קואורדינטות (קיצור)
 export async function openWaze(lat, lng, navigate = true) {
+  const w = getWin();
+  const platform = getNativePlatform();
+  
+  // ב-Native: נסה URL scheme ישיר
+  if (isNativeCapacitor() && platform) {
+    try {
+      const schemeUrl = `waze://?ll=${lat},${lng}&navigate=${navigate ? 'yes' : 'no'}`;
+      w.location.href = schemeUrl;
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return true;
+    } catch (err) {
+      console.debug('[externalApps] Waze URL scheme failed, trying Universal Link:', err);
+    }
+  }
+  
+  // Fallback: Universal Link
   const url = `https://waze.com/ul?ll=${lat},${lng}&navigate=${navigate ? 'yes' : 'no'}`;
   return openExternalApp(url);
 }
@@ -164,12 +202,11 @@ export async function openNavigation(lat, lng) {
   return false;
 }
 
-// פתיחת אירוע ביומן - Google Calendar
+// פתיחת אירוע ביומן - מוריד קובץ ICS
+// המשתמש יבחר לאיזה יומן להוסיף לפי מה שמותקן במכשיר
 export async function openCalendarEvent({ title, description, location, start, end }) {
-  const fmt = (d) => {
-    const date = d instanceof Date ? d : new Date(d);
-    // פורמט עבור Google Calendar: YYYYMMDDTHHMMSSZ
-    return date.toISOString().replace(/-|:|\.\d+/g, '').slice(0, 15) + 'Z';
+  const formatICSDate = (date) => {
+    return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
   };
 
   const startDate = start instanceof Date ? start : new Date(start);
@@ -177,17 +214,53 @@ export async function openCalendarEvent({ title, description, location, start, e
     ? (end instanceof Date ? end : new Date(end))
     : new Date(startDate.getTime() + 2 * 60 * 60 * 1000); // +2 שעות כברירת מחדל
 
-  const startStr = fmt(startDate);
-  const endStr = fmt(endDate);
-  const text = encodeURIComponent(title || '');
-  const details = encodeURIComponent(description || '');
-  const loc = encodeURIComponent(location || '');
-
-  // Google Calendar עם Universal Link
-  // זה יעבוד גם ב-iOS וגם ב-Android
-  // אם Google Calendar מותקן, הוא ייפתח
-  // אם לא, זה יפתח ב-Web
-  const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${startStr}/${endStr}&details=${details}&location=${loc}`;
+  const startStr = formatICSDate(startDate);
+  const endStr = formatICSDate(endDate);
   
-  return openExternalApp(googleUrl);
+  // Clean text for ICS format (escape special characters)
+  const cleanText = (text) => {
+    if (!text) return '';
+    return text.replace(/\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
+  };
+
+  const cleanTitle = cleanText(title || 'אירוע');
+  const cleanDescription = cleanText(description || '');
+  const cleanLocation = cleanText(location || '');
+
+  // Generate unique ID
+  const uid = `event-${Date.now()}@planora.app`;
+
+  // Generate ICS file content
+  const icsContent = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Planora//Event Calendar//HE',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'BEGIN:VEVENT',
+    `UID:${uid}`,
+    `DTSTAMP:${formatICSDate(new Date())}`,
+    `DTSTART:${startStr}`,
+    `DTEND:${endStr}`,
+    `SUMMARY:${cleanTitle}`,
+    cleanDescription ? `DESCRIPTION:${cleanDescription}` : '',
+    cleanLocation ? `LOCATION:${cleanLocation}` : '',
+    'STATUS:CONFIRMED',
+    'SEQUENCE:0',
+    'END:VEVENT',
+    'END:VCALENDAR'
+  ].filter(line => line).join('\r\n');
+
+  // Create and download ICS file
+  const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${cleanTitle.replace(/[^a-z0-9]/gi, '_')}.ics`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
+  
+  return true;
 }
