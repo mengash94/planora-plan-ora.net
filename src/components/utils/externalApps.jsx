@@ -35,97 +35,46 @@ function getNativePlatform() {
 
 /**
  * הליבה של פתיחת אפליקציות חיצוניות
- * ⚠️ משתמש ב-Browser plugin עם dynamic import (לא נכשל אם לא מותקן)
- * windowName: '_system' פותח בדפדפן החיצוני, שם המערכת מזהה Universal Links
+ * ⚠️ עובד בדיוק כמו WhatsApp ב-shareHelper.jsx
+ * משתמש ב-Browser plugin דרך Capacitor bridge או window.open('_system')
  */
 export async function openExternalApp(url) {
   const w = getWin();
   if (!w) return false;
 
-  try {
-    if (isNativeCapacitor()) {
-      // ⚠️ ניסיון 1: נסה דרך Capacitor bridge ישירות (אם plugin נטען)
-      if (w.Capacitor?.Plugins?.Browser?.open) {
-        try {
-          await w.Capacitor.Plugins.Browser.open({ 
-            url, 
-            windowName: '_system' 
-          });
-          return true;
-        } catch (err) {
-          console.warn('[externalApps] Browser.open failed:', err);
-        }
-      }
-      
-      // ⚠️ ניסיון 2: Dynamic import של Browser plugin (עם טיפול בשגיאה)
-      // משתמש ב-Function constructor כדי להתחמק מה-Vite build time resolution
+  if (isNativeCapacitor()) {
+    // ⚠️ ניסיון 1: דרך Capacitor Browser plugin (כמו WhatsApp)
+    if (w.Capacitor?.Plugins?.Browser?.open) {
       try {
-        const importDynamic = new Function('specifier', 'return import(specifier)');
-        const browserModule = await importDynamic('@capacitor/browser');
-        
-        if (browserModule?.Browser?.open) {
-          await browserModule.Browser.open({ 
-            url, 
-            windowName: '_system' 
-          });
-          return true;
-        }
-      } catch (importErr) {
-        // זה בסדר - החבילה לא מותקנת או לא זמינה
-        // Vite לא יכול לפתור את זה בזמן build, אז זה נכשל כאן
-        console.debug('[externalApps] Browser plugin import failed (expected if not installed):', importErr.message);
-      }
-      
-      // ⚠️ ניסיון 3: נסה לפתוח דרך iframe (עבודה עוקפת)
-      // יוצר iframe זמני שפותח את הקישור, מה שיגרום ל-WebView להעביר למערכת
-      try {
-        const iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
-        iframe.style.width = '0';
-        iframe.style.height = '0';
-        iframe.style.border = 'none';
-        iframe.src = url;
-        document.body.appendChild(iframe);
-        
-        // הסר אחרי זמן קצר
-        setTimeout(() => {
-          try {
-            if (iframe.parentNode) {
-              document.body.removeChild(iframe);
-            }
-          } catch {}
-        }, 1000);
-        
+        await w.Capacitor.Plugins.Browser.open({ url });
         return true;
-      } catch (iframeErr) {
-        console.warn('[externalApps] iframe method failed:', iframeErr);
+      } catch (error) {
+        console.warn('[externalApps] Capacitor Browser failed:', error);
       }
-      
-      // ⚠️ Fallback: נסה location.href (למרות שזה יפתח ב-WebView)
-      // לפחות זה לא יכשל לחלוטין
-      w.location.href = url;
-      return true;
-    } else {
-      // Web רגיל - פתיחה רגילה
-      const newWin = w.open(url, '_blank');
-      if (newWin) return true;
-      
-      // Fallback
-      w.location.href = url;
-      return true;
     }
-  } catch (err) {
-    console.error('[externalApps] Failed to open:', url, err);
     
-    // Fallback אחרון
+    // ⚠️ ניסיון 2: Dynamic import של Browser plugin
     try {
-      w.location.href = url;
-      return true;
-    } catch (fallbackErr) {
-      console.error('[externalApps] All methods failed:', fallbackErr);
-      return false;
+      const importDynamic = new Function('specifier', 'return import(specifier)');
+      const browserModule = await importDynamic('@capacitor/browser');
+      
+      if (browserModule?.Browser?.open) {
+        await browserModule.Browser.open({ url });
+        return true;
+      }
+    } catch (importErr) {
+      // זה בסדר - החבילה לא מותקנת או לא זמינה
+      console.debug('[externalApps] Browser plugin import failed:', importErr.message);
     }
+    
+    // ⚠️ Fallback: window.open עם '_system' (כמו ב-shareHelper.jsx שורה 44)
+    // זה פותח בדפדפן החיצוני, שם Universal Links עובדים
+    w.open(url, '_system');
+    return true;
   }
+  
+  // Web רגיל - פתיחה רגילה
+  w.open(url, '_blank');
 }
 
 // פתיחת Waze עם שאילתת חיפוש
