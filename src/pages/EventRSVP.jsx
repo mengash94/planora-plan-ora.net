@@ -360,7 +360,7 @@ export default function EventRSVPPage() {
     { icon: Star, text: 'צרו אירועים משלכם בחינם!', color: 'text-orange-500' },
   ];
 
-  const addToCalendar = () => {
+  const addToCalendar = async () => {
     if (!event) return;
     const startDate = event.date || event.eventDate || event.event_date;
     if (!startDate) return;
