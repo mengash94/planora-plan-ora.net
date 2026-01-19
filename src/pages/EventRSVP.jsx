@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useAuth } from '@/components/AuthProvider';
 import { getEventDetails, createNotificationAndSendPush, getInviteLinkByCode, getEventMembers } from '@/components/instabackService';
-import { isNativeCapacitor, openExternalUrl, getNativePlatform } from '@/components/onesignalService';
+import { openExternalUrl } from '@/components/utils/shareHelper';
 
 
 // Local createEventRSVP function
@@ -383,25 +383,16 @@ const addToCalendar = () => {
   const openWaze = () => {
     if (!event?.location) return;
     const query = encodeURIComponent(event.location);
-    const platform = getNativePlatform();
-
-    // ב-Native: סכימת waze:// פותחת את האפליקציה ישירות
-    const url = platform ? `waze://?q=${query}&navigate=yes` : `https://waze.com/ul?q=${query}&navigate=yes`;
+    // Universal Link אחיד שעובד גם בדפדפן וגם ב-Capacitor דרך Browser plugin
+    const url = `https://waze.com/ul?q=${query}&navigate=yes`;
     openExternalUrl(url);
   };
 
   const openGoogleMaps = () => {
     if (!event?.location) return;
     const query = encodeURIComponent(event.location);
-    const platform = getNativePlatform();
-
-    let url = `https://www.google.com/maps/search/?api=1&query=${query}`; // ברירת מחדל לווב
-    if (platform === 'ios') {
-      url = `comgooglemaps://?q=${query}`;
-    } else if (platform === 'android') {
-      url = `geo:0,0?q=${query}`;
-    }
-
+    // Universal Link אחיד ל-Google Maps
+    const url = `https://www.google.com/maps/search/?api=1&query=${query}`;
     openExternalUrl(url);
   };
 
