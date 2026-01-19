@@ -84,8 +84,8 @@ export async function openWazeByQuery(query, navigate = true) {
   const w = getWin();
   const native = isNativeCapacitor();
   const httpsUrl = useLl
-    ? `https://ul.waze.com/ul?ll=${ll}&navigate=${navigate ? 'yes' : 'no'}`
-    : `https://ul.waze.com/ul?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
+    ? `https://waze.com/ul?ll=${ll}&navigate=${navigate ? 'yes' : 'no'}`
+    : `https://waze.com/ul?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
 
   // On native: try direct scheme first (more reliable), then fallback to https
   if (native && w) {
