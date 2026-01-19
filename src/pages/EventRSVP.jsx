@@ -373,23 +373,30 @@ export default function EventRSVPPage() {
 
   const openWaze = () => {
     if (!event?.location) return;
-    // Try to open Waze app, fallback to web
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     const query = encodeURIComponent(event.location);
-    const url = isMobile 
-      ? `waze://?q=${query}&navigate=yes`
-      : `https://waze.com/ul?q=${query}&navigate=yes`;
+    // Use universal link which works in Capacitor and browsers
+    const url = `https://waze.com/ul?q=${query}&navigate=yes`;
 
-    // Fallback logic for mobile web to app store if not installed is complex, 
-    // so we stick to the universal link for web or specific scheme if we assume app.
-    // Ideally use window.open with the universal link:
-    window.open(`https://waze.com/ul?q=${query}&navigate=yes`, '_blank');
+    // For Capacitor/native apps, use window.location.href to properly open external apps
+    // window.open with _blank doesn't work well in Capacitor WebView
+    if (window.Capacitor?.isNativePlatform?.()) {
+      window.location.href = url;
+    } else {
+      window.open(url, '_blank');
+    }
   };
 
   const openGoogleMaps = () => {
     if (!event?.location) return;
     const query = encodeURIComponent(event.location);
-    window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
+    const url = `https://www.google.com/maps/search/?api=1&query=${query}`;
+
+    // For Capacitor/native apps, use window.location.href
+    if (window.Capacitor?.isNativePlatform?.()) {
+      window.location.href = url;
+    } else {
+      window.open(url, '_blank');
+    }
   };
 
   // Loading state
@@ -530,35 +537,33 @@ export default function EventRSVPPage() {
               {/* Date & Calendar */}
               {(event?.date || event?.eventDate || event?.event_date) && (
                 <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-100">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-orange-100 p-2 rounded-full">
-                        <Calendar className="w-5 h-5 text-orange-600" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-500">מתי חוגגים?</p>
-                        <p className="font-bold text-gray-900 text-lg">
-                          {new Date(event.date || event.eventDate || event.event_date).toLocaleDateString('he-IL', {
-                            weekday: 'long',
-                            day: 'numeric',
-                            month: 'long'
-                          })}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          בשעה {new Date(event.date || event.eventDate || event.event_date).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
-                        </p>
-                      </div>
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="bg-orange-100 p-2 rounded-full">
+                      <Calendar className="w-5 h-5 text-orange-600" />
                     </div>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="text-orange-500 hover:text-orange-600 hover:bg-orange-50"
-                      onClick={addToCalendar}
-                      title="הוסף ליומן"
-                    >
-                      <CalendarPlus className="w-5 h-5" />
-                    </Button>
+                    <div>
+                      <p className="text-xs text-gray-500">מתי חוגגים?</p>
+                      <p className="font-bold text-gray-900 text-lg">
+                        {new Date(event.date || event.eventDate || event.event_date).toLocaleDateString('he-IL', {
+                          weekday: 'long',
+                          day: 'numeric',
+                          month: 'long'
+                        })}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        בשעה {new Date(event.date || event.eventDate || event.event_date).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
                   </div>
+
+                  {/* Prominent Add to Calendar Button */}
+                  <Button 
+                    onClick={addToCalendar}
+                    className="w-full bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 text-white h-11 font-semibold shadow-md"
+                  >
+                    <CalendarPlus className="w-5 h-5 ml-2" />
+                    שמור ביומן הפלאפון 📅
+                  </Button>
                 </div>
               )}
 
