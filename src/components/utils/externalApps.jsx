@@ -76,9 +76,26 @@ export async function openExternalApp(url) {
 // פתיחת Waze
 export async function openWazeByQuery(query, navigate = true) {
   const q = encodeURIComponent(query || '');
-  // Always use universal link to mimic normal browser behavior
-  const url = `https://waze.com/ul?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
-  return openExternalApp(url);
+  const w = getWin();
+  const native = isNativeCapacitor();
+  const httpsUrl = `https://waze.com/ul?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
+
+  // On native: first try direct app scheme, then fallback to https after a short delay
+  if (native && w) {
+    try {
+      setTimeout(() => {
+        // If scheme didn't take over, open universal link in external browser
+        openExternalApp(httpsUrl);
+      }, 500);
+      w.location.href = `waze://?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
+      return true;
+    } catch {
+      return openExternalApp(httpsUrl);
+    }
+  }
+
+  // Web: regular https link
+  return openExternalApp(httpsUrl);
 }
 
 // פתיחת Google Maps
