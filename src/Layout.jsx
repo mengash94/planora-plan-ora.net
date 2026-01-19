@@ -17,7 +17,7 @@ import AppVersionChecker from '@/components/AppVersionChecker';
 import { getCachedData, setCachedData, CACHE_KEYS } from '@/components/utils/dataCache';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import MobileAppRedirect, { isMobileDevice } from '@/components/MobileAppRedirect';
+import AppDownloadPage from '@/pages/App';
 export default function LayoutWrapper({ children, currentPageName }) {
   return (
     <AuthProvider>
@@ -47,7 +47,13 @@ function LayoutContent({ children, currentPageName }) {
   useDeepLinkHandler();
 
   // Pages allowed on mobile web (without redirecting to app store)
-  const mobileAllowedPages = useMemo(() => ['EventRSVP', 'ShortLink'], []);
+  const mobileAllowedPages = useMemo(() => ['EventRSVP', 'ShortLink', 'App'], []);
+  
+  // Check if device is mobile
+  const isMobileDevice = useMemo(() => {
+    if (typeof navigator === 'undefined') return false;
+    return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  }, []);
   
   // Check if should redirect mobile users to app store
   const shouldRedirectToAppStore = useMemo(() => {
@@ -55,13 +61,13 @@ function LayoutContent({ children, currentPageName }) {
     if (isNativeCapacitor()) return false;
     
     // Only redirect on mobile devices
-    if (!isMobileDevice()) return false;
+    if (!isMobileDevice) return false;
     
     // Allow specific pages on mobile web
     if (mobileAllowedPages.includes(currentPageName)) return false;
     
     return true;
-  }, [currentPageName, mobileAllowedPages]);
+  }, [currentPageName, mobileAllowedPages, isMobileDevice]);
 
   const isNativeRef = useRef(null);
   if (isNativeRef.current === null) {
@@ -479,9 +485,9 @@ function LayoutContent({ children, currentPageName }) {
   const hideBottomNavPages = useMemo(() => ['Auth', 'WelcomePage', 'CreateEvent', 'CreateEventAI', 'EventChat', 'App'], []);
   const showBottomNav = isAuthenticated && !hideBottomNavPages.includes(currentPageName);
 
-  // If mobile user should be redirected to app store, show the redirect page
+  // If mobile user should be redirected to app store, show the app download page
   if (shouldRedirectToAppStore) {
-    return <MobileAppRedirect />;
+    return <AppDownloadPage />;
   }
   
   return (
