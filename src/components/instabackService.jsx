@@ -152,19 +152,49 @@ const _fetchWithAuth = async (endpoint, options = {}, retryCount = 0) => {
 
         if (!response.ok) {
             let errorMessage = `HTTP ${response.status}`;
+            let responseBody = '';
             try {
-                const errorText = await response.text();
-                if (errorText) {
+                responseBody = await response.text();
+                if (responseBody) {
                     try {
-                        const errorObj = JSON.parse(errorText);
+                        const errorObj = JSON.parse(responseBody);
                         const detail = errorObj.error || errorObj.message || errorObj.details || JSON.stringify(errorObj);
                         errorMessage += `: ${detail}`;
                     } catch {
-                        errorMessage += `: ${errorText}`;
+                        errorMessage += `: ${responseBody}`;
                     }
                 }
             } catch (e) {
                 // Ignore error reading body
+            }
+
+            // Fallback via proxy on auth errors (401/403) to use server-side token
+            if ((response.status === 401 || response.status === 403) && !options?._viaProxy) {
+                try {
+                    console.log(`[InstaBack] Auth error (${response.status}). Trying proxy fallback...`);
+                    const headers = {
+                        'Content-Type': 'application/json',
+                        'accept': 'application/json',
+                        ...(options.headers || {})
+                    };
+                    delete headers['Authorization'];
+
+                    const payload = {
+                        endpoint,
+                        options: {
+                            method: options.method || 'GET',
+                            headers,
+                            body: options.body ?? null
+                        },
+                        token: currentToken || null
+                    };
+
+                    const { data } = await proxyInstaback(payload);
+                    return typeof data === 'undefined' || data === null ? { success: true } : data;
+                } catch (proxyAuthErr) {
+                    console.warn('[InstaBack] Proxy auth fallback failed:', proxyAuthErr?.message);
+                    // fall through to throw
+                }
             }
 
             const err = new Error(errorMessage);
