@@ -33,88 +33,141 @@ function getNativePlatform() {
   return null;
 }
 
-function getCapacitorBrowser() {
-  const w = getWin();
-  // Prefer Capacitor v5 Browser API if present, else Plugins.Browser
-  return w?.Capacitor?.Browser || w?.Capacitor?.Plugins?.Browser || null;
-}
-
 /**
  * הליבה של פתיחת אפליקציות חיצוניות
+ * ⚠️ פתרון שעובד בלי שינויים ב-Capacitor/Info.plist/AndroidManifest
+ * משתמש ב-window.location.href שפועל עם Universal Links
  */
 export async function openExternalApp(url) {
   const w = getWin();
   if (!w) return false;
 
   try {
-    if (isNativeCapacitor()) {
-      // Always open in external browser to mimic regular browser behavior
-      const Browser = getCapacitorBrowser();
-      if (Browser?.open) {
-        await Browser.open({ url });
-        return true;
-      }
-      // Fallback for older Capacitor builds
-      w.open(url, '_system');
-      return true;
-    }
-
-    // Web: open new tab
-    const newWin = w.open(url, '_blank');
-    if (newWin) return true;
+    // ⚠️ פתרון: תמיד משתמש ב-window.location.href
+    // זה עובד גם ב-WebView של Capacitor - המערכת תזהה Universal Links אוטומטית
+    // אם האפליקציה מותקנת, היא תיפתח. אם לא, זה יפתח בדפדפן
     w.location.href = url;
+    
+    // תן זמן למערכת לטפל בבקשה
+    await new Promise(resolve => setTimeout(resolve, 200));
+    
     return true;
   } catch (err) {
     console.error('[externalApps] Failed to open:', url, err);
-    return false;
+    
+    // Fallback: נסה לפתוח בטאב חדש (רק ב-Web)
+    try {
+      if (!isNativeCapacitor()) {
+        const newWin = w.open(url, '_blank');
+        if (newWin) return true;
+      }
+      return false;
+    } catch (fallbackErr) {
+      console.error('[externalApps] Fallback also failed:', fallbackErr);
+      return false;
+    }
   }
 }
 
-// פתיחת Waze
+// פתיחת Waze עם שאילתת חיפוש
 export async function openWazeByQuery(query, navigate = true) {
-  const q = encodeURIComponent(query || '');
-  // Always use universal link to mimic normal browser behavior
-  const url = `https://www.waze.com/ul?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
+  const raw = String(query || '').trim();
+  const coordMatch = raw.match(/^\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$/);
+  const useLl = !!coordMatch;
+  const ll = useLl ? `${coordMatch[1]},${coordMatch[2]}` : null;
+  const q = encodeURIComponent(raw);
+  
+  // Universal Link של Waze - המערכת תזהה אוטומטית אם האפליקציה מותקנת
+  const url = useLl
+    ? `https://waze.com/ul?ll=${ll}&navigate=${navigate ? 'yes' : 'no'}`
+    : `https://waze.com/ul?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
+  
   return openExternalApp(url);
 }
 
-// פתיחת Google Maps
+// פתיחת Waze עם קואורדינטות (קיצור)
+export async function openWaze(lat, lng, navigate = true) {
+  const url = `https://waze.com/ul?ll=${lat},${lng}&navigate=${navigate ? 'yes' : 'no'}`;
+  return openExternalApp(url);
+}
+
+// פתיחת Google Maps עם שאילתת חיפוש
 export async function openGoogleMapsByQuery(query) {
   const q = encodeURIComponent(query || '');
-  // Always use the https link so OS can decide what to do
+  // Universal Link של Google Maps
   const url = `https://www.google.com/maps/search/?api=1&query=${q}`;
   return openExternalApp(url);
 }
 
-// פתיחת Apple Maps (iOS בלבד)
+// פתיחת Google Maps עם קואורדינטות
+export async function openGoogleMaps(lat, lng) {
+  const url = `https://www.google.com/maps/?q=${lat},${lng}`;
+  return openExternalApp(url);
+}
+
+// פתיחת Apple Maps עם שאילתת חיפוש (iOS בלבד)
 export async function openAppleMapsByQuery(query) {
+  const platform = getNativePlatform();
+  if (platform !== 'ios') return false;
+  
   const q = encodeURIComponent(query || '');
   const url = `https://maps.apple.com/?q=${q}`;
   return openExternalApp(url);
 }
 
-// ניסיון ניווט רב-שלבי
+// פתיחת Apple Maps עם קואורדינטות
+export async function openAppleMaps(lat, lng) {
+  const platform = getNativePlatform();
+  if (platform !== 'ios') return false;
+  
+  const url = `https://maps.apple.com/?ll=${lat},${lng}`;
+  return openExternalApp(url);
+}
+
+// ניסיון ניווט רב-שלבי עם שאילתת חיפוש
 export async function openNavigationByQuery(query) {
   if (!query) return false;
   
   // ניסיון ראשון: Waze (הכי פופולרי בישראל)
-  const openedWaze = await openWazeByQuery(query);
-  if (openedWaze) return true;
+  if (await openWazeByQuery(query)) return true;
 
   // ניסיון שני: Google Maps
-  return openGoogleMapsByQuery(query);
+  if (await openGoogleMapsByQuery(query)) return true;
+  
+  // ניסיון שלישי: Apple Maps (אם iOS)
+  const platform = getNativePlatform();
+  if (platform === 'ios' && await openAppleMapsByQuery(query)) return true;
+  
+  return false;
 }
 
-// פתיחת אירוע ביומן
+// ניסיון ניווט עם קואורדינטות
+export async function openNavigation(lat, lng) {
+  // נסה Waze
+  if (await openWaze(lat, lng)) return true;
+  
+  // נסה Google Maps
+  if (await openGoogleMaps(lat, lng)) return true;
+  
+  // נסה Apple Maps (אם iOS)
+  const platform = getNativePlatform();
+  if (platform === 'ios' && await openAppleMaps(lat, lng)) return true;
+  
+  return false;
+}
+
+// פתיחת אירוע ביומן - Google Calendar
 export async function openCalendarEvent({ title, description, location, start, end }) {
-  const pad = (n) => String(n).padStart(2, '0');
   const fmt = (d) => {
     const date = d instanceof Date ? d : new Date(d);
-    return date.toISOString().replace(/-|:|\.\d+/g, '');
+    // פורמט עבור Google Calendar: YYYYMMDDTHHMMSSZ
+    return date.toISOString().replace(/-|:|\.\d+/g, '').slice(0, 15) + 'Z';
   };
 
   const startDate = start instanceof Date ? start : new Date(start);
-  const endDate = end ? (end instanceof Date ? end : new Date(end)) : new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
+  const endDate = end 
+    ? (end instanceof Date ? end : new Date(end))
+    : new Date(startDate.getTime() + 2 * 60 * 60 * 1000); // +2 שעות כברירת מחדל
 
   const startStr = fmt(startDate);
   const endStr = fmt(endDate);
@@ -122,11 +175,11 @@ export async function openCalendarEvent({ title, description, location, start, e
   const details = encodeURIComponent(description || '');
   const loc = encodeURIComponent(location || '');
 
-  // ב-Capacitor Native, קבצי ICS (data URL) ו-calshow לעיתים קרובות נחסמים בתוך ה-WebView.
-  // הדרך הכי בטוחה היא לפתוח את גוגל יומן ב-System Browser.
-  
+  // Google Calendar עם Universal Link
+  // זה יעבוד גם ב-iOS וגם ב-Android
+  // אם Google Calendar מותקן, הוא ייפתח
+  // אם לא, זה יפתח ב-Web
   const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${startStr}/${endStr}&details=${details}&location=${loc}`;
   
-  // ב-Native נכריח פתיחה ביומן גוגל (שהוא דף אינטרנט שמזהה את היומן המקומי)
   return openExternalApp(googleUrl);
 }
