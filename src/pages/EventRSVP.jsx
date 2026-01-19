@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useAuth } from '@/components/AuthProvider';
 import { getEventDetails, createNotificationAndSendPush, getInviteLinkByCode, getEventMembers } from '@/components/instabackService';
-import { isNativeCapacitor } from '@/components/onesignalService';
+import { isNativeCapacitor, openExternalUrl, getNativePlatform } from '@/components/onesignalService';
 
 
 // Local createEventRSVP function
@@ -376,39 +376,33 @@ const addToCalendar = () => {
 
     const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startStr}/${endStr}&details=${details}&location=${location}`;
     
-    // ב-Native Capacitor: פתח בדפדפן חיצוני
-    if (isNativeCapacitor()) {
-      window.open(url, '_system');
-    } else {
-      window.open(url, '_blank');
-    }
+    openExternalUrl(url);
     toast.success('פותח יומן... 📅');
   };
 
   const openWaze = () => {
     if (!event?.location) return;
     const query = encodeURIComponent(event.location);
-    const url = `https://waze.com/ul?q=${query}&navigate=yes`;
-    
-    // ב-Native Capacitor: פתח בדפדפן חיצוני כדי שה-Universal Link יעבוד
-    if (isNativeCapacitor()) {
-      window.open(url, '_system');
-    } else {
-      window.open(url, '_blank');
-    }
+    const platform = getNativePlatform();
+
+    // ב-Native: סכימת waze:// פותחת את האפליקציה ישירות
+    const url = platform ? `waze://?q=${query}&navigate=yes` : `https://waze.com/ul?q=${query}&navigate=yes`;
+    openExternalUrl(url);
   };
 
   const openGoogleMaps = () => {
     if (!event?.location) return;
     const query = encodeURIComponent(event.location);
-    const url = `https://www.google.com/maps/search/?api=1&query=${query}`;
-    
-    // ב-Native Capacitor: פתח בדפדפן חיצוני כדי שה-Universal Link יעבוד
-    if (isNativeCapacitor()) {
-      window.open(url, '_system');
-    } else {
-      window.open(url, '_blank');
+    const platform = getNativePlatform();
+
+    let url = `https://www.google.com/maps/search/?api=1&query=${query}`; // ברירת מחדל לווב
+    if (platform === 'ios') {
+      url = `comgooglemaps://?q=${query}`;
+    } else if (platform === 'android') {
+      url = `geo:0,0?q=${query}`;
     }
+
+    openExternalUrl(url);
   };
 
 
