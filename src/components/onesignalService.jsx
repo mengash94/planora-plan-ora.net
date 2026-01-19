@@ -512,8 +512,8 @@ export function resetOneSignalState() {
 }
 
 /**
- * Open external URL using Capacitor Browser plugin
- * Falls back to window.open for web
+ * Open external URL - handles Waze, Google Maps, Calendar files, and general URLs
+ * Uses window.location.href for deep links in Capacitor (works better than Browser plugin)
  * @param {string} url - URL to open
  * @returns {Promise<void>}
  */
@@ -526,22 +526,40 @@ export async function openExternalUrl(url) {
   // Check if running in native Capacitor
   if (isNativeCapacitor()) {
     try {
-      // Try to use Capacitor Browser plugin
-      const Browser = w.Capacitor?.Plugins?.Browser;
+      // For deep links (Waze, Google Maps, calendar data URIs), use window.location.href
+      // This allows the OS to handle the protocol and open the appropriate app
+      const isDeepLink = url.startsWith('waze://') || 
+                        url.startsWith('https://waze.com') ||
+                        url.startsWith('https://www.google.com/maps') ||
+                        url.startsWith('comgooglemaps://') ||
+                        url.startsWith('data:text/calendar');
       
+      if (isDeepLink) {
+        console.log('[Browser] 🔗 Deep link detected, using window.location.href');
+        w.location.href = url;
+        return;
+      }
+      
+      // For regular HTTP links, try Browser plugin first
+      const Browser = w.Capacitor?.Plugins?.Browser;
       if (Browser?.open) {
         console.log('[Browser] 📱 Using Capacitor Browser plugin');
         await Browser.open({ url });
         return;
-      } else {
-        console.log('[Browser] ⚠️ Capacitor Browser plugin not available');
       }
+      
+      // Fallback to window.location.href
+      console.log('[Browser] 📱 Fallback to window.location.href');
+      w.location.href = url;
+      
     } catch (error) {
-      console.error('[Browser] ❌ Capacitor Browser error:', error);
+      console.error('[Browser] ❌ Error:', error);
+      // Last resort
+      w.location.href = url;
     }
+  } else {
+    // Web - use window.open
+    console.log('[Browser] 🌐 Using window.open for web');
+    w.open(url, '_blank');
   }
-  
-  // Fallback to window.open for web or if plugin not available
-  console.log('[Browser] 🌐 Using window.open fallback');
-  w.open(url, '_blank');
 }
