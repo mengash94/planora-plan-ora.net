@@ -30,74 +30,50 @@ function getNativePlatform() {
   return null;
 }
 
-function getBrowserPlugin() {
-  const w = getWin();
-  return w?.Capacitor?.Plugins?.Browser || null;
-}
+// Browser plugin not used; we rely on universal links and window.open
 
 export async function openExternalApp(url) {
   const w = getWin();
   try {
-    if (isNativeCapacitor()) {
-      const Browser = getBrowserPlugin();
-      if (Browser?.open) {
-        await Browser.open({ url });
-        return true;
-      }
-      // Fallback to location if plugin missing
-      if (w) {
-        w.location.href = url;
-        return true;
-      }
-    } else if (w) {
-      // Web
-      w.location.href = url;
-      return true;
-    }
+    if (!w) return false;
+    // Prefer opening in a new context to avoid WebView restrictions
+    const newWin = w.open(url, '_blank');
+    if (newWin) return true;
+    // Fallback to same-window navigation
+    w.location.href = url;
+    return true;
   } catch (err) {
     console.error('[externalApps] Failed to open:', url, err);
     try {
-      const Browser = getBrowserPlugin();
-      if (isNativeCapacitor() && Browser?.open) {
-        await Browser.open({ url, windowName: '_system' });
-        return true;
-      }
-      if (w) {
-        w.open(url, '_blank');
-        return true;
-      }
+      w?.location && (w.location.href = url);
+      return true;
     } catch (fallbackErr) {
       console.error('[externalApps] Fallback failed:', fallbackErr);
       return false;
     }
   }
-  return false;
 }
 
 // Open Waze with a text query (address/place)
 export async function openWazeByQuery(query, navigate = true) {
   const q = encodeURIComponent(query || '');
-  const url = `waze://?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
+  // Use universal link to avoid custom URL schemes on iOS
+  const url = `https://www.waze.com/ul?query=${q}&navigate=${navigate ? 'true' : 'false'}`;
   return openExternalApp(url);
 }
 
 // Open Google Maps with a text query; try app scheme on native, fallback to web
 export async function openGoogleMapsByQuery(query) {
   const q = encodeURIComponent(query || '');
-  const platform = getNativePlatform();
-  const appUrl = `comgooglemaps://?q=${q}`;
   const webUrl = `https://www.google.com/maps/search/?api=1&query=${q}`;
-  if (platform) {
-    const ok = await openExternalApp(appUrl);
-    if (ok) return true;
-  }
   return openExternalApp(webUrl);
 }
 
 // Open Apple Maps with a text query (iOS only)
 export async function openAppleMapsByQuery(query) {
   const q = encodeURIComponent(query || '');
-  const url = `maps://?q=${q}`;
+  // Use HTTPS so it can open externally without custom scheme
+  const url = `https://maps.apple.com/?q=${q}`;
   return openExternalApp(url);
 }
 
