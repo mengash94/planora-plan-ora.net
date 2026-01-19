@@ -78,6 +78,7 @@ export async function openExternalApp(url) {
 }
 
 // פתיחת Waze עם שאילתת חיפוש
+// ⚠️ פתרון יצירתי: נסה מספר שיטות
 export async function openWazeByQuery(query, navigate = true) {
   const raw = String(query || '').trim();
   const coordMatch = raw.match(/^\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$/);
@@ -85,22 +86,79 @@ export async function openWazeByQuery(query, navigate = true) {
   const ll = useLl ? `${coordMatch[1]},${coordMatch[2]}` : null;
   const q = encodeURIComponent(raw);
   
-  // ⚠️ משתמש ב-Universal Link - בדיוק כמו WhatsApp
-  // בדפדפן רגיל, זה פותח את האפליקציה ישירות
-  // ב-WebView, Browser plugin פותח את הדפדפן החיצוני שם זה עובד בדיוק כמו בדפדפן
-  // משתמש ב-www.waze.com (עם www) כמו WhatsApp שמשתמש ב-www
+  const w = getWin();
+  const platform = getNativePlatform();
+  const native = isNativeCapacitor();
+  
+  // ⚠️ ניסיון 1: Intent URL ב-Android (עובד גם בלי LSApplicationQueriesSchemes)
+  if (native && platform === 'android') {
+    try {
+      const intentUrl = useLl
+        ? `intent://waze.com/ul?ll=${ll}&navigate=${navigate ? 'yes' : 'no'}#Intent;scheme=https;package=com.waze;end`
+        : `intent://waze.com/ul?q=${q}&navigate=${navigate ? 'yes' : 'no'}#Intent;scheme=https;package=com.waze;end`;
+      
+      w.location.href = intentUrl;
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return true;
+    } catch (err) {
+      console.debug('[externalApps] Waze Intent URL failed:', err);
+    }
+  }
+  
+  // ⚠️ ניסיון 2: URL scheme ישיר (יעבוד אם LSApplicationQueriesSchemes מוגדר)
+  if (native && platform) {
+    try {
+      const schemeUrl = useLl
+        ? `waze://?ll=${ll}&navigate=${navigate ? 'yes' : 'no'}`
+        : `waze://?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
+      
+      w.location.href = schemeUrl;
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return true;
+    } catch (err) {
+      console.debug('[externalApps] Waze URL scheme failed:', err);
+    }
+  }
+  
+  // ⚠️ ניסיון 3: Universal Link דרך Browser plugin (כמו WhatsApp)
   const url = useLl
     ? `https://www.waze.com/ul?ll=${ll}&navigate=${navigate ? 'yes' : 'no'}`
     : `https://www.waze.com/ul?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
   
-  // ⚠️ זה יעבוד בדיוק כמו WhatsApp - Browser plugin פותח דפדפן חיצוני
-  // שם Universal Links עובדים בדיוק כמו בדפדפן רגיל
   return openExternalApp(url);
 }
 
 // פתיחת Waze עם קואורדינטות (קיצור)
 export async function openWaze(lat, lng, navigate = true) {
-  // ⚠️ Universal Link - יעבוד בדפדפן החיצוני בדיוק כמו בדפדפן רגיל
+  const w = getWin();
+  const platform = getNativePlatform();
+  const native = isNativeCapacitor();
+  
+  // ⚠️ ניסיון 1: Intent URL ב-Android
+  if (native && platform === 'android') {
+    try {
+      const intentUrl = `intent://waze.com/ul?ll=${lat},${lng}&navigate=${navigate ? 'yes' : 'no'}#Intent;scheme=https;package=com.waze;end`;
+      w.location.href = intentUrl;
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return true;
+    } catch (err) {
+      console.debug('[externalApps] Waze Intent URL failed:', err);
+    }
+  }
+  
+  // ⚠️ ניסיון 2: URL scheme ישיר
+  if (native && platform) {
+    try {
+      const schemeUrl = `waze://?ll=${lat},${lng}&navigate=${navigate ? 'yes' : 'no'}`;
+      w.location.href = schemeUrl;
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return true;
+    } catch (err) {
+      console.debug('[externalApps] Waze URL scheme failed:', err);
+    }
+  }
+  
+  // ⚠️ ניסיון 3: Universal Link
   const url = `https://www.waze.com/ul?ll=${lat},${lng}&navigate=${navigate ? 'yes' : 'no'}`;
   return openExternalApp(url);
 }
@@ -219,16 +277,39 @@ export async function openCalendarEvent({ title, description, location, start, e
     'END:VCALENDAR'
   ].filter(line => line).join('\r\n');
 
-  // Create and download ICS file
-  const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-  const url = window.URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `${cleanTitle.replace(/[^a-z0-9]/gi, '_')}.ics`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  window.URL.revokeObjectURL(url);
-  
-  return true;
+  // ⚠️ Create and download ICS file - עם טיפול טוב יותר ל-WebView
+  try {
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${(title || 'event').replace(/[^a-z0-9\u0590-\u05FF]/gi, '_')}.ics`;
+    link.style.display = 'none';
+    
+    // הוסף ל-DOM, לחץ, והסר
+    document.body.appendChild(link);
+    
+    // ⚠️ חשוב: תן זמן ל-DOM לעדכן
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
+    link.click();
+    
+    // נקה אחרי זמן קצר
+    setTimeout(() => {
+      try {
+        if (link.parentNode) {
+          document.body.removeChild(link);
+        }
+        window.URL.revokeObjectURL(url);
+      } catch {}
+    }, 200);
+    
+    return true;
+  } catch (err) {
+    console.error('[externalApps] Failed to download ICS:', err);
+    
+    // Fallback: נסה לפתוח ב-Google Calendar
+    const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title || '')}&dates=${startStr}/${endStr}&details=${encodeURIComponent(description || '')}&location=${encodeURIComponent(location || '')}`;
+    return openExternalApp(googleUrl);
+  }
 }

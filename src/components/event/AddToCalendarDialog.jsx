@@ -102,10 +102,21 @@ export default function AddToCalendarDialog({
     }
   };
 
-  const handleOpenCalendar = (type, url) => {
-    window.open(url, '_blank');
-    setAddedTo(type);
-    toast.success('נפתח ביומן! 📅');
+  const handleOpenCalendar = async (type, url) => {
+    // ⚠️ משתמש ב-openExternalApp במקום window.open
+    // זה יעבוד גם ב-WebView של Capacitor
+    try {
+      const { openExternalApp } = await import('@/components/utils/externalApps');
+      await openExternalApp(url);
+      setAddedTo(type);
+      toast.success('נפתח ביומן! 📅');
+    } catch (err) {
+      console.error('[AddToCalendarDialog] Failed to open calendar:', err);
+      // Fallback
+      window.open(url, '_blank');
+      setAddedTo(type);
+      toast.success('נפתח ביומן! 📅');
+    }
   };
 
   const calendarOptions = [
