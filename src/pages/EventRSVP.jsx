@@ -369,49 +369,19 @@ export default function EventRSVPPage() {
     const endDate = event.end_date || event.endDate;
     const end = endDate ? new Date(endDate) : new Date(start.getTime() + 2 * 60 * 60 * 1000);
 
-    // Native calendar support - create ICS file
+    const startStr = start.toISOString().replace(/-|:|\.\d+/g, '');
+    const endStr = end.toISOString().replace(/-|:|\.\d+/g, '');
+
+    const title = encodeURIComponent(event.title);
+    const details = encodeURIComponent(event.description || 'הוזמנת לאירוע');
+    const location = encodeURIComponent(event.location || '');
+
+    const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startStr}/${endStr}&details=${details}&location=${location}`;
+
     if (isNativeCapacitor()) {
-      try {
-        const formatDate = (date) => {
-          return date.toISOString().replace(/-|:|\.\d+/g, '');
-        };
-
-        // Create ICS content
-        const icsContent = [
-          'BEGIN:VCALENDAR',
-          'VERSION:2.0',
-          'PRODID:-//Planora//Event//EN',
-          'BEGIN:VEVENT',
-          `DTSTART:${formatDate(start)}`,
-          `DTEND:${formatDate(end)}`,
-          `SUMMARY:${event.title}`,
-          `DESCRIPTION:${event.description || 'הוזמנת לאירוע'}`,
-          `LOCATION:${event.location || ''}`,
-          'END:VEVENT',
-          'END:VCALENDAR'
-        ].join('\r\n');
-
-        // Create data URL for ICS
-        const dataUrl = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(icsContent);
-
-        // Open data URL - this will trigger the native calendar app
-        openExternalUrl(dataUrl);
-
-        toast.success('נפתח יומן הטלפון 📅');
-      } catch (error) {
-        console.error('Failed to open native calendar:', error);
-        toast.error('לא ניתן לפתוח את היומן');
-      }
+      await openExternalUrl(url);
+      toast.success('נפתח יומן הטלפון 📅');
     } else {
-      // Web - Google Calendar
-      const startStr = start.toISOString().replace(/-|:|\.\d+/g, '');
-      const endStr = end.toISOString().replace(/-|:|\.\d+/g, '');
-
-      const title = encodeURIComponent(event.title);
-      const details = encodeURIComponent(event.description || 'הוזמנת לאירוע');
-      const location = encodeURIComponent(event.location || '');
-
-      const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startStr}/${endStr}&details=${details}&location=${location}`;
       window.open(url, '_blank');
     }
   };
