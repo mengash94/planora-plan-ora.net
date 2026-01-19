@@ -47,23 +47,14 @@ export async function openExternalApp(url) {
   if (!w) return false;
 
   try {
-    const native = isNativeCapacitor();
-    const isDeepLink = /^(waze:\/\/|comgooglemaps:\/\/|geo:|google\.navigation:|intent:\/\/|maps:\/\/)/.test(url);
-
-    if (native) {
-      // Deep links must go via window.location to let the OS handle the scheme/intent
-      if (isDeepLink) {
-        w.location.href = url;
-        return true;
-      }
-
-      // Otherwise use Capacitor Browser (external)
+    if (isNativeCapacitor()) {
+      // Always open in external browser to mimic regular browser behavior
       const Browser = getCapacitorBrowser();
       if (Browser?.open) {
         await Browser.open({ url });
         return true;
       }
-      // Fallback: force external browser from WebView
+      // Fallback for older Capacitor builds
       w.open(url, '_system');
       return true;
     }
@@ -82,21 +73,7 @@ export async function openExternalApp(url) {
 // פתיחת Waze
 export async function openWazeByQuery(query, navigate = true) {
   const q = encodeURIComponent(query || '');
-  const native = isNativeCapacitor();
-  const platform = getNativePlatform();
-
-  if (native) {
-    if (platform === 'android') {
-      // Strong Android intent to Waze with browser fallback
-      const fallback = encodeURIComponent(`https://www.waze.com/ul?q=${q}&navigate=${navigate ? 'yes' : 'no'}`);
-      const intent = `intent://ul?q=${q}&navigate=${navigate ? 'yes' : 'no'}#Intent;scheme=waze;package=com.waze;S.browser_fallback_url=${fallback};end`;
-      return openExternalApp(intent);
-    }
-    // iOS (and other): direct scheme
-    return openExternalApp(`waze://?q=${q}&navigate=${navigate ? 'yes' : 'no'}`);
-  }
-
-  // Web fallback: universal link
+  // Always use universal link to mimic normal browser behavior
   const url = `https://www.waze.com/ul?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
   return openExternalApp(url);
 }
@@ -104,20 +81,7 @@ export async function openWazeByQuery(query, navigate = true) {
 // פתיחת Google Maps
 export async function openGoogleMapsByQuery(query) {
   const q = encodeURIComponent(query || '');
-  const native = isNativeCapacitor();
-  const platform = getNativePlatform();
-
-  if (native) {
-    if (platform === 'android') {
-      // Prefer Google Maps navigation intent on Android
-      const intent = `google.navigation:q=${q}`; // If not supported, user will be prompted to pick app
-      return openExternalApp(intent);
-    }
-    // iOS: Google Maps scheme (if installed); OS will fall back to App Store otherwise
-    return openExternalApp(`comgooglemaps://?q=${q}`);
-  }
-
-  // Web fallback: open in new tab
+  // Always use the https link so OS can decide what to do
   const url = `https://www.google.com/maps/search/?api=1&query=${q}`;
   return openExternalApp(url);
 }
