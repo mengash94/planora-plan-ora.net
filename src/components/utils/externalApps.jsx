@@ -85,55 +85,23 @@ export async function openWazeByQuery(query, navigate = true) {
   const ll = useLl ? `${coordMatch[1]},${coordMatch[2]}` : null;
   const q = encodeURIComponent(raw);
   
-  const w = getWin();
-  const platform = getNativePlatform();
-  
-  // ב-Native: נסה URL scheme ישיר (פותח ישירות את האפליקציה)
-  if (isNativeCapacitor() && platform) {
-    try {
-      const schemeUrl = useLl
-        ? `waze://?ll=${ll}&navigate=${navigate ? 'yes' : 'no'}`
-        : `waze://?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
-      
-      // נסה לפתוח URL scheme ישיר דרך location.href
-      // זה יעבוד אם LSApplicationQueriesSchemes מוגדר ב-Info.plist
-      w.location.href = schemeUrl;
-      
-      // תן זמן לאפליקציה להיפתח
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return true;
-    } catch (err) {
-      console.debug('[externalApps] Waze URL scheme failed, trying Universal Link:', err);
-    }
-  }
-  
-  // Fallback: Universal Link (יעבוד בדפדפן או אם URL scheme לא עובד)
+  // ⚠️ משתמש ב-Universal Link - בדיוק כמו WhatsApp
+  // בדפדפן רגיל, זה פותח את האפליקציה ישירות
+  // ב-WebView, Browser plugin פותח את הדפדפן החיצוני שם זה עובד בדיוק כמו בדפדפן
+  // משתמש ב-www.waze.com (עם www) כמו WhatsApp שמשתמש ב-www
   const url = useLl
-    ? `https://waze.com/ul?ll=${ll}&navigate=${navigate ? 'yes' : 'no'}`
-    : `https://waze.com/ul?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
+    ? `https://www.waze.com/ul?ll=${ll}&navigate=${navigate ? 'yes' : 'no'}`
+    : `https://www.waze.com/ul?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
   
+  // ⚠️ זה יעבוד בדיוק כמו WhatsApp - Browser plugin פותח דפדפן חיצוני
+  // שם Universal Links עובדים בדיוק כמו בדפדפן רגיל
   return openExternalApp(url);
 }
 
 // פתיחת Waze עם קואורדינטות (קיצור)
 export async function openWaze(lat, lng, navigate = true) {
-  const w = getWin();
-  const platform = getNativePlatform();
-  
-  // ב-Native: נסה URL scheme ישיר
-  if (isNativeCapacitor() && platform) {
-    try {
-      const schemeUrl = `waze://?ll=${lat},${lng}&navigate=${navigate ? 'yes' : 'no'}`;
-      w.location.href = schemeUrl;
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return true;
-    } catch (err) {
-      console.debug('[externalApps] Waze URL scheme failed, trying Universal Link:', err);
-    }
-  }
-  
-  // Fallback: Universal Link
-  const url = `https://waze.com/ul?ll=${lat},${lng}&navigate=${navigate ? 'yes' : 'no'}`;
+  // ⚠️ Universal Link - יעבוד בדפדפן החיצוני בדיוק כמו בדפדפן רגיל
+  const url = `https://www.waze.com/ul?ll=${lat},${lng}&navigate=${navigate ? 'yes' : 'no'}`;
   return openExternalApp(url);
 }
 
