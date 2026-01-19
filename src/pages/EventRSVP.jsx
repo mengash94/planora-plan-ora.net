@@ -359,24 +359,18 @@ export default function EventRSVPPage() {
     { icon: Star, text: 'צרו אירועים משלכם בחינם!', color: 'text-orange-500' },
   ];
 
-  const addToCalendar = async () => {
+  const addToCalendar = () => {
     if (!event) return;
     const startDate = event.date || event.eventDate || event.event_date;
     if (!startDate) return;
 
-    // Native calendar support
+    const start = new Date(startDate);
+    const endDate = event.end_date || event.endDate;
+    const end = endDate ? new Date(endDate) : new Date(start.getTime() + 2 * 60 * 60 * 1000);
+
+    // Native calendar support - create ICS file
     if (isNativeCapacitor()) {
       try {
-        // Use Capacitor Preferences to trigger native calendar
-        const { Capacitor } = window;
-        const { Browser } = await import('@capacitor/browser');
-
-        // Create calendar data URL that will be handled by the native system
-        const start = new Date(startDate);
-        const endDate = event.end_date || event.endDate;
-        const end = endDate ? new Date(endDate) : new Date(start.getTime() + 2 * 60 * 60 * 1000);
-
-        // Format for webcal/ics
         const formatDate = (date) => {
           return date.toISOString().replace(/-|:|\.\d+/g, '');
         };
@@ -385,6 +379,7 @@ export default function EventRSVPPage() {
         const icsContent = [
           'BEGIN:VCALENDAR',
           'VERSION:2.0',
+          'PRODID:-//Planora//Event//EN',
           'BEGIN:VEVENT',
           `DTSTART:${formatDate(start)}`,
           `DTEND:${formatDate(end)}`,
@@ -393,33 +388,29 @@ export default function EventRSVPPage() {
           `LOCATION:${event.location || ''}`,
           'END:VEVENT',
           'END:VCALENDAR'
-        ].join('\n');
+        ].join('\r\n');
 
-        // Create blob and URL
-        const blob = new Blob([icsContent], { type: 'text/calendar' });
-        const url = URL.createObjectURL(blob);
+        // Create data URL for ICS
+        const dataUrl = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(icsContent);
 
-        // Open with Browser to trigger calendar app
-        await Browser.open({ url });
+        // Open data URL - this will trigger the native calendar app
+        openExternalUrl(dataUrl);
 
-        toast.success('נפתח יומן הטלפון');
+        toast.success('נפתח יומן הטלפון 📅');
       } catch (error) {
         console.error('Failed to open native calendar:', error);
         toast.error('לא ניתן לפתוח את היומן');
       }
     } else {
       // Web - Google Calendar
-      const start = new Date(startDate).toISOString().replace(/-|:|\.\d+/g, '');
-      const endDate = event.end_date || event.endDate;
-      const end = endDate 
-        ? new Date(endDate).toISOString().replace(/-|:|\.\d+/g, '') 
-        : new Date(new Date(startDate).getTime() + 2 * 60 * 60 * 1000).toISOString().replace(/-|:|\.\d+/g, '');
+      const startStr = start.toISOString().replace(/-|:|\.\d+/g, '');
+      const endStr = end.toISOString().replace(/-|:|\.\d+/g, '');
 
       const title = encodeURIComponent(event.title);
       const details = encodeURIComponent(event.description || 'הוזמנת לאירוע');
       const location = encodeURIComponent(event.location || '');
 
-      const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&location=${location}`;
+      const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startStr}/${endStr}&details=${details}&location=${location}`;
       window.open(url, '_blank');
     }
   };
