@@ -562,7 +562,7 @@ export default function EventRSVPPage() {
                     className="w-full bg-gradient-to-r from-orange-500 to-rose-500 hover:from-orange-600 hover:to-rose-600 text-white h-11 font-semibold shadow-md"
                   >
                     <CalendarPlus className="w-5 h-5 ml-2" />
-                    שמור ביומן הפלאפון 📅
+                    שמור ביומן  📅
                   </Button>
                 </div>
               )}
