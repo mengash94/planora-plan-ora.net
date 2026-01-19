@@ -4,7 +4,7 @@ import { createPageUrl } from '@/utils';
 import { useAuth } from '@/components/AuthProvider';
 import { getEventDetails, createNotificationAndSendPush, getInviteLinkByCode, getEventMembers } from '@/components/instabackService';
 import { isNativeCapacitor } from '@/components/onesignalService';
-import { openExternalUrl } from '@/components/utils/shareHelper';
+
 
 // Local createEventRSVP function
 const createEventRSVP = async (rsvpData) => {
