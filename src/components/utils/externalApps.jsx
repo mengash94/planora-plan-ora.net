@@ -1,6 +1,11 @@
 /**
  * Utilities to open external apps (Waze, Maps, Calendar)
  * Optimized for Capacitor Native vs Web environments.
+ * 
+ * ⚠️ דרישות ב-Native:
+ * - iOS: LSApplicationQueriesSchemes ב-Info.plist עם waze, comgooglemaps, maps
+ * - Android: <queries> ב-AndroidManifest.xml עם com.waze, com.google.android.apps.maps
+ * - Plugins: @capacitor/app-launcher, @capacitor/browser, @capacitor/filesystem, @capacitor/share
  */
 
 function getWin() {
@@ -11,7 +16,6 @@ function isNativeCapacitor() {
   const w = getWin();
   if (!w) return false;
   try {
-    // Check if Capacitor bridge is present and we are on a native platform
     if (w.Capacitor?.isNativePlatform?.()) return true;
     const platform = w.Capacitor?.getPlatform?.();
     return platform === 'ios' || platform === 'android';
@@ -34,22 +38,79 @@ function getNativePlatform() {
 }
 
 /**
- * הליבה של פתיחת אפליקציות חיצוניות
- * ⚠️ עובד בדיוק כמו WhatsApp ב-shareHelper.jsx
- * משתמש ב-Browser plugin דרך Capacitor bridge או window.open('_system')
+ * פתיחת URL scheme (waze://, comgooglemaps://, וכו')
+ * משתמש ב-App Launcher plugin אם זמין
+ */
+async function openUrlScheme(schemeUrl, fallbackUrl) {
+  const w = getWin();
+  if (!w) return false;
+
+  if (isNativeCapacitor()) {
+    // ⚠️ ניסיון 1: App Launcher plugin (הדרך הנכונה לפתוח URL schemes)
+    if (w.Capacitor?.Plugins?.AppLauncher?.openUrl) {
+      try {
+        // בדוק אם אפשר לפתוח
+        const canOpen = await w.Capacitor.Plugins.AppLauncher.canOpenUrl({ url: schemeUrl });
+        if (canOpen?.value) {
+          await w.Capacitor.Plugins.AppLauncher.openUrl({ url: schemeUrl });
+          return true;
+        }
+      } catch (err) {
+        console.debug('[externalApps] AppLauncher failed:', err.message);
+      }
+    }
+    
+    // ⚠️ ניסיון 2: Dynamic import של App Launcher
+    try {
+      const importDynamic = new Function('specifier', 'return import(specifier)');
+      const appLauncherModule = await importDynamic('@capacitor/app-launcher');
+      
+      if (appLauncherModule?.AppLauncher?.openUrl) {
+        const canOpen = await appLauncherModule.AppLauncher.canOpenUrl({ url: schemeUrl });
+        if (canOpen?.value) {
+          await appLauncherModule.AppLauncher.openUrl({ url: schemeUrl });
+          return true;
+        }
+      }
+    } catch (importErr) {
+      console.debug('[externalApps] AppLauncher import failed:', importErr.message);
+    }
+    
+    // ⚠️ Fallback: נסה location.href (יעבוד אם LSApplicationQueriesSchemes מוגדר)
+    try {
+      w.location.href = schemeUrl;
+      // תן זמן לאפליקציה להיפתח
+      await new Promise(resolve => setTimeout(resolve, 300));
+      return true;
+    } catch {
+      // נכשל, נסה fallback URL
+    }
+  }
+  
+  // Fallback: פתח את ה-fallback URL (Universal Link או דף אינטרנט)
+  if (fallbackUrl) {
+    return openExternalApp(fallbackUrl);
+  }
+  
+  return false;
+}
+
+/**
+ * הליבה של פתיחת קישורים חיצוניים (Universal Links)
+ * משתמש ב-Browser plugin לפתיחה בדפדפן החיצוני
  */
 export async function openExternalApp(url) {
   const w = getWin();
   if (!w) return false;
 
   if (isNativeCapacitor()) {
-    // ⚠️ ניסיון 1: דרך Capacitor Browser plugin (כמו WhatsApp)
+    // ⚠️ ניסיון 1: Browser plugin (פותח בדפדפן החיצוני)
     if (w.Capacitor?.Plugins?.Browser?.open) {
       try {
         await w.Capacitor.Plugins.Browser.open({ url });
         return true;
       } catch (error) {
-        console.warn('[externalApps] Capacitor Browser failed:', error);
+        console.warn('[externalApps] Browser plugin failed:', error);
       }
     }
     
@@ -63,22 +124,20 @@ export async function openExternalApp(url) {
         return true;
       }
     } catch (importErr) {
-      // זה בסדר - החבילה לא מותקנת או לא זמינה
-      console.debug('[externalApps] Browser plugin import failed:', importErr.message);
+      console.debug('[externalApps] Browser import failed:', importErr.message);
     }
     
-    // ⚠️ Fallback: window.open עם '_system' (כמו ב-shareHelper.jsx שורה 44)
-    // זה פותח בדפדפן החיצוני, שם Universal Links עובדים
+    // ⚠️ Fallback: window.open עם '_system'
     w.open(url, '_system');
     return true;
   }
   
-  // Web רגיל - פתיחה רגילה
+  // Web רגיל - פתיחה בטאב חדש
   w.open(url, '_blank');
+  return true;
 }
 
 // פתיחת Waze עם שאילתת חיפוש
-// ⚠️ פתרון יצירתי: נסה מספר שיטות
 export async function openWazeByQuery(query, navigate = true) {
   const raw = String(query || '').trim();
   const coordMatch = raw.match(/^\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$/);
@@ -86,81 +145,35 @@ export async function openWazeByQuery(query, navigate = true) {
   const ll = useLl ? `${coordMatch[1]},${coordMatch[2]}` : null;
   const q = encodeURIComponent(raw);
   
-  const w = getWin();
-  const platform = getNativePlatform();
-  const native = isNativeCapacitor();
+  // URL scheme ישיר - יפתח את Waze ישירות אם מותקן
+  const schemeUrl = useLl
+    ? `waze://?ll=${ll}&navigate=${navigate ? 'yes' : 'no'}`
+    : `waze://?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
   
-  // ⚠️ ניסיון 1: Intent URL ב-Android (עובד גם בלי LSApplicationQueriesSchemes)
-  if (native && platform === 'android') {
-    try {
-      const intentUrl = useLl
-        ? `intent://waze.com/ul?ll=${ll}&navigate=${navigate ? 'yes' : 'no'}#Intent;scheme=https;package=com.waze;end`
-        : `intent://waze.com/ul?q=${q}&navigate=${navigate ? 'yes' : 'no'}#Intent;scheme=https;package=com.waze;end`;
-      
-      w.location.href = intentUrl;
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return true;
-    } catch (err) {
-      console.debug('[externalApps] Waze Intent URL failed:', err);
-    }
-  }
-  
-  // ⚠️ ניסיון 2: URL scheme ישיר (יעבוד אם LSApplicationQueriesSchemes מוגדר)
-  if (native && platform) {
-    try {
-      const schemeUrl = useLl
-        ? `waze://?ll=${ll}&navigate=${navigate ? 'yes' : 'no'}`
-        : `waze://?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
-      
-      w.location.href = schemeUrl;
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return true;
-    } catch (err) {
-      console.debug('[externalApps] Waze URL scheme failed:', err);
-    }
-  }
-  
-  // ⚠️ ניסיון 3: Universal Link דרך Browser plugin (כמו WhatsApp)
-  const url = useLl
+  // Universal Link - fallback אם Waze לא מותקן
+  const fallbackUrl = useLl
     ? `https://www.waze.com/ul?ll=${ll}&navigate=${navigate ? 'yes' : 'no'}`
     : `https://www.waze.com/ul?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
   
-  return openExternalApp(url);
+  // ⚠️ ב-Native: נסה URL scheme קודם, אחרת Universal Link
+  if (isNativeCapacitor()) {
+    return openUrlScheme(schemeUrl, fallbackUrl);
+  }
+  
+  // ב-Web: פתח Universal Link
+  return openExternalApp(fallbackUrl);
 }
 
-// פתיחת Waze עם קואורדינטות (קיצור)
+// פתיחת Waze עם קואורדינטות
 export async function openWaze(lat, lng, navigate = true) {
-  const w = getWin();
-  const platform = getNativePlatform();
-  const native = isNativeCapacitor();
+  const schemeUrl = `waze://?ll=${lat},${lng}&navigate=${navigate ? 'yes' : 'no'}`;
+  const fallbackUrl = `https://www.waze.com/ul?ll=${lat},${lng}&navigate=${navigate ? 'yes' : 'no'}`;
   
-  // ⚠️ ניסיון 1: Intent URL ב-Android
-  if (native && platform === 'android') {
-    try {
-      const intentUrl = `intent://waze.com/ul?ll=${lat},${lng}&navigate=${navigate ? 'yes' : 'no'}#Intent;scheme=https;package=com.waze;end`;
-      w.location.href = intentUrl;
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return true;
-    } catch (err) {
-      console.debug('[externalApps] Waze Intent URL failed:', err);
-    }
+  if (isNativeCapacitor()) {
+    return openUrlScheme(schemeUrl, fallbackUrl);
   }
   
-  // ⚠️ ניסיון 2: URL scheme ישיר
-  if (native && platform) {
-    try {
-      const schemeUrl = `waze://?ll=${lat},${lng}&navigate=${navigate ? 'yes' : 'no'}`;
-      w.location.href = schemeUrl;
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return true;
-    } catch (err) {
-      console.debug('[externalApps] Waze URL scheme failed:', err);
-    }
-  }
-  
-  // ⚠️ ניסיון 3: Universal Link
-  const url = `https://www.waze.com/ul?ll=${lat},${lng}&navigate=${navigate ? 'yes' : 'no'}`;
-  return openExternalApp(url);
+  return openExternalApp(fallbackUrl);
 }
 
 // פתיחת Google Maps עם שאילתת חיפוש
@@ -228,8 +241,9 @@ export async function openNavigation(lat, lng) {
   return false;
 }
 
-// פתיחת אירוע ביומן - מוריד קובץ ICS
-// המשתמש יבחר לאיזה יומן להוסיף לפי מה שמותקן במכשיר
+// פתיחת אירוע ביומן
+// ב-Native: משתמש ב-Filesystem + Share plugins לשיתוף קובץ ICS
+// ב-Web: מוריד קובץ ICS או פותח Google Calendar
 export async function openCalendarEvent({ title, description, location, start, end }) {
   const formatICSDate = (date) => {
     return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
@@ -238,12 +252,11 @@ export async function openCalendarEvent({ title, description, location, start, e
   const startDate = start instanceof Date ? start : new Date(start);
   const endDate = end 
     ? (end instanceof Date ? end : new Date(end))
-    : new Date(startDate.getTime() + 2 * 60 * 60 * 1000); // +2 שעות כברירת מחדל
+    : new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
 
   const startStr = formatICSDate(startDate);
   const endStr = formatICSDate(endDate);
   
-  // Clean text for ICS format (escape special characters)
   const cleanText = (text) => {
     if (!text) return '';
     return text.replace(/\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
@@ -252,11 +265,8 @@ export async function openCalendarEvent({ title, description, location, start, e
   const cleanTitle = cleanText(title || 'אירוע');
   const cleanDescription = cleanText(description || '');
   const cleanLocation = cleanText(location || '');
-
-  // Generate unique ID
   const uid = `event-${Date.now()}@planora.app`;
 
-  // Generate ICS file content
   const icsContent = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
@@ -277,29 +287,98 @@ export async function openCalendarEvent({ title, description, location, start, e
     'END:VCALENDAR'
   ].filter(line => line).join('\r\n');
 
-  // ⚠️ Create and download ICS file - עם טיפול טוב יותר ל-WebView
+  const w = getWin();
+  const filename = `${(title || 'event').replace(/[^a-z0-9\u0590-\u05FF]/gi, '_')}.ics`;
+
+  // ⚠️ ב-Native: השתמש ב-Filesystem + Share plugins
+  if (isNativeCapacitor()) {
+    try {
+      // ניסיון 1: Filesystem + Share plugins
+      if (w.Capacitor?.Plugins?.Filesystem && w.Capacitor?.Plugins?.Share) {
+        const { Filesystem, Share } = w.Capacitor.Plugins;
+        
+        // כתוב קובץ זמני
+        const result = await Filesystem.writeFile({
+          path: filename,
+          data: btoa(unescape(encodeURIComponent(icsContent))), // Base64 encode
+          directory: 'CACHE',
+          encoding: 'utf8'
+        });
+        
+        // שתף את הקובץ
+        await Share.share({
+          title: cleanTitle,
+          text: `הוסף ליומן: ${cleanTitle}`,
+          url: result.uri,
+          dialogTitle: 'הוסף ליומן'
+        });
+        
+        return true;
+      }
+      
+      // ניסיון 2: Dynamic import
+      try {
+        const importDynamic = new Function('specifier', 'return import(specifier)');
+        const [fsModule, shareModule] = await Promise.all([
+          importDynamic('@capacitor/filesystem'),
+          importDynamic('@capacitor/share')
+        ]);
+        
+        if (fsModule?.Filesystem && shareModule?.Share) {
+          const result = await fsModule.Filesystem.writeFile({
+            path: filename,
+            data: btoa(unescape(encodeURIComponent(icsContent))),
+            directory: 'CACHE'
+          });
+          
+          await shareModule.Share.share({
+            title: cleanTitle,
+            text: `הוסף ליומן: ${cleanTitle}`,
+            url: result.uri,
+            dialogTitle: 'הוסף ליומן'
+          });
+          
+          return true;
+        }
+      } catch (importErr) {
+        console.debug('[externalApps] Filesystem/Share import failed:', importErr.message);
+      }
+      
+      // ניסיון 3: Share plugin בלבד עם data URL
+      if (w.Capacitor?.Plugins?.Share) {
+        const dataUrl = `data:text/calendar;base64,${btoa(unescape(encodeURIComponent(icsContent)))}`;
+        await w.Capacitor.Plugins.Share.share({
+          title: cleanTitle,
+          text: icsContent,
+          dialogTitle: 'הוסף ליומן'
+        });
+        return true;
+      }
+    } catch (err) {
+      console.warn('[externalApps] Native calendar failed:', err);
+    }
+    
+    // Fallback ל-Google Calendar
+    const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title || '')}&dates=${startStr}/${endStr}&details=${encodeURIComponent(description || '')}&location=${encodeURIComponent(location || '')}`;
+    return openExternalApp(googleUrl);
+  }
+
+  // ⚠️ ב-Web: הורדת קובץ ICS
   try {
     const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `${(title || 'event').replace(/[^a-z0-9\u0590-\u05FF]/gi, '_')}.ics`;
+    link.download = filename;
     link.style.display = 'none';
     
-    // הוסף ל-DOM, לחץ, והסר
     document.body.appendChild(link);
-    
-    // ⚠️ חשוב: תן זמן ל-DOM לעדכן
     await new Promise(resolve => setTimeout(resolve, 50));
-    
     link.click();
     
-    // נקה אחרי זמן קצר
     setTimeout(() => {
       try {
-        if (link.parentNode) {
-          document.body.removeChild(link);
-        }
+        if (link.parentNode) document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
       } catch {}
     }, 200);
@@ -308,7 +387,7 @@ export async function openCalendarEvent({ title, description, location, start, e
   } catch (err) {
     console.error('[externalApps] Failed to download ICS:', err);
     
-    // Fallback: נסה לפתוח ב-Google Calendar
+    // Fallback: Google Calendar
     const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title || '')}&dates=${startStr}/${endStr}&details=${encodeURIComponent(description || '')}&location=${encodeURIComponent(location || '')}`;
     return openExternalApp(googleUrl);
   }
