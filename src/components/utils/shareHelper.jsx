@@ -1,6 +1,8 @@
 /**
  * Share Helper - handles sharing across web and native (Capacitor)
- * Uses Capacitor Browser/Share plugins when available, falls back to web APIs
+ * Uses AppLauncher for direct app opening, with Browser plugin as fallback
+ * 
+ * ⚠️ All Capacitor imports are dynamic to avoid Vite build errors
  */
 
 // Check if running in Capacitor native environment
@@ -11,141 +13,225 @@ const isCapacitor = () => {
          window.Capacitor.isNativePlatform();
 };
 
-// Get Capacitor plugins
-const getCapacitorPlugins = () => {
-  if (typeof window !== 'undefined' && window.Capacitor && window.Capacitor.Plugins) {
-    return window.Capacitor.Plugins;
-  }
-  return null;
+// Get current platform
+const getPlatform = () => {
+  if (typeof window === 'undefined') return 'web';
+  try {
+    const platform = window.Capacitor?.getPlatform?.();
+    if (platform === 'ios' || platform === 'android') return platform;
+  } catch {}
+  return 'web';
+};
+
+// Dynamic import helper (bypasses Vite resolution)
+const dynamicImport = (specifier) => {
+  const importFn = new Function('specifier', 'return import(specifier)');
+  return importFn(specifier);
 };
 
 /**
- * Open a URL externally (WhatsApp, browser, Waze, Maps, Calendar, etc.)
- * @param {string} url - The URL to open
+ * Try to open URL using AppLauncher (direct app opening)
+ */
+const tryAppLauncher = async (url) => {
+  try {
+    const module = await dynamicImport('@capacitor/app-launcher');
+    if (module?.AppLauncher?.openUrl) {
+      const result = await module.AppLauncher.openUrl({ url });
+      console.log('[ShareHelper] AppLauncher opened:', url, result);
+      return true;
+    }
+  } catch (error) {
+    console.warn('[ShareHelper] AppLauncher failed:', error);
+  }
+  return false;
+};
+
+/**
+ * Try to open URL using Browser plugin (external browser)
+ */
+const tryBrowser = async (url) => {
+  try {
+    const module = await dynamicImport('@capacitor/browser');
+    if (module?.Browser?.open) {
+      await module.Browser.open({ url });
+      console.log('[ShareHelper] Browser opened:', url);
+      return true;
+    }
+  } catch (error) {
+    console.warn('[ShareHelper] Browser plugin failed:', error);
+  }
+  return false;
+};
+
+/**
+ * Open a URL externally with multiple fallbacks
+ * Priority: AppLauncher → Browser → window.open
  */
 export const openExternalUrl = async (url) => {
-  const plugins = getCapacitorPlugins();
+  console.log('[ShareHelper] Opening:', url, 'Platform:', getPlatform());
   
   if (isCapacitor()) {
-    console.log('[ShareHelper] 📱 Native Mode: Forcing _system target');
+    // Try AppLauncher first for URL schemes
+    if (await tryAppLauncher(url)) return true;
     
-    // Try Browser plugin first
-    if (plugins?.Browser) {
-      try {
-        await plugins.Browser.open({ url });
-        return;
-      } catch (error) {
-        console.warn('[ShareHelper] Capacitor Browser failed:', error);
-      }
-    }
+    // Fallback to Browser plugin
+    if (await tryBrowser(url)) return true;
     
-    // Fallback: Use window.open with _system target
-    // This forces Capacitor to open in external browser, allowing Universal Links to work
+    // Last resort: window.open with _system
     window.open(url, '_system');
-    return;
+    return true;
   }
   
   // Web - open in new tab
   window.open(url, '_blank');
+  return true;
 };
 
 /**
  * Open WhatsApp with a message
- * @param {string} message - The message to send
- * @param {string} [phoneNumber] - Optional phone number (with country code, no +)
+ * Uses direct URL scheme on native, Universal Link as fallback
  */
 export const openWhatsApp = async (message, phoneNumber = null) => {
-  // Encode the message for URL (handles emojis and special characters)
   const encodedMessage = encodeURIComponent(message);
+  const platform = getPlatform();
   
-  // Use api.whatsapp.com/send/ with trailing slash - this preserves emojis correctly
-  // wa.me redirects and breaks emoji encoding during the redirect
+  console.log('[ShareHelper] Opening WhatsApp, platform:', platform);
+  
+  if (isCapacitor()) {
+    // ניסיון 1: URL Scheme ישיר (פותח את WhatsApp ישירות)
+    const schemeUrl = phoneNumber 
+      ? `whatsapp://send?phone=${phoneNumber}&text=${encodedMessage}`
+      : `whatsapp://send?text=${encodedMessage}`;
+    
+    if (await tryAppLauncher(schemeUrl)) {
+      console.log('[ShareHelper] ✅ WhatsApp opened via AppLauncher');
+      return true;
+    }
+    
+    // ניסיון 2: Universal Link דרך Browser
+    const universalUrl = phoneNumber 
+      ? `https://api.whatsapp.com/send/?phone=${phoneNumber}&text=${encodedMessage}`
+      : `https://api.whatsapp.com/send/?text=${encodedMessage}`;
+    
+    if (await tryBrowser(universalUrl)) {
+      console.log('[ShareHelper] ✅ WhatsApp opened via Browser');
+      return true;
+    }
+    
+    // Fallback
+    window.open(universalUrl, '_system');
+    return true;
+  }
+  
+  // Web - use Universal Link
   const url = phoneNumber 
     ? `https://api.whatsapp.com/send/?phone=${phoneNumber}&text=${encodedMessage}`
     : `https://api.whatsapp.com/send/?text=${encodedMessage}`;
   
-  // For Capacitor, use Browser plugin to open externally
-  const plugins = getCapacitorPlugins();
+  window.open(url, '_blank');
+  return true;
+};
+
+/**
+ * Open Telegram with a message
+ * Uses direct URL scheme on native
+ */
+export const openTelegram = async (message, username = null) => {
+  const encodedMessage = encodeURIComponent(message);
+  const platform = getPlatform();
   
-  if (isCapacitor() && plugins?.Browser) {
-    try {
-      await plugins.Browser.open({ url });
-      return;
-    } catch (error) {
-      console.warn('[ShareHelper] Capacitor Browser failed for WhatsApp:', error);
+  console.log('[ShareHelper] Opening Telegram, platform:', platform);
+  
+  if (isCapacitor()) {
+    // ניסיון 1: URL Scheme ישיר
+    const schemeUrl = username 
+      ? `tg://msg?to=${username}&text=${encodedMessage}`
+      : `tg://msg?text=${encodedMessage}`;
+    
+    if (await tryAppLauncher(schemeUrl)) {
+      console.log('[ShareHelper] ✅ Telegram opened via AppLauncher');
+      return true;
     }
+    
+    // ניסיון 2: Universal Link
+    const universalUrl = username
+      ? `https://t.me/${username}?text=${encodedMessage}`
+      : `https://t.me/share/url?text=${encodedMessage}`;
+    
+    if (await tryBrowser(universalUrl)) {
+      console.log('[ShareHelper] ✅ Telegram opened via Browser');
+      return true;
+    }
+    
+    window.open(universalUrl, '_system');
+    return true;
   }
   
-  // Fallback for web
+  // Web
+  const url = username
+    ? `https://t.me/${username}?text=${encodedMessage}`
+    : `https://t.me/share/url?text=${encodedMessage}`;
+  
   window.open(url, '_blank');
+  return true;
 };
 
 /**
  * Open SMS app with a message
- * @param {string} phoneNumber - The phone number
- * @param {string} message - The message body
  */
 export const openSMS = async (phoneNumber, message) => {
   const encodedMessage = encodeURIComponent(message);
   const url = `sms:${phoneNumber}?body=${encodedMessage}`;
   
-  const plugins = getCapacitorPlugins();
+  console.log('[ShareHelper] Opening SMS:', phoneNumber);
   
-  if (isCapacitor() && plugins?.Browser) {
-    try {
-      await plugins.Browser.open({ url });
-      return;
-    } catch (error) {
-      console.warn('[ShareHelper] Capacitor Browser failed for SMS, falling back:', error);
-    }
+  if (isCapacitor()) {
+    // SMS scheme עובד טוב עם AppLauncher
+    if (await tryAppLauncher(url)) return true;
+    if (await tryBrowser(url)) return true;
   }
   
-  // Fallback for web
+  // Fallback
   window.location.href = url;
+  return true;
 };
 
 /**
  * Open phone dialer
- * @param {string} phoneNumber - The phone number to call
  */
 export const openPhone = async (phoneNumber) => {
   const url = `tel:${phoneNumber}`;
   
-  const plugins = getCapacitorPlugins();
+  console.log('[ShareHelper] Opening Phone:', phoneNumber);
   
-  if (isCapacitor() && plugins?.Browser) {
-    try {
-      await plugins.Browser.open({ url });
-      return;
-    } catch (error) {
-      console.warn('[ShareHelper] Capacitor Browser failed for phone, falling back:', error);
-    }
+  if (isCapacitor()) {
+    if (await tryAppLauncher(url)) return true;
+    if (await tryBrowser(url)) return true;
   }
   
-  // Fallback for web
+  // Fallback
   window.location.href = url;
+  return true;
 };
 
 /**
  * Share content using native share or Web Share API
- * @param {Object} options - Share options
- * @param {string} options.text - Text to share
- * @param {string} [options.url] - URL to share
- * @param {string} [options.title] - Title for share dialog
  */
 export const shareContent = async ({ text, url, title }) => {
-  const plugins = getCapacitorPlugins();
+  console.log('[ShareHelper] Sharing content');
   
-  // Try Capacitor Share plugin first (for native)
-  if (isCapacitor() && plugins?.Share) {
+  if (isCapacitor()) {
     try {
-      await plugins.Share.share({
-        text,
-        url,
-        title,
-        dialogTitle: title
-      });
-      return { success: true, method: 'capacitor' };
+      const module = await dynamicImport('@capacitor/share');
+      if (module?.Share?.share) {
+        await module.Share.share({
+          text,
+          url,
+          title,
+          dialogTitle: title
+        });
+        return { success: true, method: 'capacitor' };
+      }
     } catch (error) {
       console.warn('[ShareHelper] Capacitor Share failed:', error);
     }
@@ -154,11 +240,7 @@ export const shareContent = async ({ text, url, title }) => {
   // Try Web Share API
   if (navigator.share) {
     try {
-      await navigator.share({
-        text,
-        url,
-        title
-      });
+      await navigator.share({ text, url, title });
       return { success: true, method: 'webshare' };
     } catch (error) {
       if (error.name !== 'AbortError') {
@@ -181,25 +263,18 @@ export const shareContent = async ({ text, url, title }) => {
 
 /**
  * Open email client
- * @param {Object} options - Email options
- * @param {string} [options.to] - Recipient email
- * @param {string} options.subject - Email subject
- * @param {string} options.body - Email body
  */
 export const openEmail = async ({ to = '', subject, body }) => {
   const mailtoUrl = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   
-  const plugins = getCapacitorPlugins();
+  console.log('[ShareHelper] Opening Email');
   
-  if (isCapacitor() && plugins?.Browser) {
-    try {
-      await plugins.Browser.open({ url: mailtoUrl });
-      return;
-    } catch (error) {
-      console.warn('[ShareHelper] Capacitor Browser failed for email, falling back:', error);
-    }
+  if (isCapacitor()) {
+    if (await tryAppLauncher(mailtoUrl)) return true;
+    if (await tryBrowser(mailtoUrl)) return true;
   }
   
-  // Fallback for web
+  // Fallback
   window.open(mailtoUrl);
+  return true;
 };
