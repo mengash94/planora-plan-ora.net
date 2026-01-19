@@ -48,17 +48,14 @@ export async function openExternalApp(url) {
 
   try {
     if (isNativeCapacitor()) {
-      // Prefer system browser (full Chrome/Safari) to let OS handle app links
-      try {
-        w.open(url, '_system');
-        return true;
-      } catch {}
-      // Fallback to Capacitor Browser (Custom Tabs / SFSafariViewController)
+      // Prefer Capacitor Browser (Custom Tabs / SFSafariViewController)
       const Browser = getCapacitorBrowser();
       if (Browser?.open) {
         await Browser.open({ url });
         return true;
       }
+      // Fallback: try system browser
+      w.open(url, '_system');
       return true;
     }
 
@@ -75,19 +72,28 @@ export async function openExternalApp(url) {
 
 // פתיחת Waze
 export async function openWazeByQuery(query, navigate = true) {
-  const q = encodeURIComponent(query || '');
+  const raw = String(query || '').trim();
+  const coordMatch = raw.match(/^\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$/);
+  const useLl = !!coordMatch;
+  const ll = useLl ? `${coordMatch[1]},${coordMatch[2]}` : null;
+  const q = encodeURIComponent(raw);
+
   const w = getWin();
   const native = isNativeCapacitor();
-  const httpsUrl = `https://waze.com/ul?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
+  const httpsUrl = useLl
+    ? `https://waze.com/ul?ll=${ll}&navigate=${navigate ? 'yes' : 'no'}`
+    : `https://waze.com/ul?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
 
-  // On native: first try direct app scheme, then fallback to https after a short delay
+  // On native: try direct scheme first (more reliable), then fallback to https
   if (native && w) {
     try {
       setTimeout(() => {
-        // If scheme didn't take over, open universal link in external browser
         openExternalApp(httpsUrl);
-      }, 500);
-      w.location.href = `waze://?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
+      }, 400);
+      const scheme = useLl
+        ? `waze://?ll=${ll}&navigate=${navigate ? 'yes' : 'no'}`
+        : `waze://?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
+      w.location.href = scheme;
       return true;
     } catch {
       return openExternalApp(httpsUrl);
