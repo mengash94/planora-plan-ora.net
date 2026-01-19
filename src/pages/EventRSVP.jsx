@@ -198,20 +198,26 @@ export default function EventRSVPPage() {
         setEvent(eventDetails);
 
         const ownerId = eventDetails.ownerId || eventDetails.owner_id || eventDetails._uid;
-        
+        console.log('[RSVP] Owner ID:', ownerId);
+
         if (ownerId) {
-          try {
-            const ownerDetails = await getUserById(ownerId);
-            if (ownerDetails) {
-              const resolvedOwnerName = ownerDetails.name || 
-                              ownerDetails.full_name ||
-                              `${ownerDetails.firstName || ''} ${ownerDetails.lastName || ''}`.trim() ||
-                              'מארגן האירוע';
-              setOwnerName(resolvedOwnerName);
-            }
-          } catch (ownerError) {
-            console.error('[RSVP] Failed to load owner details:', ownerError);
-          }
+          try {
+            const ownerDetails = await getUserById(ownerId);
+            console.log('[RSVP] Owner details:', ownerDetails);
+            if (ownerDetails) {
+              const resolvedOwnerName = ownerDetails.name || 
+                              ownerDetails.full_name ||
+                              ownerDetails.fullName ||
+                              ownerDetails.displayName ||
+                              ownerDetails.email?.split('@')[0] ||
+                              `${ownerDetails.firstName || ''} ${ownerDetails.lastName || ''}`.trim() ||
+                              'מארגן האירוע';
+              console.log('[RSVP] Resolved owner name:', resolvedOwnerName);
+              setOwnerName(resolvedOwnerName);
+            }
+          } catch (ownerError) {
+            console.error('[RSVP] Failed to load owner details:', ownerError);
+          }
         }
 
       } catch (err) {
