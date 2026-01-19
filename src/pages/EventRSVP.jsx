@@ -4,7 +4,7 @@ import { createPageUrl } from '@/utils';
 import { useAuth } from '@/components/AuthProvider';
 import { getEventDetails, createNotificationAndSendPush, getInviteLinkByCode, getEventMembers } from '@/components/instabackService';
 import { openExternalUrl } from '@/components/utils/shareHelper';
-import { openWazeByQuery, openGoogleMapsByQuery } from '@/components/utils/externalApps';
+import { openWazeByQuery, openGoogleMapsByQuery, openCalendarEvent } from '@/components/utils/externalApps';
 
 
 // Local createEventRSVP function
@@ -360,38 +360,21 @@ export default function EventRSVPPage() {
     { icon: MessageCircle, text: 'צ\'אט קבוצתי עם כל המשתתפים', color: 'text-indigo-500' },
     { icon: Star, text: 'צרו אירועים משלכם בחינם!', color: 'text-orange-500' },
   ];
-const addToCalendar = () => {
+const addToCalendar = async () => {
     if (!event) return;
     const startDate = event.date || event.eventDate || event.event_date;
     if (!startDate) return;
 
-    const start = new Date(startDate);
-    const end = event.endDate ? new Date(event.endDate) : new Date(start.getTime() + 2 * 60 * 60 * 1000);
-
-    const pad = (n) => String(n).padStart(2, '0');
-    const formatICS = (d) => {
-      const yyyy = d.getUTCFullYear();
-      const mm = pad(d.getUTCMonth() + 1);
-      const dd = pad(d.getUTCDate());
-      const hh = pad(d.getUTCHours());
-      const min = pad(d.getUTCMinutes());
-      const ss = pad(d.getUTCSeconds());
-      return `${yyyy}${mm}${dd}T${hh}${min}${ss}Z`;
-    };
-
-    const dtStart = formatICS(start);
-    const dtEnd = formatICS(end);
-
-    const title = (event.title || '').replace(/\n/g, ' ');
-    const description = (event.description || 'הוזמנת לאירוע').replace(/\n/g, ' ');
-    const location = (event.location || '').replace(/\n/g, ' ');
-
-    const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Planora//Event//HE\nBEGIN:VEVENT\nUID:${event.id || ('planora-' + Date.now())}\nDTSTAMP:${formatICS(new Date())}\nDTSTART:${dtStart}\nDTEND:${dtEnd}\nSUMMARY:${title}\nDESCRIPTION:${description}\nLOCATION:${location}\nEND:VEVENT\nEND:VCALENDAR`;
-
-    const dataUrl = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics);
-    openExternalUrl(dataUrl);
-    toast.success('מייצא ליומן... 📅');
+    await openCalendarEvent({
+      title: event.title,
+      description: event.description || 'הוזמנת לאירוע',
+      location: event.location || '',
+      start: new Date(startDate),
+      end: event.endDate ? new Date(event.endDate) : undefined,
+    });
+    toast.success('פותח יומן... 📅');
   };
+
 
   const openWaze = async () => {
             if (!event?.location) return;
