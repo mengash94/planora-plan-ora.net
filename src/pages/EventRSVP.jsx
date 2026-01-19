@@ -367,17 +367,29 @@ const addToCalendar = () => {
     const start = new Date(startDate);
     const end = event.endDate ? new Date(event.endDate) : new Date(start.getTime() + 2 * 60 * 60 * 1000);
 
-    const startStr = start.toISOString().replace(/-|:|\.\d+/g, '');
-    const endStr = end.toISOString().replace(/-|:|\.\d+/g, '');
+    const pad = (n) => String(n).padStart(2, '0');
+    const formatICS = (d) => {
+      const yyyy = d.getUTCFullYear();
+      const mm = pad(d.getUTCMonth() + 1);
+      const dd = pad(d.getUTCDate());
+      const hh = pad(d.getUTCHours());
+      const min = pad(d.getUTCMinutes());
+      const ss = pad(d.getUTCSeconds());
+      return `${yyyy}${mm}${dd}T${hh}${min}${ss}Z`;
+    };
 
-    const title = encodeURIComponent(event.title);
-    const details = encodeURIComponent(event.description || 'הוזמנת לאירוע');
-    const location = encodeURIComponent(event.location || '');
+    const dtStart = formatICS(start);
+    const dtEnd = formatICS(end);
 
-    const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startStr}/${endStr}&details=${details}&location=${location}`;
-    
-    openExternalUrl(url);
-    toast.success('פותח יומן... 📅');
+    const title = (event.title || '').replace(/\n/g, ' ');
+    const description = (event.description || 'הוזמנת לאירוע').replace(/\n/g, ' ');
+    const location = (event.location || '').replace(/\n/g, ' ');
+
+    const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Planora//Event//HE\nBEGIN:VEVENT\nUID:${event.id || ('planora-' + Date.now())}\nDTSTAMP:${formatICS(new Date())}\nDTSTART:${dtStart}\nDTEND:${dtEnd}\nSUMMARY:${title}\nDESCRIPTION:${description}\nLOCATION:${location}\nEND:VEVENT\nEND:VCALENDAR`;
+
+    const dataUrl = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics);
+    openExternalUrl(dataUrl);
+    toast.success('מייצא ליומן... 📅');
   };
 
   const openWaze = () => {
