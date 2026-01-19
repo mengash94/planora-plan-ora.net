@@ -47,7 +47,7 @@ function LayoutContent({ children, currentPageName }) {
   useDeepLinkHandler();
 
   // Pages allowed on mobile web (without redirecting to app store)
-  const mobileAllowedPages = useMemo(() => ['EventRSVP', 'ShortLink', 'App'], []);
+  const mobileAllowedPages = useMemo(() => ['EventRSVP', 'ShortLink', 'CreateEventAI','App'], []);
   
   // Check if device is mobile
   const isMobileDevice = useMemo(() => {
