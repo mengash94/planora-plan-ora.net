@@ -4,6 +4,7 @@ import { createPageUrl } from '@/utils';
 import { useAuth } from '@/components/AuthProvider';
 import { getEventDetails, createNotificationAndSendPush, getInviteLinkByCode, getEventMembers } from '@/components/instabackService';
 import { openExternalUrl } from '@/components/utils/shareHelper';
+import { openWazeByQuery, openGoogleMapsByQuery } from '@/components/utils/externalApps';
 
 
 // Local createEventRSVP function
@@ -392,21 +393,15 @@ const addToCalendar = () => {
     toast.success('מייצא ליומן... 📅');
   };
 
-  const openWaze = () => {
-    if (!event?.location) return;
-    const query = encodeURIComponent(event.location);
-    // Universal Link אחיד שעובד גם בדפדפן וגם ב-Capacitor דרך Browser plugin
-    const url = `https://waze.com/ul?q=${query}&navigate=yes`;
-    openExternalUrl(url);
-  };
+  const openWaze = async () => {
+            if (!event?.location) return;
+            await openWazeByQuery(event.location);
+          };
 
-  const openGoogleMaps = () => {
-    if (!event?.location) return;
-    const query = encodeURIComponent(event.location);
-    // Universal Link אחיד ל-Google Maps
-    const url = `https://www.google.com/maps/search/?api=1&query=${query}`;
-    openExternalUrl(url);
-  };
+  const openGoogleMaps = async () => {
+            if (!event?.location) return;
+            await openGoogleMapsByQuery(event.location);
+          };
 
 
 
