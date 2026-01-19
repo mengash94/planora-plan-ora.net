@@ -519,23 +519,7 @@ const addToCalendar = async () => {
         </div>
         
         <CardContent className="p-6 space-y-5">
-          <div className="mb-2 text-[11px] text-gray-600">
-            מצב פתיחה חיצונית — סביבה:
-            <span className={isNative ? 'text-green-600 font-medium ml-1' : 'text-amber-600 font-medium ml-1'}>
-              {isNative ? 'נייטיב' : 'ווב'}
-            </span>
-            · דפדפן חיצוני (Capacitor.Browser):
-            <span className={browserAvailable ? 'text-green-600 font-medium ml-1' : 'text-red-600 font-medium ml-1'}>
-              {browserAvailable ? 'זמין' : 'לא זמין'}
-            </span>
-          </div>
-          {/* Event Info */}
-          <div className="text-center pb-4 border-b">
-            <h2 className="text-2xl font-bold text-gray-900 mb-1">{event?.title}</h2>
-            {event?.description && (
-              <p className="text-gray-600 text-sm">{event.description}</p>
-            )}
-          </div>
+
 
           {/* Event Details - Styled for "Hagiga" */}
           <div className="bg-white/50 rounded-xl border border-orange-100 p-1">
