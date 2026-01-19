@@ -1,16 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Loader2 } from 'lucide-react';
 import { getInviteLinkByCode } from '@/components/instabackService';
 
 export default function ShortLink() {
     const [error, setError] = useState(null);
-    const navigate = useNavigate();
 
     useEffect(() => {
         const handleRedirect = async () => {
-            // Get the code from URL - format: /ShortLink?code=abc123
+            // Get the code from URL - format: /e/abc123 or /ShortLink?code=abc123
             const urlParams = new URLSearchParams(window.location.search);
             const code = urlParams.get('code');
 
@@ -23,13 +21,20 @@ export default function ShortLink() {
                 // Get the InviteLink by code from Instaback
                 const inviteLink = await getInviteLinkByCode(code);
 
-                if (!inviteLink || !inviteLink.eventid) {
+                if (!inviteLink || !inviteLink.eventId) {
                     setError('הקישור לא נמצא או פג תוקף');
                     return;
                 }
 
-                // Redirect to the event RSVP page with the invite code
-                navigate(createPageUrl('EventRSVP') + `?eventId=${inviteLink.eventid}&inviteCode=${code}`);
+                // Build the RSVP URL with maxGuests if available
+                let rsvpUrl = createPageUrl('EventRSVP') + `?id=${inviteLink.eventId}&code=${code}`;
+                
+                if (inviteLink.maxGuests !== null && inviteLink.maxGuests !== undefined) {
+                    rsvpUrl += `&max=${inviteLink.maxGuests}`;
+                }
+
+                // Redirect to the event RSVP page
+                window.location.href = rsvpUrl;
             } catch (err) {
                 console.error('Error fetching invite link:', err);
                 setError('שגיאה בטעינת הקישור');
@@ -37,7 +42,7 @@ export default function ShortLink() {
         };
 
         handleRedirect();
-    }, [navigate]);
+    }, []);
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-pink-50">
