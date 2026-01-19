@@ -344,11 +344,6 @@ export default function EventRSVPPage() {
           setSubmitted(true);
           toast.success('התשובה נשמרה בהצלחה! 🎉');
         } catch (err) {
-          // console.error('[RSVP] ❌❌❌ RSVP SUBMISSION ERROR:', err);
-          // console.error('[RSVP] Error details:', {
-            message: err.message,
-            stack: err.stack
-          });
           toast.error(err.message || 'שגיאה בשמירת התשובה');
         } finally {
           setIsSubmitting(false);
