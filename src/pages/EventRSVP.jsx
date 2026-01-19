@@ -360,7 +360,7 @@ export default function EventRSVPPage() {
     { icon: Star, text: 'צרו אירועים משלכם בחינם!', color: 'text-orange-500' },
   ];
 
-  const addToCalendar = async () => {
+  const addToCalendar = () => {
     if (!event) return;
     const startDate = event.date || event.eventDate || event.event_date;
     if (!startDate) return;
@@ -378,26 +378,22 @@ export default function EventRSVPPage() {
 
     const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startStr}/${endStr}&details=${details}&location=${location}`;
 
-    if (isNativeCapacitor()) {
-      await openExternalUrl(url);
-      toast.success('נפתח יומן הטלפון 📅');
-    } else {
-      window.open(url, '_blank');
-    }
+    openExternalUrl(url);
+    toast.success('פותח יומן... 📅');
   };
 
-  const openWaze = async () => {
+  const openWaze = () => {
     if (!event?.location) return;
     const query = encodeURIComponent(event.location);
     const url = `https://waze.com/ul?q=${query}&navigate=yes`;
-    await openExternalUrl(url);
+    openExternalUrl(url);
   };
 
-  const openGoogleMaps = async () => {
+  const openGoogleMaps = () => {
     if (!event?.location) return;
     const query = encodeURIComponent(event.location);
     const url = `https://www.google.com/maps/search/?api=1&query=${query}`;
-    await openExternalUrl(url);
+    openExternalUrl(url);
   };
 
   // Loading state

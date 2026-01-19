@@ -20,22 +20,32 @@ const getCapacitorPlugins = () => {
 };
 
 /**
- * Open a URL externally (WhatsApp, browser, etc.)
+ * Open a URL externally (WhatsApp, browser, Waze, Maps, Calendar, etc.)
  * @param {string} url - The URL to open
  */
 export const openExternalUrl = async (url) => {
   const plugins = getCapacitorPlugins();
   
-  if (isCapacitor() && plugins?.Browser) {
-    try {
-      await plugins.Browser.open({ url });
-      return;
-    } catch (error) {
-      console.warn('[ShareHelper] Capacitor Browser failed, falling back to window.open:', error);
+  if (isCapacitor()) {
+    console.log('[ShareHelper] 📱 Native Mode: Forcing _system target');
+    
+    // Try Browser plugin first
+    if (plugins?.Browser) {
+      try {
+        await plugins.Browser.open({ url });
+        return;
+      } catch (error) {
+        console.warn('[ShareHelper] Capacitor Browser failed:', error);
+      }
     }
+    
+    // Fallback: Use window.open with _system target
+    // This forces Capacitor to open in external browser, allowing Universal Links to work
+    window.open(url, '_system');
+    return;
   }
   
-  // Fallback for web
+  // Web - open in new tab
   window.open(url, '_blank');
 };
 
