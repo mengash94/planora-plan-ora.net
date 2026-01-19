@@ -131,16 +131,16 @@ export default function EventRSVPPage() {
     notes: ''
     });
 
-    console.log('[RSVP] Render - maxGuestsLimit:', maxGuestsLimit, 'guestCount:', rsvpData?.guestCount);
+    // console.log('[RSVP] Render - maxGuestsLimit:', maxGuestsLimit, 'guestCount:', rsvpData?.guestCount);
 
     // Handle invite code - fetch the link details and redirect to proper URL with eventId
   useEffect(() => {
     const loadInviteLink = async () => {
       if (inviteCode && !eventIdFromUrl) {
         try {
-          console.log('[RSVP] Loading invite link for code:', inviteCode);
+          // console.log('[RSVP] Loading invite link for code:', inviteCode);
           const link = await getInviteLinkByCode(inviteCode);
-          console.log('[RSVP] Got invite link:', link);
+          // console.log('[RSVP] Got invite link:', link);
           
           if (link && link.eventId) {
             // Redirect to the same page but with id parameter (keeps the code for maxGuests)
@@ -150,7 +150,7 @@ export default function EventRSVPPage() {
             currentParams.set('code', inviteCode);
             
             const newUrl = `${window.location.pathname}?${currentParams.toString()}`;
-            console.log('[RSVP] Redirecting to:', newUrl);
+            // console.log('[RSVP] Redirecting to:', newUrl);
             window.location.replace(newUrl);
             return;
           } else {
@@ -158,7 +158,7 @@ export default function EventRSVPPage() {
             setIsLoading(false);
           }
         } catch (err) {
-          console.error('[RSVP] Error loading invite link:', err);
+          // console.error('[RSVP] Error loading invite link:', err);
           setError('שגיאה בטעינת קישור ההזמנה');
           setIsLoading(false);
         }
@@ -177,7 +177,7 @@ export default function EventRSVPPage() {
             setInviteLink(link);
           }
         } catch (err) {
-          console.warn('[RSVP] Could not load invite link data:', err);
+          // console.warn('[RSVP] Could not load invite link data:', err);
         }
       }
     };
@@ -188,7 +188,7 @@ export default function EventRSVPPage() {
   useEffect(() => {
     const limit = maxGuestsLimit;
     if (limit !== null && limit > 0 && rsvpData.guestCount > limit) {
-      console.log('[RSVP] Clamping guestCount from', rsvpData.guestCount, 'to', limit);
+      // console.log('[RSVP] Clamping guestCount from', rsvpData.guestCount, 'to', limit);
       setRsvpData(prev => ({ ...prev, guestCount: Math.max(1, limit) }));
     }
   }, [maxGuestsLimit, rsvpData.guestCount]);
@@ -223,9 +223,9 @@ export default function EventRSVPPage() {
         // Fetch organizer name from EventMembers
         try {
           const members = await getEventMembers(eventId);
-          console.log('[RSVP] Event members:', members);
+          // console.log('[RSVP] Event members:', members);
           const organizer = members.find(m => m.role === 'organizer');
-          console.log('[RSVP] Found organizer:', organizer);
+          // console.log('[RSVP] Found organizer:', organizer);
           if (organizer) {
             // The name could be in different fields
             const name = organizer.name || organizer.full_name || organizer.userName;
@@ -235,11 +235,11 @@ export default function EventRSVPPage() {
             }
           }
         } catch (memberError) {
-          console.warn('[RSVP] Failed to load organizer:', memberError);
+          // console.warn('[RSVP] Failed to load organizer:', memberError);
         }
 
         } catch (err) {
-        console.error('[RSVP] Error loading event:', err);
+        // console.error('[RSVP] Error loading event:', err);
         setError('שגיאה בטעינת האירוע');
       } finally {
         setIsLoading(false);
@@ -282,12 +282,12 @@ export default function EventRSVPPage() {
 
         setIsSubmitting(true);
 
-        console.log('[RSVP] ========== STARTING RSVP SUBMISSION ==========');
-        console.log('[RSVP] Event data:', event);
-        console.log('[RSVP] RSVP data:', rsvpData);
+        // console.log('[RSVP] ========== STARTING RSVP SUBMISSION ==========');
+        // console.log('[RSVP] Event data:', event);
+        // console.log('[RSVP] RSVP data:', rsvpData);
 
         try {
-          console.log('[RSVP] Step 1: Creating RSVP record...');
+          // console.log('[RSVP] Step 1: Creating RSVP record...');
           await createEventRSVP({
             eventId: eventId,
             name: rsvpData.name,
@@ -297,16 +297,16 @@ export default function EventRSVPPage() {
             notes: rsvpData.notes || null,
             userId: isAuthenticated && user?.id ? user.id : null
           });
-          console.log('[RSVP] ✅ RSVP record created successfully');
+          // console.log('[RSVP] ✅ RSVP record created successfully');
 
           // Send notification to event owner if notifyOnRsvp is enabled (default true)
           const notifyOnRsvp = event?.notifyOnRsvp !== false;
           const ownerId = event?.owner_id || event?.ownerId;
 
-          console.log('[RSVP] Step 2: Checking notification settings...');
-          console.log('[RSVP] 🔔 notifyOnRsvp:', notifyOnRsvp);
-          console.log('[RSVP] 🔔 ownerId:', ownerId);
-          console.log('[RSVP] 🔔 event.title:', event?.title);
+          // console.log('[RSVP] Step 2: Checking notification settings...');
+          // console.log('[RSVP] 🔔 notifyOnRsvp:', notifyOnRsvp);
+          // console.log('[RSVP] 🔔 ownerId:', ownerId);
+          // console.log('[RSVP] 🔔 event.title:', event?.title);
 
           if (notifyOnRsvp && ownerId) {
             try {
@@ -319,38 +319,38 @@ export default function EventRSVPPage() {
                 title: `אישור הגעה חדש! 📋`,
                 message: `${rsvpData.name} הגיב/ה לאירוע "${event.title}": ${attendanceText}${guestText}`,
                 eventId: eventId,
-                actionUrl: `https://register.plan-ora.net${createPageUrl(`EventDetail?id=${eventId}&tab=rsvp`)}`,
+                actionUrl: `https://plan-ora.net${createPageUrl(`EventDetail?id=${eventId}&tab=rsvp`)}`,
                 priority: 'high',
                 sendPush: true
               };
 
-              console.log('[RSVP] Step 3: Sending notification with payload:', notificationPayload);
+              // console.log('[RSVP] Step 3: Sending notification with payload:', notificationPayload);
 
               const notifResult = await createNotificationAndSendPush(notificationPayload);
 
-              console.log('[RSVP] ✅✅✅ Notification sent successfully! Result:', notifResult);
+              // console.log('[RSVP] ✅✅✅ Notification sent successfully! Result:', notifResult);
             } catch (notifyErr) {
-              console.error('[RSVP] ❌❌❌ NOTIFICATION FAILED:', notifyErr);
-              console.error('[RSVP] Error details:', {
+              // console.error('[RSVP] ❌❌❌ NOTIFICATION FAILED:', notifyErr);
+              // console.error('[RSVP] Error details:', {
                 message: notifyErr.message,
                 stack: notifyErr.stack,
                 name: notifyErr.name
               });
             }
           } else {
-            console.log('[RSVP] ⚠️ Notification SKIPPED - Reason:', {
+            // console.log('[RSVP] ⚠️ Notification SKIPPED - Reason:', {
               notifyOnRsvp,
               hasOwnerId: !!ownerId,
               ownerId
             });
           }
 
-          console.log('[RSVP] ========== RSVP SUBMISSION COMPLETED ==========');
+          // console.log('[RSVP] ========== RSVP SUBMISSION COMPLETED ==========');
           setSubmitted(true);
           toast.success('התשובה נשמרה בהצלחה! 🎉');
         } catch (err) {
-          console.error('[RSVP] ❌❌❌ RSVP SUBMISSION ERROR:', err);
-          console.error('[RSVP] Error details:', {
+          // console.error('[RSVP] ❌❌❌ RSVP SUBMISSION ERROR:', err);
+          // console.error('[RSVP] Error details:', {
             message: err.message,
             stack: err.stack
           });
@@ -733,7 +733,7 @@ const addToCalendar = async () => {
                     variant="outline"
                     size="icon"
                     onClick={() => {
-                      console.log('[RSVP] Plus clicked - maxGuestsLimit:', maxGuestsLimit, 'guestCount:', rsvpData.guestCount);
+                      // console.log('[RSVP] Plus clicked - maxGuestsLimit:', maxGuestsLimit, 'guestCount:', rsvpData.guestCount);
                       // Check max guests limit from invite link or URL
                       if (maxGuestsLimit !== null && maxGuestsLimit > 0 && rsvpData.guestCount >= maxGuestsLimit) {
                         toast.error(`הגבלת קישור: עד ${maxGuestsLimit} אורחים בלבד`);

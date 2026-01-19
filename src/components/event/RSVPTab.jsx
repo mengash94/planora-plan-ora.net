@@ -107,7 +107,7 @@ export default function RSVPTab({ eventId, event, isManager }) {
   };
 
   const getRSVPLink = () => {
-    return `https://register.plan-ora.net${createPageUrl(`EventRSVP?id=${eventId}`)}`;
+    return `https://plan-ora.net${createPageUrl(`EventRSVP?id=${eventId}`)}`;
   };
 
   const handleCopyLink = async () => {

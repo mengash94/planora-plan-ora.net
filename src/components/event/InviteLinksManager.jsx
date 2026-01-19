@@ -76,7 +76,7 @@ export default function InviteLinksManager({ eventId, eventTitle }) {
   const generateFullUrl = (link) => {
     const code = typeof link === 'string' ? link : link?.code;
     const max = typeof link === 'object' && link?.maxGuests ? `&max=${link.maxGuests}` : '';
-    return `https://register.plan-ora.net/EventRSVP?id=${eventId}&code=${code}${max}`;
+    return `https://plan-ora.net/EventRSVP?id=${eventId}&code=${code}${max}`;
   };
 
   const handleCopyLink = async (link) => {
