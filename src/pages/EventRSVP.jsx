@@ -64,7 +64,7 @@ export default function EventRSVPPage() {
   
   const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const [event, setEvent] = useState(null);
-  const [ownerName, setOwnerName] = useState('מארגן האירוע');
+
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
@@ -197,28 +197,7 @@ export default function EventRSVPPage() {
 
         setEvent(eventDetails);
 
-        const ownerId = eventDetails.ownerId || eventDetails.owner_id || eventDetails._uid;
-        console.log('[RSVP] Owner ID:', ownerId);
 
-        if (ownerId) {
-          try {
-            const ownerDetails = await getUserById(ownerId);
-            console.log('[RSVP] Owner details:', ownerDetails);
-            if (ownerDetails) {
-              const resolvedOwnerName = ownerDetails.name || 
-                              ownerDetails.full_name ||
-                              ownerDetails.fullName ||
-                              ownerDetails.displayName ||
-                              ownerDetails.email?.split('@')[0] ||
-                              `${ownerDetails.firstName || ''} ${ownerDetails.lastName || ''}`.trim() ||
-                              'מארגן האירוע';
-              console.log('[RSVP] Resolved owner name:', resolvedOwnerName);
-              setOwnerName(resolvedOwnerName);
-            }
-          } catch (ownerError) {
-            console.error('[RSVP] Failed to load owner details:', ownerError);
-          }
-        }
 
       } catch (err) {
         console.error('[RSVP] Error loading event:', err);
@@ -375,7 +354,7 @@ export default function EventRSVPPage() {
       : new Date(new Date(startDate).getTime() + 2 * 60 * 60 * 1000).toISOString().replace(/-|:|\.\d+/g, '');
 
     const title = encodeURIComponent(event.title);
-    const details = encodeURIComponent(event.description || `הוזמנת לאירוע של ${ownerName}`);
+    const details = encodeURIComponent(event.description || 'הוזמנת לאירוע');
     const location = encodeURIComponent(event.location || '');
 
     const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&location=${location}`;
@@ -607,13 +586,7 @@ export default function EventRSVPPage() {
                 </div>
               )}
 
-              {/* Organizer */}
-              <div className="flex items-center gap-2 justify-center pt-2 pb-1 opacity-80">
-                <Users className="w-4 h-4 text-gray-400" />
-                <span className="text-xs text-gray-500">
-                  מארגן/ת: <span className="font-medium">{ownerName}</span>
-                </span>
-              </div>
+
               </div>
               </div>
 
