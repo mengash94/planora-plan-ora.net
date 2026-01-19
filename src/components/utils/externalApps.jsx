@@ -48,14 +48,17 @@ export async function openExternalApp(url) {
 
   try {
     if (isNativeCapacitor()) {
-      // Always open in external browser to mimic regular browser behavior
+      // Prefer system browser (full Chrome/Safari) to let OS handle app links
+      try {
+        w.open(url, '_system');
+        return true;
+      } catch {}
+      // Fallback to Capacitor Browser (Custom Tabs / SFSafariViewController)
       const Browser = getCapacitorBrowser();
       if (Browser?.open) {
         await Browser.open({ url });
         return true;
       }
-      // Fallback for older Capacitor builds
-      w.open(url, '_system');
       return true;
     }
 
@@ -74,7 +77,7 @@ export async function openExternalApp(url) {
 export async function openWazeByQuery(query, navigate = true) {
   const q = encodeURIComponent(query || '');
   // Always use universal link to mimic normal browser behavior
-  const url = `https://www.waze.com/ul?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
+  const url = `https://waze.com/ul?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
   return openExternalApp(url);
 }
 
