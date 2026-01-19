@@ -385,17 +385,17 @@ const addToCalendar = () => {
   const openWaze = () => {
     if (!event?.location) return;
     const query = encodeURIComponent(event.location);
-    // כתובת Universal Link תקנית
+    // Universal Link - דפדפנים מודרניים יפתחו את האפליקציה אם מותקנת
     const url = `https://waze.com/ul?q=${query}&navigate=yes`;
-    openExternalUrl(url); // בזכות ה-_system ב-helper, זה יקפוץ לאפליקציה
+    window.open(url, '_blank');
   };
 
   const openGoogleMaps = () => {
     if (!event?.location) return;
     const query = encodeURIComponent(event.location);
-    // תיקון ה-URL לפורמט חיפוש תקני של גוגל מפות
+    // Google Maps Universal Link
     const url = `https://www.google.com/maps/search/?api=1&query=${query}`;
-    openExternalUrl(url);
+    window.open(url, '_blank');
   };
 
 
