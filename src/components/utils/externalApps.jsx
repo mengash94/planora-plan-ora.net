@@ -48,17 +48,14 @@ export async function openExternalApp(url) {
 
   try {
     if (isNativeCapacitor()) {
-      // Prefer full system browser to best mimic a regular Chrome/Safari session
-      try {
-        w.open(url, '_system');
-        return true;
-      } catch {}
-      // Fallback: Capacitor Browser (Custom Tabs / SFSafariViewController)
+      // Always open in external browser to mimic regular browser behavior
       const Browser = getCapacitorBrowser();
       if (Browser?.open) {
         await Browser.open({ url });
         return true;
       }
+      // Fallback for older Capacitor builds
+      w.open(url, '_system');
       return true;
     }
 
@@ -75,36 +72,10 @@ export async function openExternalApp(url) {
 
 // פתיחת Waze
 export async function openWazeByQuery(query, navigate = true) {
-  const raw = String(query || '').trim();
-  const coordMatch = raw.match(/^\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$/);
-  const useLl = !!coordMatch;
-  const ll = useLl ? `${coordMatch[1]},${coordMatch[2]}` : null;
-  const q = encodeURIComponent(raw);
-
-  const w = getWin();
-  const native = isNativeCapacitor();
-  const httpsUrl = useLl
-    ? `https://waze.com/ul?ll=${ll}&navigate=${navigate ? 'yes' : 'no'}`
-    : `https://waze.com/ul?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
-
-  // On native: try direct scheme first (more reliable), then fallback to https
-  if (native && w) {
-    try {
-      setTimeout(() => {
-        openExternalApp(httpsUrl);
-      }, 400);
-      const scheme = useLl
-        ? `waze://?ll=${ll}&navigate=${navigate ? 'yes' : 'no'}`
-        : `waze://?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
-      w.location.href = scheme;
-      return true;
-    } catch {
-      return openExternalApp(httpsUrl);
-    }
-  }
-
-  // Web: regular https link
-  return openExternalApp(httpsUrl);
+  const q = encodeURIComponent(query || '');
+  // Always use universal link to mimic normal browser behavior
+  const url = `https://www.waze.com/ul?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
+  return openExternalApp(url);
 }
 
 // פתיחת Google Maps
