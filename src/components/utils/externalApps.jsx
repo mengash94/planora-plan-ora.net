@@ -49,14 +49,13 @@ async function openUrlScheme(schemeUrl, fallbackUrl) {
     // ⚠️ ניסיון 1: App Launcher plugin (הדרך הנכונה לפתוח URL schemes)
     if (w.Capacitor?.Plugins?.AppLauncher?.openUrl) {
       try {
-        // בדוק אם אפשר לפתוח
-        const canOpen = await w.Capacitor.Plugins.AppLauncher.canOpenUrl({ url: schemeUrl });
-        if (canOpen?.value) {
-          await w.Capacitor.Plugins.AppLauncher.openUrl({ url: schemeUrl });
-          return true;
-        }
+        // תמיד נסה לפתוח, גם אם canOpenUrl מחזיר false (יכול להיות בעיית הרשאות)
+        await w.Capacitor.Plugins.AppLauncher.openUrl({ url: schemeUrl });
+        // תן זמן לאפליקציה להיפתח
+        await new Promise(resolve => setTimeout(resolve, 300));
+        return true;
       } catch (err) {
-        console.debug('[externalApps] AppLauncher failed:', err.message);
+        console.debug('[externalApps] AppLauncher.openUrl failed:', err.message);
       }
     }
     
@@ -66,24 +65,22 @@ async function openUrlScheme(schemeUrl, fallbackUrl) {
       const appLauncherModule = await importDynamic('@capacitor/app-launcher');
       
       if (appLauncherModule?.AppLauncher?.openUrl) {
-        const canOpen = await appLauncherModule.AppLauncher.canOpenUrl({ url: schemeUrl });
-        if (canOpen?.value) {
-          await appLauncherModule.AppLauncher.openUrl({ url: schemeUrl });
-          return true;
-        }
+        await appLauncherModule.AppLauncher.openUrl({ url: schemeUrl });
+        await new Promise(resolve => setTimeout(resolve, 300));
+        return true;
       }
     } catch (importErr) {
       console.debug('[externalApps] AppLauncher import failed:', importErr.message);
     }
     
-    // ⚠️ Fallback: נסה location.href (יעבוד אם LSApplicationQueriesSchemes מוגדר)
+    // ⚠️ ניסיון 3: location.href (יעבוד אם LSApplicationQueriesSchemes מוגדר)
     try {
       w.location.href = schemeUrl;
       // תן זמן לאפליקציה להיפתח
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, 500));
       return true;
-    } catch {
-      // נכשל, נסה fallback URL
+    } catch (err) {
+      console.debug('[externalApps] location.href failed:', err.message);
     }
   }
   
