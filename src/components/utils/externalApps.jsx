@@ -306,75 +306,22 @@ export async function openCalendarEvent({ title, description, location, start, e
   const w = getWin();
   const filename = `${(title || 'event').replace(/[^a-z0-9\u0590-\u05FF]/gi, '_')}.ics`;
 
-  // ⚠️ ב-Native: השתמש ב-Filesystem + Share plugins
+  // ⚠️ ב-Native: פתיחה ישירה באפליקציית היומן (ללא קובץ/מייל)
   if (isNativeCapacitor()) {
     try {
-      // ניסיון 1: Filesystem + Share plugins
-      if (w.Capacitor?.Plugins?.Filesystem && w.Capacitor?.Plugins?.Share) {
-        const { Filesystem, Share } = w.Capacitor.Plugins;
-        
-        // כתוב קובץ זמני
-        const result = await Filesystem.writeFile({
-          path: filename,
-          data: btoa(unescape(encodeURIComponent(icsContent))), // Base64 encode
-          directory: 'CACHE',
-          encoding: 'utf8'
-        });
-        
-        // שתף את הקובץ
-        await Share.share({
-          title: cleanTitle,
-          text: `הוסף ליומן: ${cleanTitle}`,
-          url: result.uri,
-          dialogTitle: 'הוסף ליומן'
-        });
-        
-        return true;
-      }
-      
-      // ניסיון 2: Dynamic import
-      try {
-        const importDynamic = new Function('specifier', 'return import(specifier)');
-        const [fsModule, shareModule] = await Promise.all([
-          importDynamic('@capacitor/filesystem'),
-          importDynamic('@capacitor/share')
-        ]);
-        
-        if (fsModule?.Filesystem && shareModule?.Share) {
-          const result = await fsModule.Filesystem.writeFile({
-            path: filename,
-            data: btoa(unescape(encodeURIComponent(icsContent))),
-            directory: 'CACHE'
-          });
-          
-          await shareModule.Share.share({
-            title: cleanTitle,
-            text: `הוסף ליומן: ${cleanTitle}`,
-            url: result.uri,
-            dialogTitle: 'הוסף ליומן'
-          });
-          
+      const importDynamic = new Function('specifier', 'return import(specifier)');
+      const appLauncherModule = await importDynamic('@capacitor/app-launcher');
+      // נסיון: Google Calendar (אם מותקן) - deep link ליצירת אירוע
+      const gcalScheme = `com.google.calendar://?action=create&text=${encodeURIComponent(title || '')}&dates=${startStr}/${endStr}&details=${encodeURIComponent(description || '')}&location=${encodeURIComponent(location || '')}`;
+      if (appLauncherModule?.AppLauncher?.openUrl) {
+        try {
+          await appLauncherModule.AppLauncher.openUrl({ url: gcalScheme });
           return true;
-        }
-      } catch (importErr) {
-        console.debug('[externalApps] Filesystem/Share import failed:', importErr.message);
+        } catch (_) {}
       }
-      
-      // ניסיון 3: Share plugin בלבד עם data URL
-      if (w.Capacitor?.Plugins?.Share) {
-        const dataUrl = `data:text/calendar;base64,${btoa(unescape(encodeURIComponent(icsContent)))}`;
-        await w.Capacitor.Plugins.Share.share({
-          title: cleanTitle,
-          text: icsContent,
-          dialogTitle: 'הוסף ליומן'
-        });
-        return true;
-      }
-    } catch (err) {
-      console.warn('[externalApps] Native calendar failed:', err);
-    }
-    
-    // Fallback ל-Google Calendar
+    } catch (_) {}
+
+    // נפילה: קישור אוניברסלי של Google Calendar (נפתח באפליקציה אם קיימת או בדפדפן)
     const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title || '')}&dates=${startStr}/${endStr}&details=${encodeURIComponent(description || '')}&location=${encodeURIComponent(location || '')}`;
     return openExternalApp(googleUrl);
   }
