@@ -310,8 +310,32 @@ export async function openCalendarEvent({ title, description, location, start, e
   if (isNativeCapacitor()) {
     try {
       const importDynamic = new Function('specifier', 'return import(specifier)');
-      const appLauncherModule = await importDynamic('@capacitor/app-launcher');
-      // נסיון: Google Calendar (אם מותקן) - deep link ליצירת אירוע
+      // Write ICS file to cache (no browser)
+      const fsModule = w?.Capacitor?.Plugins?.Filesystem ? { Filesystem: w.Capacitor.Plugins.Filesystem } : await importDynamic('@capacitor/filesystem');
+      if (fsModule?.Filesystem) {
+        const writeRes = await fsModule.Filesystem.writeFile({
+          path: filename,
+          data: icsContent,
+          directory: 'CACHE',
+          encoding: 'utf8'
+        });
+        // Try open the file directly with native app
+        const appLauncherModule = w?.Capacitor?.Plugins?.AppLauncher ? { AppLauncher: w.Capacitor.Plugins.AppLauncher } : await importDynamic('@capacitor/app-launcher');
+        if (appLauncherModule?.AppLauncher?.openUrl && writeRes?.uri) {
+          try {
+            await appLauncherModule.AppLauncher.openUrl({ url: writeRes.uri });
+            return true;
+          } catch (_) {}
+        }
+        // Fallback: native share sheet so user can choose Calendar app
+        const shareModule = w?.Capacitor?.Plugins?.Share ? { Share: w.Capacitor.Plugins.Share } : await importDynamic('@capacitor/share');
+        if (shareModule?.Share?.share && writeRes?.uri) {
+          await shareModule.Share.share({ title: cleanTitle, url: writeRes.uri, dialogTitle: 'הוסף ליומן' });
+          return true;
+        }
+      }
+    } catch (_) {}
+    // נסיון: Google Calendar (אם מותקן) - deep link ליצירת אירוע
       const gcalScheme = `com.google.calendar://?action=create&text=${encodeURIComponent(title || '')}&dates=${startStr}/${endStr}&details=${encodeURIComponent(description || '')}&location=${encodeURIComponent(location || '')}`;
       if (appLauncherModule?.AppLauncher?.openUrl) {
         try {
