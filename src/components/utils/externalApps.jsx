@@ -310,42 +310,38 @@ export async function openCalendarEvent({ title, description, location, start, e
   if (isNativeCapacitor()) {
     try {
       const importDynamic = new Function('specifier', 'return import(specifier)');
-      // Write ICS file to cache (no browser)
+      // 1) כתיבת קובץ ICS למטמון (ללא דפדפן)
       const fsModule = w?.Capacitor?.Plugins?.Filesystem ? { Filesystem: w.Capacitor.Plugins.Filesystem } : await importDynamic('@capacitor/filesystem');
-      if (fsModule?.Filesystem) {
-        const writeRes = await fsModule.Filesystem.writeFile({
-          path: filename,
-          data: icsContent,
-          directory: 'CACHE',
-          encoding: 'utf8'
-        });
-        // Try open the file directly with native app
-        const appLauncherModule = w?.Capacitor?.Plugins?.AppLauncher ? { AppLauncher: w.Capacitor.Plugins.AppLauncher } : await importDynamic('@capacitor/app-launcher');
-        if (appLauncherModule?.AppLauncher?.openUrl && writeRes?.uri) {
-          try {
-            await appLauncherModule.AppLauncher.openUrl({ url: writeRes.uri });
-            return true;
-          } catch (_) {}
-        }
-        // Fallback: native share sheet so user can choose Calendar app
-        const shareModule = w?.Capacitor?.Plugins?.Share ? { Share: w.Capacitor.Plugins.Share } : await importDynamic('@capacitor/share');
-        if (shareModule?.Share?.share && writeRes?.uri) {
-          await shareModule.Share.share({ title: cleanTitle, url: writeRes.uri, dialogTitle: 'הוסף ליומן' });
-          return true;
-        }
+      const writeRes = await fsModule.Filesystem.writeFile({
+        path: filename,
+        data: icsContent,
+        directory: 'CACHE',
+        encoding: 'utf8'
+      });
+
+      // 2) נסה לפתוח את הקובץ ישירות עם אפליקציה תואמת (Calendar)
+      const appLauncherModule = w?.Capacitor?.Plugins?.AppLauncher ? { AppLauncher: w.Capacitor.Plugins.AppLauncher } : await importDynamic('@capacitor/app-launcher');
+      if (appLauncherModule?.AppLauncher?.openUrl && writeRes?.uri) {
+        await appLauncherModule.AppLauncher.openUrl({ url: writeRes.uri });
+        return true;
       }
-    } catch (_) {}
-    // נסיון: Google Calendar (אם מותקן) - deep link ליצירת אירוע
-      const gcalScheme = `com.google.calendar://?action=create&text=${encodeURIComponent(title || '')}&dates=${startStr}/${endStr}&details=${encodeURIComponent(description || '')}&location=${encodeURIComponent(location || '')}`;
-      if (appLauncherModule?.AppLauncher?.openUrl) {
-        try {
-          await appLauncherModule.AppLauncher.openUrl({ url: gcalScheme });
-          return true;
-        } catch (_) {}
+
+      // 3) נסה deep-link ל-Google Calendar (אם מותקן)
+      try {
+        const gcalScheme = `com.google.calendar://?action=create&text=${encodeURIComponent(title || '')}&dates=${startStr}/${endStr}&details=${encodeURIComponent(description || '')}&location=${encodeURIComponent(location || '')}`;
+        await appLauncherModule.AppLauncher.openUrl({ url: gcalScheme });
+        return true;
+      } catch (_) {}
+
+      // 4) נפילה: חלון שיתוף מקומי עם קובץ ה-ICS
+      const shareModule = w?.Capacitor?.Plugins?.Share ? { Share: w.Capacitor.Plugins.Share } : await importDynamic('@capacitor/share');
+      if (shareModule?.Share?.share && writeRes?.uri) {
+        await shareModule.Share.share({ title: cleanTitle, url: writeRes.uri, dialogTitle: 'הוסף ליומן' });
+        return true;
       }
     } catch (_) {}
 
-    // נפילה: קישור אוניברסלי של Google Calendar (נפתח באפליקציה אם קיימת או בדפדפן)
+    // נפילה סופית: קישור אוניברסלי של Google Calendar (נפתח באפליקציה אם קיימת או בדפדפן)
     const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title || '')}&dates=${startStr}/${endStr}&details=${encodeURIComponent(description || '')}&location=${encodeURIComponent(location || '')}`;
     return openExternalApp(googleUrl);
   }
