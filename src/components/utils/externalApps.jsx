@@ -46,6 +46,21 @@ async function openUrlScheme(schemeUrl, fallbackUrl) {
   if (!w) return false;
 
   if (isNativeCapacitor()) {
+    // Prefer dynamic import AppLauncher first for Waze URLs
+    if (schemeUrl && schemeUrl.startsWith('waze://')) {
+      try {
+        const importDynamic = new Function('specifier', 'return import(specifier)');
+        const appLauncherModule = await importDynamic('@capacitor/app-launcher');
+        if (appLauncherModule?.AppLauncher?.openUrl) {
+          await appLauncherModule.AppLauncher.openUrl({ url: schemeUrl });
+          await new Promise(resolve => setTimeout(resolve, 300));
+          return true;
+        }
+      } catch (err) {
+        console.debug('[externalApps] Waze AppLauncher import-first failed:', err.message);
+      }
+    }
+
     // ⚠️ ניסיון 1: App Launcher plugin (הדרך הנכונה לפתוח URL schemes)
     if (w.Capacitor?.Plugins?.AppLauncher?.openUrl) {
       try {
