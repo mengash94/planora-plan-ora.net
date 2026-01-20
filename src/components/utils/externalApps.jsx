@@ -46,21 +46,6 @@ async function openUrlScheme(schemeUrl, fallbackUrl) {
   if (!w) return false;
 
   if (isNativeCapacitor()) {
-    // Prefer dynamic import AppLauncher first for Waze URLs
-    if (schemeUrl && schemeUrl.startsWith('waze://')) {
-      try {
-        const importDynamic = new Function('specifier', 'return import(specifier)');
-        const appLauncherModule = await importDynamic('@capacitor/app-launcher');
-        if (appLauncherModule?.AppLauncher?.openUrl) {
-          await appLauncherModule.AppLauncher.openUrl({ url: schemeUrl });
-          await new Promise(resolve => setTimeout(resolve, 300));
-          return true;
-        }
-      } catch (err) {
-        console.debug('[externalApps] Waze AppLauncher import-first failed:', err.message);
-      }
-    }
-
     // ⚠️ ניסיון 1: App Launcher plugin (הדרך הנכונה לפתוח URL schemes)
     if (w.Capacitor?.Plugins?.AppLauncher?.openUrl) {
       try {
@@ -151,44 +136,24 @@ export async function openWazeByQuery(query, navigate = true) {
   const ll = useLl ? `${coordMatch[1]},${coordMatch[2]}` : null;
   const q = encodeURIComponent(raw);
   
-  // URL scheme ישיר - יפתח את Waze ישירות אם מותקן (רק דרך AppLauncher)
-  const schemeUrl = useLl
-    ? `waze://?ll=${ll}&navigate=${navigate ? 'yes' : 'no'}`
-    : `waze://?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
-  
-  // Universal Link - יעבוד טוב יותר ב-Capacitor דרך Browser plugin
+  // Universal Link - הדרך הטובה ביותר לפתוח Waze ב-Capacitor
   // Universal Link יפתח את Waze אם הוא מותקן, או יעביר לדף ההורדה
   const universalLink = useLl
     ? `https://www.waze.com/ul?ll=${ll}&navigate=${navigate ? 'yes' : 'no'}`
     : `https://www.waze.com/ul?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
   
-  // ⚠️ ב-Native: נסה AppLauncher עם URL scheme קודם, אחרת Universal Link דרך Browser
-  if (isNativeCapacitor()) {
-    // נסה AppLauncher (יעבוד אם הפלאגין זמין)
-    const opened = await openUrlScheme(schemeUrl, universalLink);
-    if (opened) return true;
-    
-    // אם AppLauncher לא עבד, פתח Universal Link דרך Browser plugin
-    return openExternalApp(universalLink);
-  }
-  
-  // ב-Web: פתח Universal Link
+  // ⚠️ תמיד משתמשים ב-Universal Link דרך Browser plugin (לא waze:// ישירות)
+  // זה מונע פתיחה ב-WebView
   return openExternalApp(universalLink);
 }
 
 // פתיחת Waze עם קואורדינטות
 export async function openWaze(lat, lng, navigate = true) {
-  const schemeUrl = `waze://?ll=${lat},${lng}&navigate=${navigate ? 'yes' : 'no'}`;
+  // Universal Link - הדרך הטובה ביותר לפתוח Waze ב-Capacitor
   const universalLink = `https://www.waze.com/ul?ll=${lat},${lng}&navigate=${navigate ? 'yes' : 'no'}`;
   
-  if (isNativeCapacitor()) {
-    // נסה AppLauncher קודם, אחרת Universal Link דרך Browser
-    const opened = await openUrlScheme(schemeUrl, universalLink);
-    if (opened) return true;
-    
-    return openExternalApp(universalLink);
-  }
-  
+  // ⚠️ תמיד משתמשים ב-Universal Link דרך Browser plugin (לא waze:// ישירות)
+  // זה מונע פתיחה ב-WebView
   return openExternalApp(universalLink);
 }
 
