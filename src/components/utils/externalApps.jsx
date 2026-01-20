@@ -123,17 +123,11 @@ export async function openExternalApp(url) {
       console.debug('[externalApps] Browser import failed:', importErr.message);
     }
     
-    // ⚠️ Fallback: נסה window.open עם '_system' (אבל זה לא תמיד עובד ב-Capacitor)
-    console.warn('[externalApps] Browser plugin not available, trying window.open...');
-    try {
-      w.open(url, '_system');
-      return true;
-    } catch (err) {
-      console.error('[externalApps] window.open failed:', err);
-      // אם גם זה לא עובד, נסה location.href כמוצא אחרון
-      w.location.href = url;
-      return true;
-    }
+    // ⚠️ Fallback: אם Browser plugin לא זמין, זה בעיה - צריך להתקין אותו
+    console.error('[externalApps] Browser plugin not available! Cannot open external URL without it.');
+    // לא משתמשים ב-window.open או location.href כי זה פותח ב-WebView
+    // המשתמש צריך לוודא ש-Browser plugin מותקן ומוגדר נכון
+    return false;
   }
   
   // Web רגיל - פתיחה בטאב חדש
