@@ -88,18 +88,12 @@ async function openUrlScheme(schemeUrl, fallbackUrl) {
       console.debug('[externalApps] AppLauncher import failed:', importErr.message);
     }
     
-    // ⚠️ ניסיון 3: location.href (יעבוד אם LSApplicationQueriesSchemes מוגדר)
-    try {
-      w.location.href = schemeUrl;
-      // תן זמן לאפליקציה להיפתח
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return true;
-    } catch (err) {
-      console.debug('[externalApps] location.href failed:', err.message);
-    }
+    // ⚠️ לא משתמשים ב-location.href כי זה פותח ב-WebView ונותן שגיאה
+    // במקום זה, עוברים ישירות ל-Universal Link דרך Browser plugin
   }
   
-  // Fallback: פתח את ה-fallback URL (Universal Link או דף אינטרנט)
+  // Fallback: פתח את ה-fallback URL (Universal Link) דרך Browser plugin
+  // Universal Link יעבוד טוב יותר ויפתח את Waze אם הוא מותקן
   if (fallbackUrl) {
     return openExternalApp(fallbackUrl);
   }
@@ -157,35 +151,45 @@ export async function openWazeByQuery(query, navigate = true) {
   const ll = useLl ? `${coordMatch[1]},${coordMatch[2]}` : null;
   const q = encodeURIComponent(raw);
   
-  // URL scheme ישיר - יפתח את Waze ישירות אם מותקן
+  // URL scheme ישיר - יפתח את Waze ישירות אם מותקן (רק דרך AppLauncher)
   const schemeUrl = useLl
     ? `waze://?ll=${ll}&navigate=${navigate ? 'yes' : 'no'}`
     : `waze://?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
   
-  // Universal Link - fallback אם Waze לא מותקן
-  const fallbackUrl = useLl
+  // Universal Link - יעבוד טוב יותר ב-Capacitor דרך Browser plugin
+  // Universal Link יפתח את Waze אם הוא מותקן, או יעביר לדף ההורדה
+  const universalLink = useLl
     ? `https://www.waze.com/ul?ll=${ll}&navigate=${navigate ? 'yes' : 'no'}`
     : `https://www.waze.com/ul?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
   
-  // ⚠️ ב-Native: נסה URL scheme קודם, אחרת Universal Link
+  // ⚠️ ב-Native: נסה AppLauncher עם URL scheme קודם, אחרת Universal Link דרך Browser
   if (isNativeCapacitor()) {
-    return openUrlScheme(schemeUrl, fallbackUrl);
+    // נסה AppLauncher (יעבוד אם הפלאגין זמין)
+    const opened = await openUrlScheme(schemeUrl, universalLink);
+    if (opened) return true;
+    
+    // אם AppLauncher לא עבד, פתח Universal Link דרך Browser plugin
+    return openExternalApp(universalLink);
   }
   
   // ב-Web: פתח Universal Link
-  return openExternalApp(fallbackUrl);
+  return openExternalApp(universalLink);
 }
 
 // פתיחת Waze עם קואורדינטות
 export async function openWaze(lat, lng, navigate = true) {
   const schemeUrl = `waze://?ll=${lat},${lng}&navigate=${navigate ? 'yes' : 'no'}`;
-  const fallbackUrl = `https://www.waze.com/ul?ll=${lat},${lng}&navigate=${navigate ? 'yes' : 'no'}`;
+  const universalLink = `https://www.waze.com/ul?ll=${lat},${lng}&navigate=${navigate ? 'yes' : 'no'}`;
   
   if (isNativeCapacitor()) {
-    return openUrlScheme(schemeUrl, fallbackUrl);
+    // נסה AppLauncher קודם, אחרת Universal Link דרך Browser
+    const opened = await openUrlScheme(schemeUrl, universalLink);
+    if (opened) return true;
+    
+    return openExternalApp(universalLink);
   }
   
-  return openExternalApp(fallbackUrl);
+  return openExternalApp(universalLink);
 }
 
 // פתיחת Google Maps עם שאילתת חיפוש
