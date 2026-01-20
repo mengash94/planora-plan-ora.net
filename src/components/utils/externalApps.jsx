@@ -95,9 +95,12 @@ export async function openExternalApp(url) {
   if (!w) return false;
 
   if (isNativeCapacitor()) {
+    console.log('[externalApps] Opening URL in native app:', url);
+    
     // ⚠️ ניסיון 1: Browser plugin (פותח בדפדפן החיצוני)
     if (w.Capacitor?.Plugins?.Browser?.open) {
       try {
+        console.log('[externalApps] Using Browser plugin...');
         await w.Capacitor.Plugins.Browser.open({ url });
         return true;
       } catch (error) {
@@ -107,20 +110,30 @@ export async function openExternalApp(url) {
     
     // ⚠️ ניסיון 2: Dynamic import של Browser plugin
     try {
+      console.log('[externalApps] Trying dynamic import of Browser plugin...');
       const importDynamic = new Function('specifier', 'return import(specifier)');
       const browserModule = await importDynamic('@capacitor/browser');
       
       if (browserModule?.Browser?.open) {
         await browserModule.Browser.open({ url });
+        console.log('[externalApps] Browser plugin opened successfully via dynamic import');
         return true;
       }
     } catch (importErr) {
       console.debug('[externalApps] Browser import failed:', importErr.message);
     }
     
-    // ⚠️ Fallback: window.open עם '_system'
-    w.open(url, '_system');
-    return true;
+    // ⚠️ Fallback: נסה window.open עם '_system' (אבל זה לא תמיד עובד ב-Capacitor)
+    console.warn('[externalApps] Browser plugin not available, trying window.open...');
+    try {
+      w.open(url, '_system');
+      return true;
+    } catch (err) {
+      console.error('[externalApps] window.open failed:', err);
+      // אם גם זה לא עובד, נסה location.href כמוצא אחרון
+      w.location.href = url;
+      return true;
+    }
   }
   
   // Web רגיל - פתיחה בטאב חדש
