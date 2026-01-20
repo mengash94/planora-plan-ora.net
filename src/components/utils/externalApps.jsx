@@ -46,6 +46,21 @@ async function openUrlScheme(schemeUrl, fallbackUrl) {
   if (!w) return false;
 
   if (isNativeCapacitor()) {
+    // Prefer dynamic import AppLauncher first for Waze URLs
+    if (schemeUrl && schemeUrl.startsWith('waze://')) {
+      try {
+        const importDynamic = new Function('specifier', 'return import(specifier)');
+        const appLauncherModule = await importDynamic('@capacitor/app-launcher');
+        if (appLauncherModule?.AppLauncher?.openUrl) {
+          await appLauncherModule.AppLauncher.openUrl({ url: schemeUrl });
+          await new Promise(resolve => setTimeout(resolve, 300));
+          return true;
+        }
+      } catch (err) {
+        console.debug('[externalApps] Waze AppLauncher import-first failed:', err.message);
+      }
+    }
+
     // ⚠️ ניסיון 1: App Launcher plugin (הדרך הנכונה לפתוח URL schemes)
     if (w.Capacitor?.Plugins?.AppLauncher?.openUrl) {
       try {
@@ -95,12 +110,9 @@ export async function openExternalApp(url) {
   if (!w) return false;
 
   if (isNativeCapacitor()) {
-    console.log('[externalApps] Opening URL in native app:', url);
-    
     // ⚠️ ניסיון 1: Browser plugin (פותח בדפדפן החיצוני)
     if (w.Capacitor?.Plugins?.Browser?.open) {
       try {
-        console.log('[externalApps] Using Browser plugin...');
         await w.Capacitor.Plugins.Browser.open({ url });
         return true;
       } catch (error) {
@@ -110,24 +122,20 @@ export async function openExternalApp(url) {
     
     // ⚠️ ניסיון 2: Dynamic import של Browser plugin
     try {
-      console.log('[externalApps] Trying dynamic import of Browser plugin...');
       const importDynamic = new Function('specifier', 'return import(specifier)');
       const browserModule = await importDynamic('@capacitor/browser');
       
       if (browserModule?.Browser?.open) {
         await browserModule.Browser.open({ url });
-        console.log('[externalApps] Browser plugin opened successfully via dynamic import');
         return true;
       }
     } catch (importErr) {
       console.debug('[externalApps] Browser import failed:', importErr.message);
     }
     
-    // ⚠️ Fallback: אם Browser plugin לא זמין, זה בעיה - צריך להתקין אותו
-    console.error('[externalApps] Browser plugin not available! Cannot open external URL without it.');
-    // לא משתמשים ב-window.open או location.href כי זה פותח ב-WebView
-    // המשתמש צריך לוודא ש-Browser plugin מותקן ומוגדר נכון
-    return false;
+    // ⚠️ Fallback: window.open עם '_system'
+    w.open(url, '_system');
+    return true;
   }
   
   // Web רגיל - פתיחה בטאב חדש
@@ -143,24 +151,44 @@ export async function openWazeByQuery(query, navigate = true) {
   const ll = useLl ? `${coordMatch[1]},${coordMatch[2]}` : null;
   const q = encodeURIComponent(raw);
   
-  // Universal Link - הדרך הטובה ביותר לפתוח Waze ב-Capacitor
+  // URL scheme ישיר - יפתח את Waze ישירות אם מותקן (רק דרך AppLauncher)
+  const schemeUrl = useLl
+    ? `waze://?ll=${ll}&navigate=${navigate ? 'yes' : 'no'}`
+    : `waze://?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
+  
+  // Universal Link - יעבוד טוב יותר ב-Capacitor דרך Browser plugin
   // Universal Link יפתח את Waze אם הוא מותקן, או יעביר לדף ההורדה
   const universalLink = useLl
     ? `https://www.waze.com/ul?ll=${ll}&navigate=${navigate ? 'yes' : 'no'}`
     : `https://www.waze.com/ul?q=${q}&navigate=${navigate ? 'yes' : 'no'}`;
   
-  // ⚠️ תמיד משתמשים ב-Universal Link דרך Browser plugin (לא waze:// ישירות)
-  // זה מונע פתיחה ב-WebView
+  // ⚠️ ב-Native: נסה AppLauncher עם URL scheme קודם, אחרת Universal Link דרך Browser
+  if (isNativeCapacitor()) {
+    // נסה AppLauncher (יעבוד אם הפלאגין זמין)
+    const opened = await openUrlScheme(schemeUrl, universalLink);
+    if (opened) return true;
+    
+    // אם AppLauncher לא עבד, פתח Universal Link דרך Browser plugin
+    return openExternalApp(universalLink);
+  }
+  
+  // ב-Web: פתח Universal Link
   return openExternalApp(universalLink);
 }
 
 // פתיחת Waze עם קואורדינטות
 export async function openWaze(lat, lng, navigate = true) {
-  // Universal Link - הדרך הטובה ביותר לפתוח Waze ב-Capacitor
+  const schemeUrl = `waze://?ll=${lat},${lng}&navigate=${navigate ? 'yes' : 'no'}`;
   const universalLink = `https://www.waze.com/ul?ll=${lat},${lng}&navigate=${navigate ? 'yes' : 'no'}`;
   
-  // ⚠️ תמיד משתמשים ב-Universal Link דרך Browser plugin (לא waze:// ישירות)
-  // זה מונע פתיחה ב-WebView
+  if (isNativeCapacitor()) {
+    // נסה AppLauncher קודם, אחרת Universal Link דרך Browser
+    const opened = await openUrlScheme(schemeUrl, universalLink);
+    if (opened) return true;
+    
+    return openExternalApp(universalLink);
+  }
+  
   return openExternalApp(universalLink);
 }
 
@@ -278,16 +306,105 @@ export async function openCalendarEvent({ title, description, location, start, e
   const w = getWin();
   const filename = `${(title || 'event').replace(/[^a-z0-9\u0590-\u05FF]/gi, '_')}.ics`;
 
-  // ⚠️ ב-Native: פתח ישירות את Google Calendar דרך Browser plugin
-  // זה יפתח את אפליקציית היומן במכשיר (Google Calendar או Apple Calendar)
+  // ⚠️ ב-Native: השתמש ב-Filesystem + Share plugins
   if (isNativeCapacitor()) {
+    try {
+      // ניסיון 1: Filesystem + Share plugins
+      if (w.Capacitor?.Plugins?.Filesystem && w.Capacitor?.Plugins?.Share) {
+        const { Filesystem, Share } = w.Capacitor.Plugins;
+        
+        // כתוב קובץ זמני
+        const result = await Filesystem.writeFile({
+          path: filename,
+          data: btoa(unescape(encodeURIComponent(icsContent))), // Base64 encode
+          directory: 'CACHE',
+          encoding: 'utf8'
+        });
+        
+        // שתף את הקובץ
+        await Share.share({
+          title: cleanTitle,
+          text: `הוסף ליומן: ${cleanTitle}`,
+          url: result.uri,
+          dialogTitle: 'הוסף ליומן'
+        });
+        
+        return true;
+      }
+      
+      // ניסיון 2: Dynamic import
+      try {
+        const importDynamic = new Function('specifier', 'return import(specifier)');
+        const [fsModule, shareModule] = await Promise.all([
+          importDynamic('@capacitor/filesystem'),
+          importDynamic('@capacitor/share')
+        ]);
+        
+        if (fsModule?.Filesystem && shareModule?.Share) {
+          const result = await fsModule.Filesystem.writeFile({
+            path: filename,
+            data: btoa(unescape(encodeURIComponent(icsContent))),
+            directory: 'CACHE'
+          });
+          
+          await shareModule.Share.share({
+            title: cleanTitle,
+            text: `הוסף ליומן: ${cleanTitle}`,
+            url: result.uri,
+            dialogTitle: 'הוסף ליומן'
+          });
+          
+          return true;
+        }
+      } catch (importErr) {
+        console.debug('[externalApps] Filesystem/Share import failed:', importErr.message);
+      }
+      
+      // ניסיון 3: Share plugin בלבד עם data URL
+      if (w.Capacitor?.Plugins?.Share) {
+        const dataUrl = `data:text/calendar;base64,${btoa(unescape(encodeURIComponent(icsContent)))}`;
+        await w.Capacitor.Plugins.Share.share({
+          title: cleanTitle,
+          text: icsContent,
+          dialogTitle: 'הוסף ליומן'
+        });
+        return true;
+      }
+    } catch (err) {
+      console.warn('[externalApps] Native calendar failed:', err);
+    }
+    
+    // Fallback ל-Google Calendar
     const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title || '')}&dates=${startStr}/${endStr}&details=${encodeURIComponent(description || '')}&location=${encodeURIComponent(location || '')}`;
-    console.log('[externalApps] Opening calendar in native app:', googleUrl);
     return openExternalApp(googleUrl);
   }
 
-  // ⚠️ ב-Web: פתח Google Calendar ישירות במקום להוריד קובץ
-  // אם המשתמש רוצה להוריד קובץ, הוא יכול להשתמש בכפתור הנפרד להורדה
-  const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title || '')}&dates=${startStr}/${endStr}&details=${encodeURIComponent(description || '')}&location=${encodeURIComponent(location || '')}`;
-  return openExternalApp(googleUrl);
+  // ⚠️ ב-Web: הורדת קובץ ICS
+  try {
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.style.display = 'none';
+    
+    document.body.appendChild(link);
+    await new Promise(resolve => setTimeout(resolve, 50));
+    link.click();
+    
+    setTimeout(() => {
+      try {
+        if (link.parentNode) document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } catch {}
+    }, 200);
+    
+    return true;
+  } catch (err) {
+    console.error('[externalApps] Failed to download ICS:', err);
+    
+    // Fallback: Google Calendar
+    const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title || '')}&dates=${startStr}/${endStr}&details=${encodeURIComponent(description || '')}&location=${encodeURIComponent(location || '')}`;
+    return openExternalApp(googleUrl);
+  }
 }
