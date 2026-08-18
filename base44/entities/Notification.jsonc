@@ -1,0 +1,66 @@
+{
+  "name": "Notification",
+  "type": "object",
+  "properties": {
+    "userId": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05d4\u05de\u05e9\u05ea\u05de\u05e9 \u05e9\u05d0\u05de\u05d5\u05e8 \u05dc\u05e7\u05d1\u05dc \u05d0\u05ea \u05d4\u05d4\u05ea\u05e8\u05d0\u05d4"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "payment_received",
+        "event_invitation",
+        "task_assigned",
+        "task_completed",
+        "event_reminder",
+        "poll_created",
+        "poll_closed",
+        "member_joined",
+        "new_message"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05d4\u05d4\u05ea\u05e8\u05d0\u05d4"
+    },
+    "title": {
+      "type": "string",
+      "description": "\u05db\u05d5\u05ea\u05e8\u05ea \u05d4\u05d4\u05ea\u05e8\u05d0\u05d4"
+    },
+    "message": {
+      "type": "string",
+      "description": "\u05ea\u05d5\u05db\u05df \u05d4\u05d4\u05ea\u05e8\u05d0\u05d4 \u05d4\u05de\u05e4\u05d5\u05e8\u05d8"
+    },
+    "eventId": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05d4\u05d0\u05d9\u05e8\u05d5\u05e2 \u05d4\u05e7\u05e9\u05d5\u05e8 (\u05d0\u05dd \u05e8\u05dc\u05d5\u05d5\u05e0\u05d8\u05d9)"
+    },
+    "relatedId": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05d4\u05e4\u05e8\u05d9\u05d8 \u05d4\u05e7\u05e9\u05d5\u05e8 (\u05d4\u05d5\u05e6\u05d0\u05d4, \u05de\u05e9\u05d9\u05de\u05d4, \u05e1\u05e7\u05e8 \u05d5\u05db\u05d5')"
+    },
+    "isRead": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u05d4\u05d0\u05dd \u05d4\u05d4\u05ea\u05e8\u05d0\u05d4 \u05e0\u05e7\u05e8\u05d0\u05d4"
+    },
+    "actionUrl": {
+      "type": "string",
+      "description": "\u05e7\u05d9\u05e9\u05d5\u05e8 \u05dc\u05d1\u05d9\u05e6\u05d5\u05e2 \u05e4\u05e2\u05d5\u05dc\u05d4 (\u05d0\u05d5\u05e4\u05e6\u05d9\u05d5\u05e0\u05dc\u05d9)"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "normal",
+        "high"
+      ],
+      "default": "normal",
+      "description": "\u05e2\u05d3\u05d9\u05e4\u05d5\u05ea \u05d4\u05d4\u05ea\u05e8\u05d0\u05d4"
+    }
+  },
+  "required": [
+    "userId",
+    "type",
+    "title",
+    "message"
+  ]
+}

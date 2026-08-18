@@ -1,0 +1,48 @@
+{
+  "name": "UserActivity",
+  "type": "object",
+  "properties": {
+    "userId": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05d4\u05de\u05e9\u05ea\u05de\u05e9"
+    },
+    "activityType": {
+      "type": "string",
+      "enum": [
+        "login",
+        "event_create",
+        "event_join",
+        "task_complete",
+        "message_send",
+        "poll_vote",
+        "file_upload",
+        "profile_update"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05d4\u05e4\u05e2\u05d9\u05dc\u05d5\u05ea"
+    },
+    "relatedEntityId": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05d4\u05d9\u05e9\u05d5\u05ea \u05d4\u05e7\u05e9\u05d5\u05e8\u05d4 (\u05d0\u05d9\u05e8\u05d5\u05e2, \u05de\u05e9\u05d9\u05de\u05d4 \u05d5\u05db\u05d5')"
+    },
+    "relatedEntityType": {
+      "type": "string",
+      "description": "\u05e1\u05d5\u05d2 \u05d4\u05d9\u05e9\u05d5\u05ea \u05d4\u05e7\u05e9\u05d5\u05e8\u05d4"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "\u05de\u05d9\u05d3\u05e2 \u05e0\u05d5\u05e1\u05e3 \u05e2\u05dc \u05d4\u05e4\u05e2\u05d9\u05dc\u05d5\u05ea"
+    },
+    "deviceInfo": {
+      "type": "string",
+      "description": "\u05de\u05d9\u05d3\u05e2 \u05e2\u05dc \u05d4\u05de\u05db\u05e9\u05d9\u05e8"
+    },
+    "ipAddress": {
+      "type": "string",
+      "description": "\u05db\u05ea\u05d5\u05d1\u05ea IP"
+    }
+  },
+  "required": [
+    "userId",
+    "activityType"
+  ]
+}

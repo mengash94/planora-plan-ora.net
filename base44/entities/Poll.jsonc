@@ -1,0 +1,112 @@
+{
+  "name": "Poll",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05d4\u05d0\u05d9\u05e8\u05d5\u05e2"
+    },
+    "title": {
+      "type": "string",
+      "description": "\u05db\u05d5\u05ea\u05e8\u05ea \u05d4\u05e1\u05e7\u05e8"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "date",
+        "location",
+        "generic"
+      ],
+      "default": "generic",
+      "description": "\u05e1\u05d5\u05d2 \u05d4\u05e1\u05e7\u05e8"
+    },
+    "options": {
+      "type": "array",
+      "description": "\u05d0\u05e4\u05e9\u05e8\u05d5\u05d9\u05d5\u05ea \u05d4\u05e1\u05e7\u05e8 \u05dc\u05d1\u05d7\u05d9\u05e8\u05d4",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "location": {
+            "type": "string"
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "text"
+        ]
+      }
+    },
+    "votes": {
+      "type": "array",
+      "description": "\u05d4\u05e6\u05d1\u05e2\u05d5\u05ea \u05d4\u05de\u05e9\u05ea\u05de\u05e9\u05d9\u05dd",
+      "items": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string"
+          },
+          "option_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id",
+          "option_id"
+        ]
+      }
+    },
+    "allow_multiple": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u05d4\u05d0\u05dd \u05e0\u05d9\u05ea\u05df \u05dc\u05d1\u05d7\u05d5\u05e8 \u05de\u05e1\u05e4\u05e8 \u05d0\u05e4\u05e9\u05e8\u05d5\u05d9\u05d5\u05ea"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "\u05d4\u05d0\u05dd \u05d4\u05e1\u05e7\u05e8 \u05e4\u05e2\u05d9\u05dc"
+    },
+    "final_result": {
+      "type": "object",
+      "description": "\u05ea\u05d5\u05e6\u05d0\u05ea \u05e1\u05e7\u05e8 \u05e1\u05d5\u05e4\u05d9\u05ea (\u05d0\u05dd \u05d4\u05d5\u05d2\u05d3\u05e8\u05d4)",
+      "properties": {
+        "option_id": {
+          "type": "string"
+        },
+        "decided_by": {
+          "type": "string"
+        },
+        "decided_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  },
+  "required": [
+    "event_id",
+    "title",
+    "type",
+    "options"
+  ]
+}

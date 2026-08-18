@@ -1,0 +1,90 @@
+{
+  "name": "RecurringEventRule",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05d4\u05d0\u05d9\u05e8\u05d5\u05e2 \u05e9\u05d0\u05dc\u05d9\u05d5 \u05de\u05e9\u05d5\u05d9\u05da \u05db\u05dc\u05dc \u05d4\u05d7\u05d6\u05e8\u05ea\u05d9\u05d5\u05ea"
+    },
+    "recurrence_pattern": {
+      "type": "string",
+      "enum": [
+        "DAILY",
+        "WEEKLY",
+        "MONTHLY_BY_DAY_OF_MONTH",
+        "MONTHLY_BY_DAY_OF_WEEK",
+        "YEARLY"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05d4\u05d7\u05d6\u05e8\u05ea\u05d9\u05d5\u05ea"
+    },
+    "recurrence_interval": {
+      "type": "number",
+      "default": 1,
+      "description": "\u05db\u05dc \u05db\u05de\u05d4 \u05d6\u05de\u05df \u05d4\u05d0\u05d9\u05e8\u05d5\u05e2 \u05d7\u05d5\u05d6\u05e8 (1=\u05db\u05dc \u05d9\u05d5\u05dd/\u05e9\u05d1\u05d5\u05e2/\u05d7\u05d5\u05d3\u05e9, 2=\u05db\u05dc \u05d9\u05d5\u05de\u05d9\u05d9\u05dd/\u05e9\u05d1\u05d5\u05e2\u05d9\u05d9\u05dd \u05d5\u05db\u05d5')"
+    },
+    "recurrence_days_of_week": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "description": "\u05d0\u05d9\u05dc\u05d5 \u05d9\u05de\u05d9\u05dd \u05d1\u05e9\u05d1\u05d5\u05e2 (0=\u05e8\u05d0\u05e9\u05d5\u05df, 1=\u05e9\u05e0\u05d9, ... 6=\u05e9\u05d1\u05ea) - \u05e8\u05dc\u05d5\u05d5\u05e0\u05d8\u05d9 \u05dc-WEEKLY"
+    },
+    "recurrence_day_of_month": {
+      "type": "number",
+      "description": "\u05d0\u05d9\u05d6\u05d4 \u05d9\u05d5\u05dd \u05d1\u05d7\u05d5\u05d3\u05e9 (1-31) - \u05e8\u05dc\u05d5\u05d5\u05e0\u05d8\u05d9 \u05dc-MONTHLY_BY_DAY_OF_MONTH"
+    },
+    "recurrence_nth_day_of_week": {
+      "type": "object",
+      "properties": {
+        "week": {
+          "type": "number",
+          "description": "\u05d1\u05d0\u05d9\u05d6\u05d4 \u05e9\u05d1\u05d5\u05e2 \u05d1\u05d7\u05d5\u05d3\u05e9 (1=\u05e8\u05d0\u05e9\u05d5\u05df, 2=\u05e9\u05e0\u05d9, -1=\u05d0\u05d7\u05e8\u05d5\u05df)"
+        },
+        "day": {
+          "type": "number",
+          "description": "\u05d0\u05d9\u05d6\u05d4 \u05d9\u05d5\u05dd \u05d1\u05e9\u05d1\u05d5\u05e2 (0=\u05e8\u05d0\u05e9\u05d5\u05df, 1=\u05e9\u05e0\u05d9, ... 6=\u05e9\u05d1\u05ea)"
+        }
+      },
+      "description": "\u05e8\u05dc\u05d5\u05d5\u05e0\u05d8\u05d9 \u05dc-MONTHLY_BY_DAY_OF_WEEK - \u05dc\u05de\u05e9\u05dc \u05d9\u05d5\u05dd \u05e9\u05dc\u05d9\u05e9\u05d9 \u05d4\u05e8\u05d0\u05e9\u05d5\u05df \u05d1\u05d7\u05d5\u05d3\u05e9"
+    },
+    "recurrence_end_type": {
+      "type": "string",
+      "enum": [
+        "NEVER",
+        "ON_DATE",
+        "AFTER_COUNT"
+      ],
+      "default": "NEVER",
+      "description": "\u05de\u05ea\u05d9 \u05d4\u05d7\u05d6\u05e8\u05ea\u05d9\u05d5\u05ea \u05de\u05e1\u05ea\u05d9\u05d9\u05de\u05ea"
+    },
+    "recurrence_end_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05d4\u05ea\u05d0\u05e8\u05d9\u05da \u05d1\u05d5 \u05de\u05e1\u05ea\u05d9\u05d9\u05de\u05d5\u05ea \u05d4\u05d7\u05d6\u05e8\u05d5\u05ea - \u05e8\u05dc\u05d5\u05d5\u05e0\u05d8\u05d9 \u05dc-ON_DATE"
+    },
+    "recurrence_count": {
+      "type": "number",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05d4\u05d7\u05d6\u05e8\u05d5\u05ea \u05d4\u05db\u05d5\u05dc\u05dc - \u05e8\u05dc\u05d5\u05d5\u05e0\u05d8\u05d9 \u05dc-AFTER_COUNT"
+    },
+    "original_event_start_time": {
+      "type": "string",
+      "description": "\u05e9\u05e2\u05ea \u05d4\u05d4\u05ea\u05d7\u05dc\u05d4 \u05d4\u05de\u05e7\u05d5\u05e8\u05d9\u05ea \u05e9\u05dc \u05d4\u05d0\u05d9\u05e8\u05d5\u05e2 (HH:MM)"
+    },
+    "original_event_duration_minutes": {
+      "type": "number",
+      "description": "\u05de\u05e9\u05da \u05d4\u05d0\u05d9\u05e8\u05d5\u05e2 \u05d1\u05d3\u05e7\u05d5\u05ea"
+    },
+    "excluded_dates": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "date"
+      },
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05db\u05d9\u05dd \u05e9\u05d4\u05d5\u05d7\u05e8\u05d2\u05d5 \u05de\u05d4\u05e1\u05d3\u05e8\u05d4 (\u05de\u05d5\u05e4\u05e2\u05d9\u05dd \u05e9\u05e0\u05de\u05d7\u05e7\u05d5)"
+    }
+  },
+  "required": [
+    "event_id",
+    "recurrence_pattern"
+  ]
+}

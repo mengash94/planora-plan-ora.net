@@ -1,0 +1,88 @@
+{
+  "name": "AppVersion",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05d2\u05e8\u05e1\u05d4 (\u05dc\u05d3\u05d5\u05d2\u05de\u05d4: 1.2.0)"
+    },
+    "title": {
+      "type": "string",
+      "description": "\u05db\u05d5\u05ea\u05e8\u05ea \u05d4\u05d2\u05e8\u05e1\u05d4"
+    },
+    "release_date": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05e9\u05d7\u05e8\u05d5\u05e8"
+    },
+    "releaseDate": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05e9\u05d7\u05e8\u05d5\u05e8 (camelCase)"
+    },
+    "features": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "\u05db\u05d5\u05ea\u05e8\u05ea \u05d4\u05e4\u05d9\u05e6'\u05e8"
+          },
+          "description": {
+            "type": "string",
+            "description": "\u05ea\u05d9\u05d0\u05d5\u05e8 \u05d4\u05e4\u05d9\u05e6'\u05e8"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "feature",
+              "improvement",
+              "bugfix"
+            ],
+            "description": "\u05e1\u05d5\u05d2 \u05d4\u05e9\u05d9\u05e0\u05d5\u05d9"
+          }
+        }
+      },
+      "description": "\u05e8\u05e9\u05d9\u05de\u05ea \u05e4\u05d9\u05e6'\u05e8\u05d9\u05dd \u05d5\u05e9\u05d9\u05e4\u05d5\u05e8\u05d9\u05dd"
+    },
+    "notes": {
+      "type": "string",
+      "description": "\u05d4\u05e2\u05e8\u05d5\u05ea \u05e0\u05d5\u05e1\u05e4\u05d5\u05ea"
+    },
+    "is_published": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u05d4\u05d0\u05dd \u05d4\u05d2\u05e8\u05e1\u05d4 \u05e4\u05d5\u05e8\u05e1\u05de\u05d4"
+    },
+    "isPublished": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u05d4\u05d0\u05dd \u05d4\u05d2\u05e8\u05e1\u05d4 \u05e4\u05d5\u05e8\u05e1\u05de\u05d4 (camelCase)"
+    },
+    "notification_sent": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u05d4\u05d0\u05dd \u05e0\u05e9\u05dc\u05d7\u05d4 \u05d4\u05ea\u05e8\u05d0\u05d4 \u05dc\u05de\u05e9\u05ea\u05de\u05e9\u05d9\u05dd"
+    },
+    "notificationSent": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u05d4\u05d0\u05dd \u05e0\u05e9\u05dc\u05d7\u05d4 \u05d4\u05ea\u05e8\u05d0\u05d4 \u05dc\u05de\u05e9\u05ea\u05de\u05e9\u05d9\u05dd (camelCase)"
+    },
+    "showPopup": {
+      "type": "boolean",
+      "default": true,
+      "description": "\u05d4\u05d0\u05dd \u05dc\u05d4\u05e6\u05d9\u05d2 \u05e4\u05d5\u05e4\u05d0\u05e4 '\u05de\u05d4 \u05d7\u05d3\u05e9' \u05dc\u05de\u05e9\u05ea\u05de\u05e9\u05d9\u05dd"
+    },
+    "show_popup": {
+      "type": "boolean",
+      "default": true,
+      "description": "\u05d4\u05d0\u05dd \u05dc\u05d4\u05e6\u05d9\u05d2 \u05e4\u05d5\u05e4\u05d0\u05e4 '\u05de\u05d4 \u05d7\u05d3\u05e9' \u05dc\u05de\u05e9\u05ea\u05de\u05e9\u05d9\u05dd (snake_case)"
+    }
+  },
+  "required": [
+    "version",
+    "title"
+  ]
+}

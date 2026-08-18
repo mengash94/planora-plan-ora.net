@@ -1,0 +1,61 @@
+{
+  "name": "EventBudget",
+  "type": "object",
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05d4\u05d0\u05d9\u05e8\u05d5\u05e2"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "venue",
+        "catering",
+        "music",
+        "photography",
+        "decoration",
+        "transportation",
+        "attire",
+        "invitations",
+        "gifts",
+        "other"
+      ],
+      "description": "\u05e7\u05d8\u05d2\u05d5\u05e8\u05d9\u05d9\u05ea \u05d4\u05ea\u05e7\u05e6\u05d9\u05d1"
+    },
+    "categoryName": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05e7\u05d8\u05d2\u05d5\u05e8\u05d9\u05d4 \u05de\u05d5\u05ea\u05d0\u05dd \u05d0\u05d9\u05e9\u05d9\u05ea (\u05dc\u05e7\u05d8\u05d2\u05d5\u05e8\u05d9\u05d9\u05ea other)"
+    },
+    "plannedAmount": {
+      "type": "number",
+      "description": "\u05e1\u05db\u05d5\u05dd \u05de\u05ea\u05d5\u05db\u05e0\u05df"
+    },
+    "actualAmount": {
+      "type": "number",
+      "default": 0,
+      "description": "\u05e1\u05db\u05d5\u05dd \u05d1\u05e4\u05d5\u05e2\u05dc"
+    },
+    "paidAmount": {
+      "type": "number",
+      "default": 0,
+      "description": "\u05e1\u05db\u05d5\u05dd \u05e9\u05e9\u05d5\u05dc\u05dd"
+    },
+    "notes": {
+      "type": "string",
+      "description": "\u05d4\u05e2\u05e8\u05d5\u05ea"
+    },
+    "vendorName": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05d4\u05e1\u05e4\u05e7"
+    },
+    "vendorPhone": {
+      "type": "string",
+      "description": "\u05d8\u05dc\u05e4\u05d5\u05df \u05d4\u05e1\u05e4\u05e7"
+    }
+  },
+  "required": [
+    "eventId",
+    "category",
+    "plannedAmount"
+  ]
+}

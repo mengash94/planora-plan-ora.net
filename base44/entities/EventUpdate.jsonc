@@ -1,0 +1,48 @@
+{
+  "name": "EventUpdate",
+  "type": "object",
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05d4\u05d0\u05d9\u05e8\u05d5\u05e2"
+    },
+    "title": {
+      "type": "string",
+      "description": "\u05db\u05d5\u05ea\u05e8\u05ea \u05d4\u05e2\u05d3\u05db\u05d5\u05df"
+    },
+    "content": {
+      "type": "string",
+      "description": "\u05ea\u05d5\u05db\u05df \u05d4\u05e2\u05d3\u05db\u05d5\u05df"
+    },
+    "authorId": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05db\u05d5\u05ea\u05d1 \u05d4\u05e2\u05d3\u05db\u05d5\u05df"
+    },
+    "authorName": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05db\u05d5\u05ea\u05d1 \u05d4\u05e2\u05d3\u05db\u05d5\u05df"
+    },
+    "isPinned": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u05d4\u05d0\u05dd \u05d4\u05e2\u05d3\u05db\u05d5\u05df \u05de\u05d5\u05e6\u05de\u05d3"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "normal",
+        "high",
+        "urgent"
+      ],
+      "default": "normal",
+      "description": "\u05e2\u05d3\u05d9\u05e4\u05d5\u05ea \u05d4\u05e2\u05d3\u05db\u05d5\u05df"
+    }
+  },
+  "required": [
+    "eventId",
+    "title",
+    "content",
+    "authorId"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "name": "NotifTocken",
+  "type": "object",
+  "properties": {
+    "token": {
+      "type": "string",
+      "description": "The notification token registered for the user (FCM token)"
+    },
+    "userId": {
+      "type": "string",
+      "description": "Reference to the user who owns this notification token"
+    }
+  },
+  "required": [
+    "userId",
+    "token"
+  ]
+}

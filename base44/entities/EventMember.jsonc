@@ -1,0 +1,34 @@
+{
+  "name": "EventMember",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05d4\u05d0\u05d9\u05e8\u05d5\u05e2"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05d4\u05de\u05e9\u05ea\u05de\u05e9"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "organizer",
+        "member",
+        "manger"
+      ],
+      "default": "member",
+      "description": "\u05ea\u05e4\u05e7\u05d9\u05d3 \u05d4\u05de\u05e9\u05ea\u05ea\u05e3 - organizer=\u05de\u05d0\u05e8\u05d2\u05df, manger=\u05de\u05e0\u05d4\u05dc, member=\u05d7\u05d1\u05e8"
+    },
+    "last_seen_message_timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05d6\u05de\u05df \u05d0\u05d7\u05e8\u05d5\u05df \u05e9\u05d1\u05d5 \u05d4\u05de\u05e9\u05ea\u05de\u05e9 \u05e1\u05d9\u05de\u05df \u05d0\u05ea \u05d4\u05e6'\u05d0\u05d8 \u05db\u05e0\u05e7\u05e8\u05d0"
+    }
+  },
+  "required": [
+    "event_id",
+    "user_id",
+    "role"
+  ]
+}
